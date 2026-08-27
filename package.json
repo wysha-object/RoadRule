@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "build": "npm run build -w UI",
+    "i18n-format": "node ./scripts/i18n-format.js",
+    "publish-mod": "node ./scripts/publish-mod.js"
+  },
+  "workspaces": [
+    "UI"
+  ],
+  "dependencies": {
+    "fast-xml-parser": "^5.11.0"
+  }
+}

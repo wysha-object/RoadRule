@@ -1,0 +1,39 @@
+<Publish>
+    <ModId Value="" />
+    
+    <DisplayName Value="Road Rule [Beta]" />
+
+    <ShortDescription Value="" />
+
+    <LongDescription>
+
+# Road Rule [Beta]
+
+Beta version of Road Rule
+
+    </LongDescription>
+    
+    <Thumbnail Value="Properties/BetaThumbnail.png" />
+    
+    <!-- <Screenshot Value="Properties/Screenshots/Screenshot1.jpg" /> -->
+    
+    <Tag Value="" />
+    
+    <ForumLink Value="" />
+    
+    <ModVersion Value="" />
+    
+    <GameVersion Value="1.*" />
+    
+	<Dependency Id="75426" DisplayName="I18n EveryWhere" />
+    
+    <ChangeLog>
+
+See commit history for details
+
+    </ChangeLog>
+    
+    <ExternalLink Type="discord" Url="https://discord.gg/TBPYuMtN2" />
+    <ExternalLink Type="github" Url="https://github.com/wysha-object/RoadRule" />
+    <ExternalLink Type="paypal" Url="https://paypal.me/SSObject" />
+</Publish>
