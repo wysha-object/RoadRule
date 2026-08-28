@@ -77,6 +77,10 @@ namespace RoadRule.Systems.UI
                 {
                     list.Add(key);
                 }
+                if (list.Length == 0)
+                {
+                    list.Add(kvp.Key);
+                }
                 masterLaneIndexMap.Add(kvp.Key, list);
             }
 
@@ -246,6 +250,24 @@ namespace RoadRule.Systems.UI
                         else
                         {
                             master = netCompositionLane.m_Index;
+                        }
+                    }
+                }
+
+                if (master == -1)
+                {
+                    foreach (var netCompositionLane in netCompositionLaneBuffer)
+                    {
+                        if ((netCompositionLane.m_Flags & LaneFlags.Road) != 0)
+                        {
+                            if ((netCompositionLane.m_Flags & LaneFlags.Invert) != 0)
+                            {
+                                invertMaster = netCompositionLane.m_Index;
+                            }
+                            else
+                            {
+                                master = netCompositionLane.m_Index;
+                            }
                         }
                     }
                 }
