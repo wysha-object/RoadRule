@@ -28,7 +28,7 @@ namespace RoadRule.Systems.UI
             Choosed = 2,
         }
 
-        public HashSet<Entity> SelectedEdgeEntitySet { get; private set; } = new HashSet<Entity>();
+        public List<Entity> SelectedEdgeEntityList { get; private set; } = new List<Entity>();
         public HashSet<int> SelectedLaneIndexSet { get; private set; } = new HashSet<int>();
         private Entity m_CompositionEdgePrefabEntity;
         private Tool.ToolSystem m_ToolSystem;
@@ -66,7 +66,7 @@ namespace RoadRule.Systems.UI
             var buffer = overlayRenderSystem.GetBuffer(out var overlayRenderDependencies);
             var dictionary = GetMasterLaneDictionary();
 
-            var selectedEdgeEntityArray = new NativeArray<Entity>(SelectedEdgeEntitySet.ToArray(), Allocator.TempJob);
+            var selectedEdgeEntityArray = new NativeArray<Entity>(SelectedEdgeEntityList.ToArray(), Allocator.TempJob);
             var selectedLaneIndexArray = new NativeArray<int>(SelectedLaneIndexSet.ToArray(), Allocator.TempJob);
             var masterLaneIndexMap = new NativeHashMap<int, UnsafeList<int>>(dictionary.Count, Allocator.TempJob);
             foreach (var kvp in dictionary)
@@ -113,7 +113,7 @@ namespace RoadRule.Systems.UI
             {
                 return;
             }
-            if (SelectedEdgeEntitySet.Count == 0)
+            if (SelectedEdgeEntityList.Count == 0)
             {
                 if (!EntityManager.TryGetComponent<Composition>(selectedEdgeEntity, out var composition))
                 {
@@ -128,25 +128,25 @@ namespace RoadRule.Systems.UI
                     return;
                 }
             }
-            SelectedEdgeEntitySet.Add(selectedEdgeEntity);
+            SelectedEdgeEntityList.Add(selectedEdgeEntity);
             HandleSelectedEdgeEntityUpdate();
         }
 
         public void RemoveSelectedEdgeEntity(Entity selectedEdgeEntity)
         {
-            SelectedEdgeEntitySet.Remove(selectedEdgeEntity);
+            SelectedEdgeEntityList.Remove(selectedEdgeEntity);
             HandleSelectedEdgeEntityUpdate();
         }
 
         public void ClearSelectedEdgeEntity()
         {
-            SelectedEdgeEntitySet.Clear();
+            SelectedEdgeEntityList.Clear();
             HandleSelectedEdgeEntityUpdate();
         }
 
         private void HandleSelectedEdgeEntityUpdate()
         {
-            if (SelectedEdgeEntitySet.Count == 0)
+            if (SelectedEdgeEntityList.Count == 0)
             {
                 m_CompositionEdgePrefabEntity = Entity.Null;
                 if (new ToolState[] { ToolState.Choosed }.Contains(GetToolState()))
@@ -224,7 +224,7 @@ namespace RoadRule.Systems.UI
 
         public struct MasterLaneValue
         {
-            public Entity m_MasterLaneEntity { get; set; } = Entity.Null;
+            public List<Entity> m_MasterLaneEntities { get; set; } = new List<Entity>();
             public Dictionary<int, List<Entity>> m_LaneIndexDictionary { get; set; } = new Dictionary<int, List<Entity>>();
 
             public MasterLaneValue() { }
@@ -281,7 +281,7 @@ namespace RoadRule.Systems.UI
                     result[invertMaster] = new MasterLaneValue();
                 }
 
-                foreach (var selectedEdgeEntity in SelectedEdgeEntitySet)
+                foreach (var selectedEdgeEntity in SelectedEdgeEntityList)
                 {
                     if (EntityManager.TryGetBuffer<Game.Net.SubLane>(selectedEdgeEntity, true, out var subLaneBuffer))
                     {
@@ -308,15 +308,11 @@ namespace RoadRule.Systems.UI
 
                             if (laneIndex == master)
                             {
-                                result[master] = new MasterLaneValue { m_MasterLaneEntity = selectedEdgeEntity, m_LaneIndexDictionary = result[master].m_LaneIndexDictionary };
+                                result[master].m_MasterLaneEntities.Add(selectedEdgeEntity);
                             }
                             else if (laneIndex == invertMaster)
                             {
-                                result[invertMaster] = new MasterLaneValue
-                                {
-                                    m_MasterLaneEntity = selectedEdgeEntity,
-                                    m_LaneIndexDictionary = result[invertMaster].m_LaneIndexDictionary,
-                                };
+                                result[invertMaster].m_MasterLaneEntities.Add(selectedEdgeEntity);
                             }
                             else
                             {

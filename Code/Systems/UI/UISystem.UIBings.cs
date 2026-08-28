@@ -93,12 +93,12 @@ namespace RoadRule.Systems.UI
                             foreach (var laneIndexKVP in kvp.Value.m_LaneIndexDictionary)
                             {
                                 var laneIndex = laneIndexKVP.Key;
-                                LaneRulesValue? laneRulesValue = null;
                                 if (!EntityManager.TryGetComponent<Curve>(laneIndexKVP.Value[0], out var curve))
                                 {
                                     return JsonConvert.SerializeObject(new Dictionary<int, object>());
                                 }
 
+                                LaneRulesValue? laneRulesValue = null;
                                 foreach (var subLaneEntity in laneIndexKVP.Value)
                                 {
                                     if (!EntityManager.TryGetComponent<LaneRules>(subLaneEntity, out var laneRules))
@@ -129,14 +129,23 @@ namespace RoadRule.Systems.UI
                                 );
                             }
 
-                            if (!EntityManager.TryGetComponent<Curve>(kvp.Value.m_MasterLaneEntity, out var masterCurve))
+                            if (!EntityManager.TryGetComponent<Curve>(kvp.Value.m_MasterLaneEntities[0], out var masterCurve))
                             {
                                 return JsonConvert.SerializeObject(new Dictionary<int, object>());
                             }
-                            if (!EntityManager.TryGetComponent<LaneRules>(kvp.Value.m_MasterLaneEntity, out var masterLaneRules))
+                            LaneRulesValue? masterLaneRulesValue = null;
+                            foreach (var masterLaneEntity in kvp.Value.m_MasterLaneEntities)
                             {
-                                masterLaneRules = new LaneRules();
+                                if (!EntityManager.TryGetComponent<LaneRules>(masterLaneEntity, out var laneRules))
+                                {
+                                    laneRules = new LaneRules();
+                                }
+                                masterLaneRulesValue =
+                                    masterLaneRulesValue == null
+                                        ? LaneRulesValue.FromRules(laneRules)
+                                        : LaneRulesValue.MergeRulesValues(masterLaneRulesValue.Value, LaneRulesValue.FromRules(laneRules));
                             }
+
                             var masterWorldPosition = masterCurve.m_Bezier.d;
                             var masterScreenPoint = camera.WorldToScreenPoint(new Vector3(masterWorldPosition.x, masterWorldPosition.y, masterWorldPosition.z));
                             masterMap.Add(
@@ -153,7 +162,7 @@ namespace RoadRule.Systems.UI
                                             z = masterWorldPosition.z,
                                         },
                                         screenPoint = new ScreenPointValue { top = Screen.height - masterScreenPoint.y, left = masterScreenPoint.x },
-                                        laneRules = LaneRulesValue.FromRules(masterLaneRules),
+                                        laneRules = masterLaneRulesValue.Value,
                                     },
                                     lanes = laneList,
                                 }
@@ -185,7 +194,7 @@ namespace RoadRule.Systems.UI
                         {
                             return JsonConvert.SerializeObject(selectedEdgeList);
                         }
-                        foreach (var edgeEntity in SelectedEdgeEntitySet)
+                        foreach (var edgeEntity in SelectedEdgeEntityList)
                         {
                             if (!EntityManager.TryGetComponent<EdgeGeometry>(edgeEntity, out var edgeGeometry))
                             {
@@ -243,7 +252,7 @@ namespace RoadRule.Systems.UI
                         var laneIndexDictionary = new Dictionary<int, List<Entity>>();
                         foreach (var kvp in masterLaneDictionary)
                         {
-                            laneIndexDictionary[kvp.Key] = new List<Entity>([kvp.Value.m_MasterLaneEntity]);
+                            laneIndexDictionary[kvp.Key] = kvp.Value.m_MasterLaneEntities;
                             foreach (var laneIndexKVP in kvp.Value.m_LaneIndexDictionary)
                             {
                                 laneIndexDictionary[laneIndexKVP.Key] = laneIndexKVP.Value;
