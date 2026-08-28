@@ -308,11 +308,11 @@ namespace RoadRule.Systems.UI
 
                             if (laneIndex == master)
                             {
-                                result[master].m_MasterLaneEntities.Add(selectedEdgeEntity);
+                                result[master].m_MasterLaneEntities.Add(e);
                             }
                             else if (laneIndex == invertMaster)
                             {
-                                result[invertMaster].m_MasterLaneEntities.Add(selectedEdgeEntity);
+                                result[invertMaster].m_MasterLaneEntities.Add(e);
                             }
                             else
                             {
