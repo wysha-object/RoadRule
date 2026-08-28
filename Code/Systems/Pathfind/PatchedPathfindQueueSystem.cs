@@ -64,7 +64,7 @@ namespace RoadRule.Systems.Pathfind
                     {
                         instanceT.Field("m_DependencyIndex").SetValue(0);
                     }
-                    threadDataT.SetValue(instanceT.Field("m_ThreadData").Method("get_Item", instanceT.Field("m_DependencyIndex").GetValue<int>()).GetValue());
+                    threadDataT = Traverse.Create(instanceT.Field("m_ThreadData").Method("get_Item", instanceT.Field("m_DependencyIndex").GetValue<int>()).GetValue());
                     jobHandle = JobHandle.CombineDependencies(jobHandle, threadDataT.Field("m_JobHandle").GetValue<JobHandle>());
                 }
                 else if (instanceT.Field("m_AllocatorPool").Property("Count").GetValue<int>() != 0)
