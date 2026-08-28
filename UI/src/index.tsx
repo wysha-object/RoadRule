@@ -3,7 +3,11 @@ import LogoIcon from 'components/icon/logo-icon'
 import { UIToolModeContext } from 'context'
 import { ModRegistrar } from 'cs2/modding'
 import { Button, Tooltip } from 'cs2/ui'
-import { clearSelectedLaneIndex, setToolStateCmd, useGetToolStateCmd } from 'hooks/cmd'
+import {
+  clearSelectedLaneIndex,
+  setToolStateCmd,
+  useGetToolStateCmd,
+} from 'hooks/cmd'
 import { useTranslate } from 'hooks/translate'
 import MainPanel from 'pages/main-panel'
 import { useCallback, useEffect, useState } from 'react'
@@ -14,7 +18,7 @@ const register: ModRegistrar = (moduleRegistry) => {
 }
 
 function App() {
-  const { t } = useTranslate();
+  const { t } = useTranslate()
 
   const toolState = useGetToolStateCmd()
   const [mode, setMode] = useState<UIToolMode>(UIToolMode.Lane)
@@ -32,7 +36,7 @@ function App() {
   }, [mode])
 
   return (
-    <div id="road-rule-root">
+    <div id='road-rule-root'>
       <UIToolModeContext.Provider value={[mode, setMode]}>
         <Tooltip tooltip={t('RoadRule')}>
           <Button variant='floating' onSelect={floatingButtonClickHandler}>

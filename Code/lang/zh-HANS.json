@@ -1,8 +1,8 @@
 {
-    "Options.GROUP[RoadRule.RoadRule.Mod.GroupVersion]": "版本",
-    "Options.OPTION[RoadRule.RoadRule.Mod.Settings.m_ReleaseChannel]": "发行频道",
-    "Options.SECTION[RoadRule.RoadRule.Mod]": "道路规则",
-    "Options.TAB[RoadRule.RoadRule.Mod.TabGeneral]": "通用",
-    "Options.TAB[RoadRule.RoadRule.Mod.TabKeyBindings]": "按键绑定",
-    "RoadRule": "道路规则"
+  "Options.GROUP[RoadRule.RoadRule.Mod.GroupVersion]": "版本",
+  "Options.OPTION[RoadRule.RoadRule.Mod.Settings.m_ReleaseChannel]": "发行频道",
+  "Options.SECTION[RoadRule.RoadRule.Mod]": "道路规则",
+  "Options.TAB[RoadRule.RoadRule.Mod.TabGeneral]": "通用",
+  "Options.TAB[RoadRule.RoadRule.Mod.TabKeyBindings]": "按键绑定",
+  "RoadRule": "道路规则"
 }

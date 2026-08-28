@@ -7,15 +7,13 @@ import LeftPage from 'components/main-panel/left-page'
 import TooltipPage from 'components/main-panel/tooltip-page'
 
 export default function MainPanel() {
-  const { t } = useTranslate();
+  const { t } = useTranslate()
 
   const toolState = useGetToolStateCmd()
 
   return (
     <>
-      {toolState === ToolState.Choosing && (
-        <TooltipPage />
-      )}
+      {toolState === ToolState.Choosing && <TooltipPage />}
       {[ToolState.Choosed].includes(toolState) && (
         <>
           <LeftPage />

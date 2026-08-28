@@ -1,8 +1,8 @@
 import { Entity } from 'cs2/utils'
 
 export enum UIToolMode {
-    MasterLane,
-    Lane,
+  MasterLane,
+  Lane,
 }
 
 export const enum ToolState {

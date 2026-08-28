@@ -1,6 +1,8 @@
-import { createContext } from "react";
-import { UIToolMode } from "types";
+import { createContext } from 'react'
+import { UIToolMode } from 'types'
 
-const UIToolModeContext = createContext<[UIToolMode, (mode: UIToolMode) => void]>([UIToolMode.Lane, () => {}]);
+const UIToolModeContext = createContext<
+  [UIToolMode, (mode: UIToolMode) => void]
+>([UIToolMode.Lane, () => {}])
 
-export {UIToolModeContext};
+export { UIToolModeContext }

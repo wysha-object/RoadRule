@@ -55,12 +55,15 @@ export function mergeEnergyTypesRules(
 }
 
 export function mergeLaneRules(
-    a: LaneRulesValue,
-    b: LaneRulesValue,
+  a: LaneRulesValue,
+  b: LaneRulesValue,
 ): LaneRulesValue {
-    return {
-        carFlagsRules: mergeCarFlagsRules(a.carFlagsRules, b.carFlagsRules),
-        sizeClassRules: mergeSizeClassRules(a.sizeClassRules, b.sizeClassRules),
-        energyTypesRules: mergeEnergyTypesRules(a.energyTypesRules, b.energyTypesRules),
-    }
+  return {
+    carFlagsRules: mergeCarFlagsRules(a.carFlagsRules, b.carFlagsRules),
+    sizeClassRules: mergeSizeClassRules(a.sizeClassRules, b.sizeClassRules),
+    energyTypesRules: mergeEnergyTypesRules(
+      a.energyTypesRules,
+      b.energyTypesRules,
+    ),
+  }
 }

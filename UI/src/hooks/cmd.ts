@@ -1,5 +1,5 @@
 import { useValue, bindValue, call } from 'cs2/api'
-import { Entity } from 'cs2/utils';
+import { Entity } from 'cs2/utils'
 import { Lane, ToolState, Edge, LaneRulesValue } from 'types'
 
 export function useGetToolStateCmd(): ToolState {
@@ -12,10 +12,13 @@ export function useGetCameraCmd(): {
 } {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetCamera')))
 }
-export function useGetLanesCmd(): Record<number, {
-  masterLane: Lane
-  lanes: Lane[]
-}> {
+export function useGetLanesCmd(): Record<
+  number,
+  {
+    masterLane: Lane
+    lanes: Lane[]
+  }
+> {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetLanes')))
 }
 export function useGetSelectedLaneIndexCmd(): number[] {

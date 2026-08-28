@@ -24,7 +24,8 @@ const BasePage = forwardRef<HTMLDivElement, BasePageProps>(
           zIndex: '1000',
           overflow: 'hidden',
           color: 'var(--textColor)',
-          backgroundImage: 'linear-gradient( var(--panelGradientStart) , var(--panelGradientEnd) )',
+          backgroundImage:
+            'linear-gradient( var(--panelGradientStart) , var(--panelGradientEnd) )',
           ...props.style,
         }}
       >

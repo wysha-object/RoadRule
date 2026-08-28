@@ -57,14 +57,15 @@ export default function TextInput(props: {
         )}
       </div>
       <div className='vertical-gap' />
-      {textFieldActive ?
+      {textFieldActive ? (
         <Button variant='round' onClick={submitTextField}>
           <CheckSvg />
-        </Button> :
+        </Button>
+      ) : (
         <Button variant='round' onClick={enableTextField}>
           <EditSvg />
         </Button>
-      }
+      )}
     </div>
   )
 }
