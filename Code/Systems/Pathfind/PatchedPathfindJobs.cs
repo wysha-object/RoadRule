@@ -200,6 +200,9 @@ namespace RoadRule.Systems.Pathfind
             public ComponentLookup<LaneRules> m_LaneRulesLookup;
 
             [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+
+            [ReadOnly]
             public ComponentLookup<Car> m_CarLookup;
 
             [ReadOnly]
@@ -215,7 +218,8 @@ namespace RoadRule.Systems.Pathfind
                 PathfindHeuristicData pathfindHeuristicData,
                 float maxPassengerTransportSpeed,
                 float maxCargoTransportSpeed,
-                ComponentLookup<LaneRules> laneRulesData,
+                ComponentLookup<LaneRules> laneRulesLookup,
+                ComponentLookup<PrefabRef> prefabRefLookup,
                 ComponentLookup<Car> carLookup,
                 ComponentLookup<CarData> carDataLookup,
                 Entity owner
@@ -306,7 +310,8 @@ namespace RoadRule.Systems.Pathfind
                 m_NodeData = new UnsafeList<NodeData>(10000, allocator);
                 m_NodeIndex.Resize(num);
                 m_NodeIndexBits.Resize(num2, NativeArrayOptions.ClearMemory);
-                m_LaneRulesLookup = laneRulesData;
+                m_LaneRulesLookup = laneRulesLookup;
+                m_PrefabRefLookup = prefabRefLookup;
                 m_CarLookup = carLookup;
                 m_CarDataLookup = carDataLookup;
                 m_Owner = owner;
@@ -755,7 +760,8 @@ namespace RoadRule.Systems.Pathfind
                 if (
                     m_LaneRulesLookup.TryGetComponent(edgeEntity, out laneRules)
                     && m_CarLookup.TryGetComponent(m_Owner, out Car car)
-                    && m_CarDataLookup.TryGetComponent(m_Owner, out CarData carData)
+                    && m_PrefabRefLookup.TryGetComponent(m_Owner, out PrefabRef ownerPrefabRef)
+                    && m_CarDataLookup.TryGetComponent(ownerPrefabRef.m_Prefab, out CarData carData)
                 )
                 {
                     carFlags = car.m_Flags;
@@ -1370,7 +1376,10 @@ namespace RoadRule.Systems.Pathfind
             public PathfindAction m_Action;
 
             [ReadOnly]
-            public ComponentLookup<LaneRules> m_LaneRulesData;
+            public ComponentLookup<LaneRules> m_LaneRulesLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
 
             [ReadOnly]
             public ComponentLookup<Car> m_CarLookup;
@@ -1390,7 +1399,8 @@ namespace RoadRule.Systems.Pathfind
                     m_MaxPassengerTransportSpeed,
                     m_MaxCargoTransportSpeed,
                     ref m_Action.data,
-                    m_LaneRulesData,
+                    m_LaneRulesLookup,
+                    m_PrefabRefLookup,
                     m_CarLookup,
                     m_CarDataLookup,
                     m_Owner
@@ -1405,7 +1415,8 @@ namespace RoadRule.Systems.Pathfind
                 float maxPassengerTransportSpeed,
                 float maxCargoTransportSpeed,
                 ref PathfindActionData actionData,
-                ComponentLookup<LaneRules> laneRulesData,
+                ComponentLookup<LaneRules> laneRulesLookup,
+                ComponentLookup<PrefabRef> prefabRefLookup,
                 ComponentLookup<Car> carLookup,
                 ComponentLookup<CarData> carDataLookup,
                 Entity owner
@@ -1448,7 +1459,8 @@ namespace RoadRule.Systems.Pathfind
                         pathfindHeuristicData,
                         maxPassengerTransportSpeed,
                         maxCargoTransportSpeed,
-                        laneRulesData,
+                        laneRulesLookup,
+                        prefabRefLookup,
                         carLookup,
                         carDataLookup,
                         owner

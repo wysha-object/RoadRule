@@ -46,7 +46,8 @@ namespace RoadRule.Systems.Pathfind
                 m_PathfindHeuristicData = instanceT.Field("m_NetInitializeSystem").GetValue<NetInitializeSystem>().GetHeuristicData(),
                 m_Actions = currentActions.m_Actions.AsArray(),
                 m_ActionIndex = currentActions.m_ActionIndex,
-                m_LaneRulesData = __instance.GetComponentLookup<LaneRules>(true),
+                m_LaneRulesLookup = __instance.GetComponentLookup<LaneRules>(true),
+                m_PrefabRefLookup = __instance.GetComponentLookup<PrefabRef>(true),
                 m_CarLookup = __instance.GetComponentLookup<Car>(true),
                 m_CarDataLookup = __instance.GetComponentLookup<CarData>(true),
             };
@@ -204,7 +205,10 @@ namespace RoadRule.Systems.Pathfind
             public AllocatorHelper<UnsafeLinearAllocator> m_Allocator;
 
             [ReadOnly]
-            public ComponentLookup<LaneRules> m_LaneRulesData;
+            public ComponentLookup<LaneRules> m_LaneRulesLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
 
             [ReadOnly]
             public ComponentLookup<Car> m_CarLookup;
@@ -252,7 +256,8 @@ namespace RoadRule.Systems.Pathfind
                     m_MaxPassengerTransportSpeed,
                     m_MaxCargoTransportSpeed,
                     ref actionData,
-                    m_LaneRulesData,
+                    m_LaneRulesLookup,
+                    m_PrefabRefLookup,
                     m_CarLookup,
                     m_CarDataLookup,
                     owner
