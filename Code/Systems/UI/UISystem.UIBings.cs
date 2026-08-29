@@ -288,7 +288,7 @@ namespace RoadRule.Systems.UI
                         }
 
                         m_GetLanesBinding.Update();
-                        Dependency = ScheduleObsoleteMarkerJob(Dependency);
+                        m_ObsoleteMarkerSystem.UpdateAll();
                         return "";
                     }
                 )

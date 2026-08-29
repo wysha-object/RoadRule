@@ -9,6 +9,7 @@ using Game.Pathfind;
 using Game.Prefabs;
 using Game.Rendering;
 using Game.UI;
+using RoadRule.Systems.Pathfind;
 using RoadRule.Utils;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -33,6 +34,7 @@ namespace RoadRule.Systems.UI
         private Entity m_CompositionEdgePrefabEntity;
         private Tool.ToolSystem m_ToolSystem;
         private CameraUpdateSystem m_CameraUpdateSystem;
+        private ObsoleteMarkerSystem m_ObsoleteMarkerSystem;
 
         protected override void OnCreate()
         {
@@ -40,6 +42,7 @@ namespace RoadRule.Systems.UI
 
             m_ToolSystem = World.GetOrCreateSystemManaged<Tool.ToolSystem>();
             m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
+            m_ObsoleteMarkerSystem = World.GetOrCreateSystemManaged<ObsoleteMarkerSystem>();
 
             AddUIBindings();
         }
