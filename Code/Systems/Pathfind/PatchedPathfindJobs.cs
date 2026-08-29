@@ -797,7 +797,7 @@ namespace RoadRule.Systems.Pathfind
                 {
                     value.y += math.select(
                         math.select(0f, -1 * math.min(10f, math.max(0, value.y)), LaneRulesUtils.IsPrefer(laneRules, carFlags, sizeClass, energyTypes)),
-                        100f,
+                        10000f,
                         LaneRulesUtils.IsForbidden(laneRules, carFlags, sizeClass, energyTypes)
                     );
                 }

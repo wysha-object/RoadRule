@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.UI.Binding;
+using Game.Common;
 using Game.Net;
 using Game.Rendering;
 using Game.Vehicles;
@@ -277,6 +278,7 @@ namespace RoadRule.Systems.UI
 
                                 laneRules = LaneRulesValue.ApplyRulesValue(laneRules, value);
                                 EntityManager.SetComponentData(e, laneRules);
+                                EntityManager.AddComponent<Updated>(e);
                             }
                         }
                         else
