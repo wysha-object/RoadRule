@@ -15,39 +15,17 @@ namespace RoadRule.Utils
             }
 
             bool isPreferCarFlags = IsPrefer((int)CarFlags.Emergency, laneRules.m_CarFlagsRules.m_Emergency, (int)carFlags);
-            bool isPreferSizeClass = false;
-            switch (sizeClass)
-            {
-                case SizeClass.Small:
-                    isPreferSizeClass = IsPrefer(laneRules.m_SizeClassRules.m_Small, true);
-                    break;
-                case SizeClass.Medium:
-                    isPreferSizeClass = IsPrefer(laneRules.m_SizeClassRules.m_Medium, true);
-                    break;
-                case SizeClass.Large:
-                    isPreferSizeClass = IsPrefer(laneRules.m_SizeClassRules.m_Large, true);
-                    break;
-                case SizeClass.Undefined:
-                    isPreferSizeClass = IsPrefer(laneRules.m_SizeClassRules.m_Undefined, true);
-                    break;
-            }
+            bool isPreferSizeClass =
+                IsPrefer(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
+                || IsPrefer(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
+                || IsPrefer(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
+                || IsPrefer(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
 
-            bool isPreferEnergyTypes = false;
-            switch (energyTypes)
-            {
-                case EnergyTypes.Fuel:
-                    isPreferEnergyTypes = IsPrefer(laneRules.m_EnergyTypesRules.m_Fuel, true);
-                    break;
-                case EnergyTypes.Electricity:
-                    isPreferEnergyTypes = IsPrefer(laneRules.m_EnergyTypesRules.m_Electricity, true);
-                    break;
-                case EnergyTypes.FuelAndElectricity:
-                    isPreferEnergyTypes = IsPrefer(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, true);
-                    break;
-                case EnergyTypes.None:
-                    isPreferEnergyTypes = IsPrefer(laneRules.m_EnergyTypesRules.m_None, true);
-                    break;
-            }
+            bool isPreferEnergyTypes =
+                IsPrefer(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
+                || IsPrefer(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
+                || IsPrefer(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
+                || IsPrefer(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
 
             return isPreferCarFlags || isPreferSizeClass || isPreferEnergyTypes;
         }
@@ -55,39 +33,17 @@ namespace RoadRule.Utils
         public static bool IsForbidden(LaneRules laneRules, CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes)
         {
             bool isForbiddenCarFlags = IsForbidden((int)CarFlags.Emergency, laneRules.m_CarFlagsRules.m_Emergency, (int)carFlags);
-            bool isForbiddenSizeClass = false;
-            switch (sizeClass)
-            {
-                case SizeClass.Small:
-                    isForbiddenSizeClass = IsForbidden(laneRules.m_SizeClassRules.m_Small, true);
-                    break;
-                case SizeClass.Medium:
-                    isForbiddenSizeClass = IsForbidden(laneRules.m_SizeClassRules.m_Medium, true);
-                    break;
-                case SizeClass.Large:
-                    isForbiddenSizeClass = IsForbidden(laneRules.m_SizeClassRules.m_Large, true);
-                    break;
-                case SizeClass.Undefined:
-                    isForbiddenSizeClass = IsForbidden(laneRules.m_SizeClassRules.m_Undefined, true);
-                    break;
-            }
+            bool isForbiddenSizeClass =
+                IsForbidden(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
+                || IsForbidden(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
+                || IsForbidden(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
+                || IsForbidden(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
 
-            bool isForbiddenEnergyTypes = false;
-            switch (energyTypes)
-            {
-                case EnergyTypes.Fuel:
-                    isForbiddenEnergyTypes = IsForbidden(laneRules.m_EnergyTypesRules.m_Fuel, true);
-                    break;
-                case EnergyTypes.Electricity:
-                    isForbiddenEnergyTypes = IsForbidden(laneRules.m_EnergyTypesRules.m_Electricity, true);
-                    break;
-                case EnergyTypes.FuelAndElectricity:
-                    isForbiddenEnergyTypes = IsForbidden(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, true);
-                    break;
-                case EnergyTypes.None:
-                    isForbiddenEnergyTypes = IsForbidden(laneRules.m_EnergyTypesRules.m_None, true);
-                    break;
-            }
+            bool isForbiddenEnergyTypes =
+                IsForbidden(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
+                || IsForbidden(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
+                || IsForbidden(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
+                || IsForbidden(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
 
             return isForbiddenCarFlags || isForbiddenSizeClass || isForbiddenEnergyTypes;
         }
