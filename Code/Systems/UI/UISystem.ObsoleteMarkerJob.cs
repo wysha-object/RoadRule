@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Game.Common;
 using Game.Pathfind;
+using Game.Vehicles;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
@@ -35,6 +36,15 @@ namespace RoadRule.Systems.UI
                     pathOwners[i] = pathOwner;
                 }
             }
+        }
+
+        private JobHandle ScheduleObsoleteMarkerJob(JobHandle dependsOn)
+        {
+            return JobChunkExtensions.ScheduleParallel(
+                new ObsoleteMarkerJob { m_EntityType = SystemAPI.GetEntityTypeHandle(), m_PathOwnerType = SystemAPI.GetComponentTypeHandle<PathOwner>(false) },
+                GetEntityQuery(ComponentType.ReadWrite<PathOwner>(), ComponentType.ReadOnly<Car>(), ComponentType.Exclude<Deleted>()),
+                dependsOn
+            );
         }
     }
 }

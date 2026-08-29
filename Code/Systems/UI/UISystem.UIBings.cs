@@ -288,11 +288,7 @@ namespace RoadRule.Systems.UI
                         }
 
                         m_GetLanesBinding.Update();
-                        JobChunkExtensions.ScheduleParallel(
-                            new ObsoleteMarkerJob { m_EntityType = SystemAPI.GetEntityTypeHandle(), m_PathOwnerType = SystemAPI.GetComponentTypeHandle<PathOwner>(false) },
-                            GetEntityQuery(ComponentType.ReadWrite<PathOwner>(), ComponentType.ReadOnly<Car>(), ComponentType.Exclude<Deleted>()),
-                            default
-                        );
+                        Dependency = ScheduleObsoleteMarkerJob(Dependency);
                         return "";
                     }
                 )

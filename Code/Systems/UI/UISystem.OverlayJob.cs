@@ -89,5 +89,56 @@ namespace RoadRule.Systems.UI
                 return segment;
             }
         }
+
+        private JobHandle ScheduleOverlayJob(in JobHandle dependsOn)
+        {
+            var overlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+            var buffer = overlayRenderSystem.GetBuffer(out var overlayRenderDependencies);
+            var dictionary = GetMasterLaneDictionary();
+
+            var selectedEdgeEntityArray = new NativeArray<Entity>(SelectedEdgeEntityList.ToArray(), Allocator.TempJob);
+            var selectedLaneIndexArray = new NativeArray<int>(SelectedLaneIndexSet.ToArray(), Allocator.TempJob);
+            var masterLaneIndexMap = new NativeHashMap<int, UnsafeList<int>>(dictionary.Count, Allocator.TempJob);
+            foreach (var kvp in dictionary)
+            {
+                var keys = kvp.Value.m_LaneIndexDictionary.Keys;
+                var list = new UnsafeList<int>(keys.Count, Allocator.TempJob);
+                foreach (var key in keys)
+                {
+                    list.Add(key);
+                }
+                if (list.Length == 0)
+                {
+                    list.Add(kvp.Key);
+                }
+                masterLaneIndexMap.Add(kvp.Key, list);
+            }
+
+            JobHandle dependency = IJobExtensions.Schedule(
+                new OverlayJob
+                {
+                    m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
+                    m_NetCompositionLaneBufferLookup = SystemAPI.GetBufferLookup<NetCompositionLane>(true),
+                    m_EdgeGeometryLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
+                    m_NetLaneDataLookup = SystemAPI.GetComponentLookup<NetLaneData>(true),
+                    m_SelectedEdgeEntityArray = selectedEdgeEntityArray,
+                    m_SelectedLaneIndexArray = selectedLaneIndexArray,
+                    m_CompositionEdgePrefabEntity = m_CompositionEdgePrefabEntity,
+                    m_MasterLaneIndexMap = masterLaneIndexMap,
+                    m_OverlayRenderSystemBuffer = buffer,
+                },
+                JobHandle.CombineDependencies(dependsOn, overlayRenderDependencies)
+            );
+
+            foreach (var kvp in masterLaneIndexMap)
+            {
+                var cloned = masterLaneIndexMap[kvp.Key];
+                dependency = cloned.Dispose(dependency);
+            }
+            dependency = masterLaneIndexMap.Dispose(dependency);
+            dependency = selectedLaneIndexArray.Dispose(dependency);
+            dependency = selectedEdgeEntityArray.Dispose(dependency);
+            return dependency;
+        }
     }
 }
