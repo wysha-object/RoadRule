@@ -121,6 +121,7 @@ namespace RoadRule.Systems.Pathfind
                 Dependency
             );
             m_EndFrameBarrier.AddJobHandleForProducer(Dependency);
+            m_ForceNextUpdate = false;
         }
 
         public void UpdateAll()
