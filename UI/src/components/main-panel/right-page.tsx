@@ -27,7 +27,7 @@ export default function RightPage() {
     >
       <div
         style={{
-          width: '20em',
+          width: '26em',
           display: 'flex',
           flexDirection: 'column',
         }}

@@ -1,5 +1,6 @@
 import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout } from 'cs2/ui'
 import { useTranslate } from 'hooks/translate'
+import { CSSProperties, useCallback, useMemo, useState } from 'react'
 import { LaneRulesValue, Rule, RuleState, RuleValue } from 'types'
 
 export default function RulesEditor(props: {
@@ -111,12 +112,85 @@ export default function RulesEditor(props: {
   )
 }
 
+enum DropdownItemValue {
+  None,
+  Prefer,
+  Forbidden
+}
+
+const DropdownToggleStyle: CSSProperties = {
+  width: '8em',
+  margin: '0 0.5em',
+}
+
 function RuleEditor(props: {
   name: string
   ruleValue: RuleValue
   onChange: (oldValue: RuleValue, newValue: RuleValue) => void
 }) {
   const { t } = useTranslate()
+
+  const { noneFlagRule, haveFlagRule } = useMemo(() => {
+    switch (props.ruleValue.rule) {
+      case Rule.None:
+        return { noneFlagRule: DropdownItemValue.None, haveFlagRule: DropdownItemValue.None }
+      case Rule.PreferOrNone:
+        return { noneFlagRule: DropdownItemValue.Prefer, haveFlagRule: DropdownItemValue.None }
+      case Rule.NoneOrPrefer:
+        return { noneFlagRule: DropdownItemValue.None, haveFlagRule: DropdownItemValue.Prefer }
+      case Rule.ForbiddenOrNone:
+        return { noneFlagRule: DropdownItemValue.Forbidden, haveFlagRule: DropdownItemValue.None }
+      case Rule.NoneOrForbidden:
+        return { noneFlagRule: DropdownItemValue.None, haveFlagRule: DropdownItemValue.Forbidden }
+      case Rule.ForbiddenOrPrefer:
+        return { noneFlagRule: DropdownItemValue.Forbidden, haveFlagRule: DropdownItemValue.Prefer }
+      case Rule.PreferOrForbidden:
+        return { noneFlagRule: DropdownItemValue.Prefer, haveFlagRule: DropdownItemValue.Forbidden }
+    }
+  }, [props.ruleValue.rule])
+
+  const handleChange = useCallback((noneFlagRule: DropdownItemValue, haveFlagRule: DropdownItemValue) => {
+    switch (noneFlagRule) {
+      case DropdownItemValue.None:
+        switch (haveFlagRule) {
+          case DropdownItemValue.None:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.None })
+            break
+          case DropdownItemValue.Prefer:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.NoneOrPrefer })
+            break
+          case DropdownItemValue.Forbidden:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.NoneOrForbidden })
+            break
+        }
+        break
+      case DropdownItemValue.Prefer:
+        switch (haveFlagRule) {
+          case DropdownItemValue.None:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.PreferOrNone })
+            break
+          case DropdownItemValue.Prefer:
+            // Invalid combination
+            break
+          case DropdownItemValue.Forbidden:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.PreferOrForbidden })
+            break
+        }
+        break
+      case DropdownItemValue.Forbidden:
+        switch (haveFlagRule) {
+          case DropdownItemValue.None:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.ForbiddenOrNone })
+            break
+          case DropdownItemValue.Prefer:
+            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.ForbiddenOrPrefer })
+            break
+          case DropdownItemValue.Forbidden:
+            // Invalid combination
+            break
+        }
+    }
+  }, [props.onChange])
 
   return (
     <div className='row'>
@@ -134,39 +208,58 @@ function RuleEditor(props: {
       >
         {props.ruleValue.state === RuleState.PartiallyApplied && <>!</>}
       </div>
-      <div>
-        <Dropdown
-          content={
-            <>
-              {Object.values(Rule).map((rule) => {
-                if (typeof rule !== 'string') {
-                  return null
-                }
-                return (
-                  <DropdownItem
-                    value={rule}
-                    key={rule}
-                    onChange={(value) => {
-                      props.onChange(props.ruleValue, {
-                        state: RuleState.Applied,
-                        rule: Rule[value as keyof typeof Rule],
-                      })
-                    }}
-                  >
-                    <div>{t(`Rule.${rule}`)}</div>
-                  </DropdownItem>
-                )
-              })}
-            </>
-          }
-        >
-          <DropdownToggle>
-            {t(
-              `Rule.${Object.keys(Rule).find((key) => Rule[key as keyof typeof Rule] === props.ruleValue.rule)}`,
-            )}
-          </DropdownToggle>
-        </Dropdown>
-      </div>
+      <Dropdown
+        content={
+          <>
+            {Object.values(DropdownItemValue).map((item) => {
+              if (typeof item !== 'string') {
+                return null
+              }
+              return (
+                <DropdownItem
+                  value={item}
+                  key={item}
+                  onChange={(value) => handleChange(DropdownItemValue[value as keyof typeof DropdownItemValue], haveFlagRule)}
+                >
+                  <div>{t(`Rule.${item}`)}</div>
+                </DropdownItem>
+              )
+            })}
+          </>
+        }
+      >
+        <DropdownToggle style={DropdownToggleStyle}>
+          {t(
+            `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === noneFlagRule)}`,
+          )}
+        </DropdownToggle>
+      </Dropdown>
+      <Dropdown
+        content={
+          <>
+            {Object.values(DropdownItemValue).map((item) => {
+              if (typeof item !== 'string') {
+                return null
+              }
+              return (
+                <DropdownItem
+                  value={item}
+                  key={item}
+                  onChange={(value) => handleChange(noneFlagRule, DropdownItemValue[value as keyof typeof DropdownItemValue])}
+                >
+                  <div>{t(`Rule.${item}`)}</div>
+                </DropdownItem>
+              )
+            })}
+          </>
+        }
+      >
+        <DropdownToggle style={DropdownToggleStyle}>
+          {t(
+            `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === haveFlagRule)}`,
+          )}
+        </DropdownToggle>
+      </Dropdown>
     </div>
   )
 }
