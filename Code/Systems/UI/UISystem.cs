@@ -84,18 +84,21 @@ namespace RoadRule.Systems.UI
                 masterLaneIndexMap.Add(kvp.Key, list);
             }
 
-            Dependency = new OverlayJobHandle
-            {
-                m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
-                m_NetCompositionLaneBufferLookup = SystemAPI.GetBufferLookup<NetCompositionLane>(true),
-                m_EdgeGeometryLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
-                m_NetLaneDataLookup = SystemAPI.GetComponentLookup<NetLaneData>(true),
-                m_SelectedEdgeEntityArray = selectedEdgeEntityArray,
-                m_SelectedLaneIndexArray = selectedLaneIndexArray,
-                m_CompositionEdgePrefabEntity = m_CompositionEdgePrefabEntity,
-                m_MasterLaneIndexMap = masterLaneIndexMap,
-                m_OverlayRenderSystemBuffer = buffer,
-            }.Schedule(JobHandle.CombineDependencies(Dependency, overlayRenderDependencies));
+            Dependency = IJobExtensions.Schedule(
+                new OverlayJob
+                {
+                    m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
+                    m_NetCompositionLaneBufferLookup = SystemAPI.GetBufferLookup<NetCompositionLane>(true),
+                    m_EdgeGeometryLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
+                    m_NetLaneDataLookup = SystemAPI.GetComponentLookup<NetLaneData>(true),
+                    m_SelectedEdgeEntityArray = selectedEdgeEntityArray,
+                    m_SelectedLaneIndexArray = selectedLaneIndexArray,
+                    m_CompositionEdgePrefabEntity = m_CompositionEdgePrefabEntity,
+                    m_MasterLaneIndexMap = masterLaneIndexMap,
+                    m_OverlayRenderSystemBuffer = buffer,
+                },
+                JobHandle.CombineDependencies(Dependency, overlayRenderDependencies)
+            );
 
             foreach (var kvp in masterLaneIndexMap)
             {

@@ -21,7 +21,7 @@ namespace RoadRule.Systems.UI
     public partial class UISystem
     {
         [BurstCompile]
-        private struct OverlayJobHandle : IJob
+        private struct OverlayJob : IJob
         {
             [ReadOnly]
             public ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;

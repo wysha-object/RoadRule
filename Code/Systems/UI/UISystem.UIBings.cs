@@ -4,11 +4,13 @@ using Colossal.Entities;
 using Colossal.UI.Binding;
 using Game.Common;
 using Game.Net;
+using Game.Pathfind;
 using Game.Rendering;
 using Game.Vehicles;
 using Newtonsoft.Json;
 using RoadRule.Components;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -278,7 +280,6 @@ namespace RoadRule.Systems.UI
 
                                 laneRules = LaneRulesValue.ApplyRulesValue(laneRules, value);
                                 EntityManager.SetComponentData(e, laneRules);
-                                EntityManager.AddComponent<Updated>(e);
                             }
                         }
                         else
@@ -287,6 +288,11 @@ namespace RoadRule.Systems.UI
                         }
 
                         m_GetLanesBinding.Update();
+                        JobChunkExtensions.ScheduleParallel(
+                            new ObsoleteMarkerJob { m_EntityType = SystemAPI.GetEntityTypeHandle(), m_PathOwnerType = SystemAPI.GetComponentTypeHandle<PathOwner>(false) },
+                            GetEntityQuery(ComponentType.ReadWrite<PathOwner>(), ComponentType.ReadOnly<Car>(), ComponentType.Exclude<Deleted>()),
+                            default
+                        );
                         return "";
                     }
                 )
