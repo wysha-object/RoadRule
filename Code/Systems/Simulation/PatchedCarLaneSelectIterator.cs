@@ -414,50 +414,10 @@ public struct PatchedCarLaneSelectIterator
 
     private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules carLaneRules)
     {
-        float falseValue = math.select(
-            0f,
-            0.4f,
-            (((flags & m_PreferLaneFlags) == 0) || LaneRulesUtils.IsPrefer(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes))
-                & (
-                    m_PreferLaneFlags
-                    != ~(
-                        Game.Net.CarLaneFlags.Unsafe
-                        | Game.Net.CarLaneFlags.UTurnLeft
-                        | Game.Net.CarLaneFlags.Invert
-                        | Game.Net.CarLaneFlags.SideConnection
-                        | Game.Net.CarLaneFlags.TurnLeft
-                        | Game.Net.CarLaneFlags.TurnRight
-                        | Game.Net.CarLaneFlags.LevelCrossing
-                        | Game.Net.CarLaneFlags.Twoway
-                        | Game.Net.CarLaneFlags.IsSecured
-                        | Game.Net.CarLaneFlags.Runway
-                        | Game.Net.CarLaneFlags.Yield
-                        | Game.Net.CarLaneFlags.Stop
-                        | Game.Net.CarLaneFlags.SecondaryStart
-                        | Game.Net.CarLaneFlags.SecondaryEnd
-                        | Game.Net.CarLaneFlags.ForbidBicycles
-                        | Game.Net.CarLaneFlags.PublicOnly
-                        | Game.Net.CarLaneFlags.Highway
-                        | Game.Net.CarLaneFlags.UTurnRight
-                        | Game.Net.CarLaneFlags.GentleTurnLeft
-                        | Game.Net.CarLaneFlags.GentleTurnRight
-                        | Game.Net.CarLaneFlags.Forward
-                        | Game.Net.CarLaneFlags.Approach
-                        | Game.Net.CarLaneFlags.Roundabout
-                        | Game.Net.CarLaneFlags.RightLimit
-                        | Game.Net.CarLaneFlags.LeftLimit
-                        | Game.Net.CarLaneFlags.ForbidPassing
-                        | Game.Net.CarLaneFlags.RightOfWay
-                        | Game.Net.CarLaneFlags.TrafficLights
-                        | Game.Net.CarLaneFlags.ParkingLeft
-                        | Game.Net.CarLaneFlags.ParkingRight
-                        | Game.Net.CarLaneFlags.Forbidden
-                        | Game.Net.CarLaneFlags.AllowEnter
-                    )
-                )
-        );
+        float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || LaneRulesUtils.IsPrefer(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes));
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
-        float num = math.select(falseValue, trueValue, ((flags & m_ForbidLaneFlags) != 0) || LaneRulesUtils.IsForbidden(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes));
+        float num = math.select(falseValue, trueValue, ((flags & m_ForbidLaneFlags) != 0));
+        num = math.select(num, num + 10f, LaneRulesUtils.IsForbidden(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes));
         int num2 = math.select(index - minIndex, maxIndex - index, (flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(
             num + math.select(0f, 1.4f + (float)num2 * 0.4f, (m_PathMethods == PathMethod.Bicycle) & (pathMethods != PathMethod.Bicycle)),
