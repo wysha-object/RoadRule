@@ -109,7 +109,7 @@ namespace RoadRule.Systems.UI
 
         public void AddSelectedEdgeEntity(Entity selectedEdgeEntity)
         {
-            if (selectedEdgeEntity == null || selectedEdgeEntity == Entity.Null)
+            if (selectedEdgeEntity == null || selectedEdgeEntity == Entity.Null || SelectedEdgeEntityList.Contains(selectedEdgeEntity))
             {
                 return;
             }
