@@ -34,7 +34,7 @@ namespace RoadRule.Systems.UI
         private Entity m_CompositionEdgePrefabEntity;
         private Tool.ToolSystem m_ToolSystem;
         private CameraUpdateSystem m_CameraUpdateSystem;
-        private ObsoleteMarkerSystem m_ObsoleteMarkerSystem;
+        private ObsoleteCheckSystem m_ObsoleteCheckSystem;
 
         protected override void OnCreate()
         {
@@ -42,7 +42,7 @@ namespace RoadRule.Systems.UI
 
             m_ToolSystem = World.GetOrCreateSystemManaged<Tool.ToolSystem>();
             m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
-            m_ObsoleteMarkerSystem = World.GetOrCreateSystemManaged<ObsoleteMarkerSystem>();
+            m_ObsoleteCheckSystem = World.GetOrCreateSystemManaged<ObsoleteCheckSystem>();
 
             AddUIBindings();
         }

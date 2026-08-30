@@ -288,7 +288,7 @@ namespace RoadRule.Systems.UI
                         }
 
                         m_GetLanesBinding.Update();
-                        m_ObsoleteMarkerSystem.UpdateAll();
+                        m_ObsoleteCheckSystem.UpdateAll();
                         return "";
                     }
                 )
