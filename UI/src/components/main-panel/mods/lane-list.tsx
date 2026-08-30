@@ -17,20 +17,23 @@ export default function LaneList() {
     () =>
       mode === UIToolMode.Lane
         ? Object.values(masterMap)
-            .map((item) => item.lanes)
-            .flat()
+          .map((item) => item.lanes)
+          .flat()
         : Object.values(masterMap).map((item) => item.masterLane),
     [mode, JSON.stringify(masterMap)],
   )
 
   return (
-    <>
-      <div className='row'>
-        {lanes.map((lane) => (
-          <LaneItem lane={lane} />
-        ))}
-      </div>
-    </>
+    <div
+      className='row'
+      style={{
+        width: '30em'
+      }}
+    >
+      {lanes.map((lane) => (
+        <LaneItem lane={lane} />
+      ))}
+    </div>
   )
 }
 
