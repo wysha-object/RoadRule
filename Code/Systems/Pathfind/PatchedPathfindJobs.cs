@@ -846,11 +846,11 @@ namespace RoadRule.Systems.Pathfind
                         (rules & RuleFlags.AvoidBicycles) != 0
                     )
                 );
+                yz.x += math.select(1f, 0f, isPrefer);
+                yz.x += math.select(0f, 10f, isForbidden);
                 float4 value = pathSpecification.m_Costs.m_Value;
                 value.xyw += pathSpecification.m_Length * new float3(1f / num, yz);
                 value.y += math.select(0f, 100f, (flags & EdgeFlags.RequireAuthorization) != 0 != math.any(pathSpecification.m_AccessRequirement == m_AuthorizationMask));
-
-                value.y += math.select(math.select(0f, -1 * math.min(100f, math.max(0, value.y)), isPrefer), 10000f, isForbidden);
 
                 bool2 x = new float2(num2, 0f) >= new float2(0f, num2);
                 x.x &= (flags & m_FreeForward) != 0;
