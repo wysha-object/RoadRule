@@ -1,4 +1,4 @@
-import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout } from 'cs2/ui'
+import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable } from 'cs2/ui'
 import { useTranslate } from 'hooks/translate'
 import { CSSProperties, useCallback, useMemo, useState } from 'react'
 import { LaneRulesValue, Rule, RuleState, RuleValue } from 'types'
@@ -10,7 +10,7 @@ export default function RulesEditor(props: {
   const { t } = useTranslate()
 
   return (
-    <div>
+    <Scrollable>
       <PanelFoldout header={t('CarFlags')} initialExpanded={true}>
         <RuleEditor
           name={t('CarFlags.Emergency')}
@@ -108,7 +108,139 @@ export default function RulesEditor(props: {
           }}
         />
       </PanelFoldout>
-    </div>
+      <PanelFoldout header={t('VehicleType')} initialExpanded={true}>
+        <RuleEditor
+          name={t('VehicleType.Ambulance')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.ambulance}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                ambulance: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.DeliveryTruck')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.deliveryTruck}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                deliveryTruck: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.FireEngine')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.fireEngine}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                fireEngine: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.GarbageTruck')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.garbageTruck}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                garbageTruck: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.Hearse')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.hearse}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                hearse: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.MaintenanceVehicle')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.maintenanceVehicle}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                maintenanceVehicle: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.PersonalCar')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.personalCar}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                personalCar: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.PoliceCar')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.policeCar}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                policeCar: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.PostVan')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.postVan}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                postVan: newValue,
+              },
+            })
+          }}
+        />
+        <RuleEditor
+          name={t('VehicleType.PublicTransport')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.publicTransport}
+          onChange={(_, newValue) => {
+            props.onChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                publicTransport: newValue,
+              },
+            })
+          }}
+        />
+      </PanelFoldout>
+    </Scrollable>
   )
 }
 
@@ -204,6 +336,7 @@ function RuleEditor(props: {
       <div
         style={{
           flex: '1 0 1em',
+          textAlign: 'right',
         }}
       >
         {props.ruleValue.state === RuleState.PartiallyApplied && <>!</>}

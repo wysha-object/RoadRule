@@ -128,34 +128,95 @@ namespace RoadRule.Components
             }
         }
 
+        public struct VehicleTypeRules : ISerializable
+        {
+            public Rule m_Ambulance;
+            public Rule m_DeliveryTruck;
+            public Rule m_FireEngine;
+            public Rule m_GarbageTruck;
+            public Rule m_Hearse;
+            public Rule m_MaintenanceVehicle;
+            public Rule m_PersonalCar;
+            public Rule m_PoliceCar;
+            public Rule m_PostVan;
+            public Rule m_PublicTransport;
+
+            public void Deserialize<TReader>(TReader reader)
+                where TReader : IReader
+            {
+                reader.Read(out ushort schemaVersion);
+
+                reader.Read(out int ambulance);
+                m_Ambulance = (Rule)ambulance;
+                reader.Read(out int deliveryTruck);
+                m_DeliveryTruck = (Rule)deliveryTruck;
+                reader.Read(out int fireEngine);
+                m_FireEngine = (Rule)fireEngine;
+                reader.Read(out int garbageTruck);
+                m_GarbageTruck = (Rule)garbageTruck;
+                reader.Read(out int hearse);
+                m_Hearse = (Rule)hearse;
+                reader.Read(out int maintenanceVehicle);
+                m_MaintenanceVehicle = (Rule)maintenanceVehicle;
+                reader.Read(out int personalCar);
+                m_PersonalCar = (Rule)personalCar;
+                reader.Read(out int policeCar);
+                m_PoliceCar = (Rule)policeCar;
+                reader.Read(out int postVan);
+                m_PostVan = (Rule)postVan;
+                reader.Read(out int publicTransport);
+                m_PublicTransport = (Rule)publicTransport;
+            }
+
+            public void Serialize<TWriter>(TWriter writer)
+                where TWriter : IWriter
+            {
+                ushort schemaVersion = 1;
+                writer.Write(schemaVersion);
+
+                writer.Write((int)m_Ambulance);
+                writer.Write((int)m_DeliveryTruck);
+                writer.Write((int)m_FireEngine);
+                writer.Write((int)m_GarbageTruck);
+                writer.Write((int)m_Hearse);
+                writer.Write((int)m_MaintenanceVehicle);
+                writer.Write((int)m_PersonalCar);
+                writer.Write((int)m_PoliceCar);
+                writer.Write((int)m_PostVan);
+                writer.Write((int)m_PublicTransport);
+            }
+        }
+
         public CarFlagsRules m_CarFlagsRules;
         public SizeClassRules m_SizeClassRules;
         public EnergyTypesRules m_EnergyTypesRules;
+        public VehicleTypeRules m_VehicleType;
 
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader
         {
             reader.Read(out ushort schemaVersion);
 
-            reader.Read(out CarFlagsRules carFlagsRules);
-            m_CarFlagsRules = carFlagsRules;
+            reader.Read(out m_CarFlagsRules);
+            reader.Read(out m_SizeClassRules);
+            reader.Read(out m_EnergyTypesRules);
 
-            reader.Read(out SizeClassRules sizeClassRules);
-            m_SizeClassRules = sizeClassRules;
-
-            reader.Read(out EnergyTypesRules energyTypesRules);
-            m_EnergyTypesRules = energyTypesRules;
+            if (schemaVersion >= 2)
+            {
+                reader.Read(out m_VehicleType);
+            }
         }
 
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            ushort schemaVersion = 1;
+            ushort schemaVersion = 2;
             writer.Write(schemaVersion);
 
             writer.Write(m_CarFlagsRules);
             writer.Write(m_SizeClassRules);
             writer.Write(m_EnergyTypesRules);
+            writer.Write(m_VehicleType);
         }
     }
 }

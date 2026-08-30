@@ -132,11 +132,79 @@ namespace RoadRule.Systems.UI
             }
         }
 
+        private struct VehicleTypeRulesValue
+        {
+            public RuleValue ambulance;
+            public RuleValue deliveryTruck;
+            public RuleValue fireEngine;
+            public RuleValue garbageTruck;
+            public RuleValue hearse;
+            public RuleValue maintenanceVehicle;
+            public RuleValue personalCar;
+            public RuleValue policeCar;
+            public RuleValue postVan;
+            public RuleValue publicTransport;
+
+            public static VehicleTypeRulesValue FromVehicleTypeRules(LaneRules.VehicleTypeRules vehicleTypeRules)
+            {
+                return new VehicleTypeRulesValue
+                {
+                    ambulance = FromRule(vehicleTypeRules.m_Ambulance),
+                    deliveryTruck = FromRule(vehicleTypeRules.m_DeliveryTruck),
+                    fireEngine = FromRule(vehicleTypeRules.m_FireEngine),
+                    garbageTruck = FromRule(vehicleTypeRules.m_GarbageTruck),
+                    hearse = FromRule(vehicleTypeRules.m_Hearse),
+                    maintenanceVehicle = FromRule(vehicleTypeRules.m_MaintenanceVehicle),
+                    personalCar = FromRule(vehicleTypeRules.m_PersonalCar),
+                    policeCar = FromRule(vehicleTypeRules.m_PoliceCar),
+                    postVan = FromRule(vehicleTypeRules.m_PostVan),
+                    publicTransport = FromRule(vehicleTypeRules.m_PublicTransport),
+                };
+            }
+
+            public static LaneRules.VehicleTypeRules ApplyVehicleTypeRulesValue(LaneRules.VehicleTypeRules vehicleTypeRules, VehicleTypeRulesValue vehicleTypeRulesValue)
+            {
+                return new LaneRules.VehicleTypeRules
+                {
+                    m_Ambulance = vehicleTypeRulesValue.ambulance.state == RuleState.Applied ? vehicleTypeRulesValue.ambulance.rule : vehicleTypeRules.m_Ambulance,
+                    m_DeliveryTruck = vehicleTypeRulesValue.deliveryTruck.state == RuleState.Applied ? vehicleTypeRulesValue.deliveryTruck.rule : vehicleTypeRules.m_DeliveryTruck,
+                    m_FireEngine = vehicleTypeRulesValue.fireEngine.state == RuleState.Applied ? vehicleTypeRulesValue.fireEngine.rule : vehicleTypeRules.m_FireEngine,
+                    m_GarbageTruck = vehicleTypeRulesValue.garbageTruck.state == RuleState.Applied ? vehicleTypeRulesValue.garbageTruck.rule : vehicleTypeRules.m_GarbageTruck,
+                    m_Hearse = vehicleTypeRulesValue.hearse.state == RuleState.Applied ? vehicleTypeRulesValue.hearse.rule : vehicleTypeRules.m_Hearse,
+                    m_MaintenanceVehicle =
+                        vehicleTypeRulesValue.maintenanceVehicle.state == RuleState.Applied ? vehicleTypeRulesValue.maintenanceVehicle.rule : vehicleTypeRules.m_MaintenanceVehicle,
+                    m_PersonalCar = vehicleTypeRulesValue.personalCar.state == RuleState.Applied ? vehicleTypeRulesValue.personalCar.rule : vehicleTypeRules.m_PersonalCar,
+                    m_PoliceCar = vehicleTypeRulesValue.policeCar.state == RuleState.Applied ? vehicleTypeRulesValue.policeCar.rule : vehicleTypeRules.m_PoliceCar,
+                    m_PostVan = vehicleTypeRulesValue.postVan.state == RuleState.Applied ? vehicleTypeRulesValue.postVan.rule : vehicleTypeRules.m_PostVan,
+                    m_PublicTransport =
+                        vehicleTypeRulesValue.publicTransport.state == RuleState.Applied ? vehicleTypeRulesValue.publicTransport.rule : vehicleTypeRules.m_PublicTransport,
+                };
+            }
+
+            public static VehicleTypeRulesValue MergeVehicleTypeRules(VehicleTypeRulesValue a, VehicleTypeRulesValue b)
+            {
+                return new VehicleTypeRulesValue
+                {
+                    ambulance = MergeRuleValues(a.ambulance, b.ambulance),
+                    deliveryTruck = MergeRuleValues(a.deliveryTruck, b.deliveryTruck),
+                    fireEngine = MergeRuleValues(a.fireEngine, b.fireEngine),
+                    garbageTruck = MergeRuleValues(a.garbageTruck, b.garbageTruck),
+                    hearse = MergeRuleValues(a.hearse, b.hearse),
+                    maintenanceVehicle = MergeRuleValues(a.maintenanceVehicle, b.maintenanceVehicle),
+                    personalCar = MergeRuleValues(a.personalCar, b.personalCar),
+                    policeCar = MergeRuleValues(a.policeCar, b.policeCar),
+                    postVan = MergeRuleValues(a.postVan, b.postVan),
+                    publicTransport = MergeRuleValues(a.publicTransport, b.publicTransport),
+                };
+            }
+        }
+
         private struct LaneRulesValue
         {
             public CarFlagsRulesValue carFlagsRules;
             public SizeClassRulesValue sizeClassRules;
             public EnergyTypesRulesValue energyTypesRules;
+            public VehicleTypeRulesValue vehicleTypeRules;
 
             public static LaneRulesValue FromRules(LaneRules rules)
             {
@@ -145,6 +213,7 @@ namespace RoadRule.Systems.UI
                     carFlagsRules = CarFlagsRulesValue.FromCarFlagsRules(rules.m_CarFlagsRules),
                     sizeClassRules = SizeClassRulesValue.FromSizeClassRules(rules.m_SizeClassRules),
                     energyTypesRules = EnergyTypesRulesValue.FromEnergyTypesRules(rules.m_EnergyTypesRules),
+                    vehicleTypeRules = VehicleTypeRulesValue.FromVehicleTypeRules(rules.m_VehicleType),
                 };
             }
 
@@ -155,6 +224,7 @@ namespace RoadRule.Systems.UI
                     m_CarFlagsRules = CarFlagsRulesValue.ApplyCarFlagsRulesValue(laneRules.m_CarFlagsRules, rulesValue.carFlagsRules),
                     m_SizeClassRules = SizeClassRulesValue.ApplySizeClassRulesValue(laneRules.m_SizeClassRules, rulesValue.sizeClassRules),
                     m_EnergyTypesRules = EnergyTypesRulesValue.ApplyEnergyTypesRulesValue(laneRules.m_EnergyTypesRules, rulesValue.energyTypesRules),
+                    m_VehicleType = VehicleTypeRulesValue.ApplyVehicleTypeRulesValue(laneRules.m_VehicleType, rulesValue.vehicleTypeRules),
                 };
             }
 
@@ -165,6 +235,7 @@ namespace RoadRule.Systems.UI
                     carFlagsRules = CarFlagsRulesValue.MergeCarFlagsRules(a.carFlagsRules, b.carFlagsRules),
                     sizeClassRules = SizeClassRulesValue.MergeSizeClassRules(a.sizeClassRules, b.sizeClassRules),
                     energyTypesRules = EnergyTypesRulesValue.MergeEnergyTypesRules(a.energyTypesRules, b.energyTypesRules),
+                    vehicleTypeRules = VehicleTypeRulesValue.MergeVehicleTypeRules(a.vehicleTypeRules, b.vehicleTypeRules),
                 };
             }
         }

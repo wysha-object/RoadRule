@@ -144,9 +144,6 @@ namespace RoadRule.Systems.Simulation
             public ComponentLookup<Moving> m_MovingData;
 
             [ReadOnly]
-            public ComponentLookup<Car> m_CarData;
-
-            [ReadOnly]
             public ComponentLookup<Bicycle> m_BicycleData;
 
             [ReadOnly]
@@ -163,12 +160,6 @@ namespace RoadRule.Systems.Simulation
 
             [ReadOnly]
             public ComponentLookup<Creature> m_CreatureData;
-
-            [ReadOnly]
-            public ComponentLookup<PrefabRef> m_PrefabRefData;
-
-            [ReadOnly]
-            public ComponentLookup<CarData> m_PrefabCarData;
 
             [ReadOnly]
             public ComponentLookup<TrainData> m_PrefabTrainData;
@@ -245,6 +236,45 @@ namespace RoadRule.Systems.Simulation
             public NativeQueue<CarNavigationHelpers.LaneSignal>.ParallelWriter m_LaneSignals;
 
             public NativeQueue<CarNavigationSystem.TrafficAmbienceEffect>.ParallelWriter m_TrafficAmbienceEffects;
+
+            [ReadOnly]
+            public ComponentLookup<Car> m_CarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+
+            [ReadOnly]
+            public ComponentLookup<CarData> m_PrefabCarDataLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -340,7 +370,7 @@ namespace RoadRule.Systems.Simulation
                         DynamicBuffer<CarNavigationLane> navigationLanes2 = bufferAccessor[j];
                         DynamicBuffer<PathElement> pathElements2 = bufferAccessor2[j];
                         DynamicBuffer<BlockedLane> blockedLanes2 = m_BlockedLanes[entity2];
-                        CarData prefabCarData = m_PrefabCarData[prefabRef2.m_Prefab];
+                        CarData prefabCarData = m_PrefabCarDataLookup[prefabRef2.m_Prefab];
                         ObjectGeometryData objectGeometryData2 = m_PrefabObjectGeometryData[prefabRef2.m_Prefab];
                         if (bufferAccessor3.Length != 0)
                         {
@@ -481,8 +511,8 @@ namespace RoadRule.Systems.Simulation
                 for (int i = 1; i < layout.Length; i++)
                 {
                     Entity vehicle = layout[i].m_Vehicle;
-                    PrefabRef prefabRef = m_PrefabRefData[vehicle];
-                    CarData carData = m_PrefabCarData[prefabRef.m_Prefab];
+                    PrefabRef prefabRef = m_PrefabRefLookup[vehicle];
+                    CarData carData = m_PrefabCarDataLookup[prefabRef.m_Prefab];
                     prefabCarData.m_Acceleration = math.min(prefabCarData.m_Acceleration, carData.m_Acceleration);
                     prefabCarData.m_Braking = math.min(prefabCarData.m_Braking, carData.m_Braking);
                     prefabCarData.m_MaxSpeed = math.min(prefabCarData.m_MaxSpeed, carData.m_MaxSpeed);
@@ -502,12 +532,12 @@ namespace RoadRule.Systems.Simulation
                     Game.Objects.Transform transform = m_TransformData[vehicle];
                     Moving moving = m_MovingData[vehicle];
                     DynamicBuffer<BlockedLane> blockedLanes = m_BlockedLanes[vehicle];
-                    PrefabRef prefabRef = m_PrefabRefData[vehicle];
+                    PrefabRef prefabRef = m_PrefabRefLookup[vehicle];
                     ObjectGeometryData objectGeometryData = m_PrefabObjectGeometryData[prefabRef.m_Prefab];
                     CarNavigationHelpers.TrailerLaneCache trailerLaneCache = new CarNavigationHelpers.TrailerLaneCache(
                         ref trailerLane,
                         blockedLanes,
-                        m_PrefabRefData,
+                        m_PrefabRefLookup,
                         m_MovingObjectSearchTree
                     );
                     if (trailerLane.m_Lane == Entity.Null)
@@ -547,12 +577,12 @@ namespace RoadRule.Systems.Simulation
                     Game.Objects.Transform transform = m_TransformData[vehicle];
                     Moving moving = m_MovingData[vehicle];
                     DynamicBuffer<BlockedLane> blockedLanes = m_BlockedLanes[vehicle];
-                    PrefabRef prefabRef = m_PrefabRefData[vehicle];
+                    PrefabRef prefabRef = m_PrefabRefLookup[vehicle];
                     ObjectGeometryData objectGeometryData = m_PrefabObjectGeometryData[prefabRef.m_Prefab];
                     CarNavigationHelpers.TrailerLaneCache trailerLaneCache = new CarNavigationHelpers.TrailerLaneCache(
                         ref trailerLane,
                         blockedLanes,
-                        m_PrefabRefData,
+                        m_PrefabRefLookup,
                         m_MovingObjectSearchTree
                     );
                     UpdateOutOfControl(vehicle, transform, objectGeometryData, ref trailerLane, blockedLanes, tempBlockedLanes);
@@ -570,12 +600,12 @@ namespace RoadRule.Systems.Simulation
                     CarTrailerLane trailerLane = m_TrailerLaneData[vehicle];
                     Game.Objects.Transform transform = m_TransformData[vehicle];
                     DynamicBuffer<BlockedLane> blockedLanes = m_BlockedLanes[vehicle];
-                    PrefabRef prefabRef = m_PrefabRefData[vehicle];
+                    PrefabRef prefabRef = m_PrefabRefLookup[vehicle];
                     ObjectGeometryData objectGeometryData = m_PrefabObjectGeometryData[prefabRef.m_Prefab];
                     CarNavigationHelpers.TrailerLaneCache trailerLaneCache = new CarNavigationHelpers.TrailerLaneCache(
                         ref trailerLane,
                         blockedLanes,
-                        m_PrefabRefData,
+                        m_PrefabRefLookup,
                         m_MovingObjectSearchTree
                     );
                     if (trailerLane.m_Lane == Entity.Null)
@@ -630,7 +660,7 @@ namespace RoadRule.Systems.Simulation
                 }
                 if (
                     (currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.QueueReached) != 0
-                    && (!m_CarData.HasComponent(blocker.m_Blocker) || (m_CarData[blocker.m_Blocker].m_Flags & CarFlags.Queueing) == 0)
+                    && (!m_CarLookup.HasComponent(blocker.m_Blocker) || (m_CarLookup[blocker.m_Blocker].m_Flags & CarFlags.Queueing) == 0)
                 )
                 {
                     currentLane.m_LaneFlags &= ~Game.Vehicles.CarLaneFlags.QueueReached;
@@ -664,7 +694,7 @@ namespace RoadRule.Systems.Simulation
                     m_SubLanes = m_Lanes,
                     m_MasterLaneData = m_MasterLaneData,
                     m_CurveData = m_CurveData,
-                    m_PrefabRefData = m_PrefabRefData,
+                    m_PrefabRefData = m_PrefabRefLookup,
                     m_PrefabLaneData = m_PrefabLaneData,
                 };
                 m_NetSearchTree.Iterate(ref iterator);
@@ -702,7 +732,7 @@ namespace RoadRule.Systems.Simulation
                     m_SubLanes = m_Lanes,
                     m_MasterLaneData = m_MasterLaneData,
                     m_CurveData = m_CurveData,
-                    m_PrefabRefData = m_PrefabRefData,
+                    m_PrefabRefData = m_PrefabRefLookup,
                     m_PrefabLaneData = m_PrefabLaneData,
                 };
                 m_NetSearchTree.Iterate(ref iterator);
@@ -885,7 +915,7 @@ namespace RoadRule.Systems.Simulation
                     m_MasterLaneData = m_MasterLaneData,
                     m_ConnectionLaneData = m_ConnectionLaneData,
                     m_CurveData = m_CurveData,
-                    m_PrefabRefData = m_PrefabRefData,
+                    m_PrefabRefData = m_PrefabRefLookup,
                     m_PrefabCarLaneData = m_PrefabCarLaneData,
                 };
                 m_NetSearchTree.Iterate(ref iterator);
@@ -921,7 +951,7 @@ namespace RoadRule.Systems.Simulation
                     m_MasterLaneData = m_MasterLaneData,
                     m_ConnectionLaneData = m_ConnectionLaneData,
                     m_CurveData = m_CurveData,
-                    m_PrefabRefData = m_PrefabRefData,
+                    m_PrefabRefData = m_PrefabRefLookup,
                     m_PrefabCarLaneData = m_PrefabCarLaneData,
                 };
                 m_NetSearchTree.Iterate(ref iterator);
@@ -1001,7 +1031,16 @@ namespace RoadRule.Systems.Simulation
                                             navLane.m_Flags = value.m_Flags & (Game.Vehicles.CarLaneFlags.Connection | Game.Vehicles.CarLaneFlags.Area);
                                             navLane.m_CurvePosition = value.m_CurvePosition.yy;
                                             float3 position = default(float3);
-                                            if (VehicleUtils.CalculateTransformPosition(ref position, lane, m_TransformData, m_PositionData, m_PrefabRefData, m_PrefabBuildingData))
+                                            if (
+                                                VehicleUtils.CalculateTransformPosition(
+                                                    ref position,
+                                                    lane,
+                                                    m_TransformData,
+                                                    m_PositionData,
+                                                    m_PrefabRefLookup,
+                                                    m_PrefabBuildingData
+                                                )
+                                            )
                                             {
                                                 UpdateSlaveLane(isBicycle, ref navLane, position);
                                             }
@@ -1318,7 +1357,6 @@ namespace RoadRule.Systems.Simulation
                     m_SlaveLaneData = m_SlaveLaneData,
                     m_LaneReservationData = m_LaneReservationData,
                     m_MovingData = m_MovingData,
-                    m_CarData = m_CarData,
                     m_ControllerData = m_ControllerData,
                     m_CarLaneRulesData = m_CarLaneRulesData,
                     m_Lanes = m_Lanes,
@@ -1330,10 +1368,20 @@ namespace RoadRule.Systems.Simulation
                     m_TurnAhead = VehicleUtils.HasUpcomingTurn(navigationLanes),
                     m_ForbidLaneFlags = VehicleUtils.GetForbiddenLaneFlags(car, isBicycle),
                     m_PreferLaneFlags = VehicleUtils.GetPreferredLaneFlags(car),
-                    m_CarFlags = car.m_Flags,
-                    m_SizeClass = prefabCarData.m_SizeClass,
-                    m_EnergyTypes = prefabCarData.m_EnergyType,
                     m_PathMethods = (isBicycle ? PathMethod.Bicycle : PathMethod.Road),
+                    m_CarLookup = m_CarLookup,
+                    m_PrefabCarDataLookup = m_PrefabCarDataLookup,
+                    m_PrefabRefLookup = m_PrefabRefLookup,
+                    m_AmbulanceLookup = m_AmbulanceLookup,
+                    m_DeliveryTruckLookup = m_DeliveryTruckLookup,
+                    m_FireEngineLookup = m_FireEngineLookup,
+                    m_GarbageTruckLookup = m_GarbageTruckLookup,
+                    m_HearseLookup = m_HearseLookup,
+                    m_MaintenanceVehicleLookup = m_MaintenanceVehicleLookup,
+                    m_PersonalCarLookup = m_PersonalCarLookup,
+                    m_PoliceCarLookup = m_PoliceCarLookup,
+                    m_PostVanLookup = m_PostVanLookup,
+                    m_PublicTransportLookup = m_PublicTransportLookup,
                 };
                 carLaneSelectIterator.SetBuffer(ref laneSelectBuffer);
                 if (navigationLanes.Length != 0)
@@ -1466,7 +1514,7 @@ namespace RoadRule.Systems.Simulation
                     if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.TransformTarget) != 0)
                     {
                         float3 position = default(float3);
-                        if (VehicleUtils.CalculateTransformPosition(ref position, currentLane.m_Lane, m_TransformData, m_PositionData, m_PrefabRefData, m_PrefabBuildingData))
+                        if (VehicleUtils.CalculateTransformPosition(ref position, currentLane.m_Lane, m_TransformData, m_PositionData, m_PrefabRefLookup, m_PrefabBuildingData))
                         {
                             int index = NetUtils.ChooseClosestLane(
                                 componentData.m_MinIndex,
@@ -1572,9 +1620,9 @@ namespace RoadRule.Systems.Simulation
                 {
                     if (!m_MovingData.HasComponent(laneIterator.m_Blocker))
                     {
-                        if (m_CarData.HasComponent(laneIterator.m_Blocker))
+                        if (m_CarLookup.HasComponent(laneIterator.m_Blocker))
                         {
-                            if ((m_CarData[laneIterator.m_Blocker].m_Flags & CarFlags.Queueing) != 0 && (currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.Queue) != 0)
+                            if ((m_CarLookup[laneIterator.m_Blocker].m_Flags & CarFlags.Queueing) != 0 && (currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.Queue) != 0)
                             {
                                 if (laneIterator.m_MaxSpeed <= 3f)
                                 {
@@ -1741,7 +1789,7 @@ namespace RoadRule.Systems.Simulation
                 {
                     m_TransformData = m_TransformData,
                     m_MovingData = m_MovingData,
-                    m_CarData = m_CarData,
+                    m_CarData = m_CarLookup,
                     m_BicycleData = m_BicycleData,
                     m_TrainData = m_TrainData,
                     m_ControllerData = m_ControllerData,
@@ -1754,9 +1802,9 @@ namespace RoadRule.Systems.Simulation
                     m_ParkingLaneData = m_ParkingLaneData,
                     m_UnspawnedData = m_UnspawnedData,
                     m_CreatureData = m_CreatureData,
-                    m_PrefabRefData = m_PrefabRefData,
+                    m_PrefabRefData = m_PrefabRefLookup,
                     m_PrefabObjectGeometryData = m_PrefabObjectGeometryData,
-                    m_PrefabCarData = m_PrefabCarData,
+                    m_PrefabCarData = m_PrefabCarDataLookup,
                     m_PrefabTrainData = m_PrefabTrainData,
                     m_PrefabParkingLaneData = m_PrefabParkingLaneData,
                     m_LaneOverlapData = m_LaneOverlaps,
@@ -1822,7 +1870,7 @@ namespace RoadRule.Systems.Simulation
                             blocker.m_MaxSpeed = byte.MaxValue;
                             return;
                         }
-                        PrefabRef prefabRef2 = m_PrefabRefData[currentLane.m_Lane];
+                        PrefabRef prefabRef2 = m_PrefabRefLookup[currentLane.m_Lane];
                         NetLaneData prefabLaneData = m_PrefabLaneData[prefabRef2.m_Prefab];
                         m_NodeLaneData.TryGetComponent(currentLane.m_Lane, out var componentData);
                         float laneOffset = VehicleUtils.GetLaneOffset(
@@ -1860,7 +1908,7 @@ namespace RoadRule.Systems.Simulation
                         }
                         if (currentLane.m_ChangeLane != Entity.Null)
                         {
-                            PrefabRef prefabRef3 = m_PrefabRefData[currentLane.m_ChangeLane];
+                            PrefabRef prefabRef3 = m_PrefabRefLookup[currentLane.m_ChangeLane];
                             NetLaneData prefabLaneData2 = m_PrefabLaneData[prefabRef3.m_Prefab];
                             m_NodeLaneData.TryGetComponent(currentLane.m_ChangeLane, out var componentData2);
                             num4 = VehicleUtils.GetLaneOffset(prefabObjectGeometryData, prefabLaneData2, componentData2, currentLane.m_CurvePosition.x, lanePosition, isBicycle);
@@ -1998,7 +2046,7 @@ namespace RoadRule.Systems.Simulation
                     float5.zw = math.min(1f, num12 * float5.zw);
                     if (isBicycle && laneIterator.m_LaneOffsetPush.y != 0f)
                     {
-                        PrefabRef prefabRef4 = m_PrefabRefData[currentLane.m_Lane];
+                        PrefabRef prefabRef4 = m_PrefabRefLookup[currentLane.m_Lane];
                         if (m_PrefabLaneData.TryGetComponent(prefabRef4.m_Prefab, out var componentData4))
                         {
                             float num13 = laneIterator.m_LaneOffsetPush.x / (laneIterator.m_LaneOffsetPush.y * math.max(1f, componentData4.m_Width));
@@ -2041,7 +2089,7 @@ namespace RoadRule.Systems.Simulation
                             if (m_ParkingLaneData.HasComponent(currentLane.m_Lane))
                             {
                                 Game.Net.ParkingLane parkingLane = m_ParkingLaneData[currentLane.m_Lane];
-                                PrefabRef prefabRef5 = m_PrefabRefData[currentLane.m_Lane];
+                                PrefabRef prefabRef5 = m_PrefabRefLookup[currentLane.m_Lane];
                                 ParkingLaneData parkingLaneData = m_PrefabParkingLaneData[prefabRef5.m_Prefab];
                                 Game.Objects.Transform ownerTransform = default(Game.Objects.Transform);
                                 if (m_OwnerData.TryGetComponent(currentLane.m_Lane, out var componentData5) && m_TransformData.HasComponent(componentData5.m_Owner))
@@ -2121,8 +2169,8 @@ namespace RoadRule.Systems.Simulation
                             {
                                 Curve curve2 = m_CurveData[currentLane.m_Lane];
                                 Curve curve3 = m_CurveData[currentLane.m_ChangeLane];
-                                PrefabRef prefabRef6 = m_PrefabRefData[currentLane.m_Lane];
-                                PrefabRef prefabRef7 = m_PrefabRefData[currentLane.m_ChangeLane];
+                                PrefabRef prefabRef6 = m_PrefabRefLookup[currentLane.m_Lane];
+                                PrefabRef prefabRef7 = m_PrefabRefLookup[currentLane.m_ChangeLane];
                                 NetLaneData prefabLaneData3 = m_PrefabLaneData[prefabRef6.m_Prefab];
                                 NetLaneData prefabLaneData4 = m_PrefabLaneData[prefabRef7.m_Prefab];
                                 m_NodeLaneData.TryGetComponent(currentLane.m_Lane, out var componentData6);
@@ -2169,7 +2217,7 @@ namespace RoadRule.Systems.Simulation
                             else
                             {
                                 Curve curve4 = m_CurveData[currentLane.m_Lane];
-                                PrefabRef prefabRef8 = m_PrefabRefData[currentLane.m_Lane];
+                                PrefabRef prefabRef8 = m_PrefabRefLookup[currentLane.m_Lane];
                                 NetLaneData prefabLaneData5 = m_PrefabLaneData[prefabRef8.m_Prefab];
                                 m_NodeLaneData.TryGetComponent(currentLane.m_Lane, out var componentData8);
                                 float laneOffset2 = VehicleUtils.GetLaneOffset(
@@ -2292,7 +2340,7 @@ namespace RoadRule.Systems.Simulation
                         m_CreatureData = m_CreatureData,
                         m_CurveData = m_CurveData,
                         m_AreaLaneData = m_AreaLaneData,
-                        m_PrefabRefData = m_PrefabRefData,
+                        m_PrefabRefData = m_PrefabRefLookup,
                         m_PrefabObjectGeometryData = m_PrefabObjectGeometryData,
                         m_PrefabLaneData = m_PrefabLaneData,
                         m_AreaNodes = m_AreaNodes,
@@ -2992,7 +3040,7 @@ namespace RoadRule.Systems.Simulation
 
             private bool MoveTarget(float3 comparePosition, ref float3 targetPosition, float minDistance, Entity target)
             {
-                if (VehicleUtils.CalculateTransformPosition(ref targetPosition, target, m_TransformData, m_PositionData, m_PrefabRefData, m_PrefabBuildingData))
+                if (VehicleUtils.CalculateTransformPosition(ref targetPosition, target, m_TransformData, m_PositionData, m_PrefabRefLookup, m_PrefabBuildingData))
                 {
                     return math.distance(comparePosition, targetPosition) >= minDistance;
                 }
@@ -3191,15 +3239,12 @@ namespace RoadRule.Systems.Simulation
                     m_TransformData = SystemAPI.GetComponentLookup<Game.Objects.Transform>(true),
                     m_PositionData = SystemAPI.GetComponentLookup<Game.Routes.Position>(true),
                     m_MovingData = SystemAPI.GetComponentLookup<Game.Objects.Moving>(true),
-                    m_CarData = SystemAPI.GetComponentLookup<Game.Vehicles.Car>(true),
                     m_BicycleData = SystemAPI.GetComponentLookup<Game.Vehicles.Bicycle>(true),
                     m_TrainData = SystemAPI.GetComponentLookup<Game.Vehicles.Train>(true),
                     m_ControllerData = SystemAPI.GetComponentLookup<Game.Vehicles.Controller>(true),
                     m_CarLaneRulesData = SystemAPI.GetComponentLookup<LaneRules>(isReadOnly: true),
                     m_VehicleData = SystemAPI.GetComponentLookup<Game.Vehicles.Vehicle>(true),
                     m_CreatureData = SystemAPI.GetComponentLookup<Game.Creatures.Creature>(true),
-                    m_PrefabRefData = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(true),
-                    m_PrefabCarData = SystemAPI.GetComponentLookup<Game.Prefabs.CarData>(true),
                     m_PrefabTrainData = SystemAPI.GetComponentLookup<Game.Prefabs.TrainData>(true),
                     m_PrefabBuildingData = SystemAPI.GetComponentLookup<Game.Prefabs.BuildingData>(true),
                     m_PrefabObjectGeometryData = SystemAPI.GetComponentLookup<Game.Prefabs.ObjectGeometryData>(true),
@@ -3227,6 +3272,19 @@ namespace RoadRule.Systems.Simulation
                     m_LaneEffects = m_Actions.m_LaneEffectsQueue.AsParallelWriter(),
                     m_LaneSignals = m_Actions.m_LaneSignalQueue.AsParallelWriter(),
                     m_TrafficAmbienceEffects = m_Actions.m_TrafficAmbienceQueue.AsParallelWriter(),
+                    m_CarLookup = SystemAPI.GetComponentLookup<Game.Vehicles.Car>(true),
+                    m_PrefabRefLookup = SystemAPI.GetComponentLookup<Game.Prefabs.PrefabRef>(true),
+                    m_PrefabCarDataLookup = SystemAPI.GetComponentLookup<Game.Prefabs.CarData>(true),
+                    m_AmbulanceLookup = SystemAPI.GetComponentLookup<Game.Vehicles.Ambulance>(true),
+                    m_DeliveryTruckLookup = SystemAPI.GetComponentLookup<Game.Vehicles.DeliveryTruck>(true),
+                    m_FireEngineLookup = SystemAPI.GetComponentLookup<Game.Vehicles.FireEngine>(true),
+                    m_GarbageTruckLookup = SystemAPI.GetComponentLookup<Game.Vehicles.GarbageTruck>(true),
+                    m_HearseLookup = SystemAPI.GetComponentLookup<Game.Vehicles.Hearse>(true),
+                    m_MaintenanceVehicleLookup = SystemAPI.GetComponentLookup<Game.Vehicles.MaintenanceVehicle>(true),
+                    m_PersonalCarLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PersonalCar>(true),
+                    m_PoliceCarLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PoliceCar>(true),
+                    m_PostVanLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PostVan>(true),
+                    m_PublicTransportLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
                 },
                 m_VehicleQuery,
                 JobUtils.CombineDependencies(base.Dependency, dependencies, dependencies2, dependencies3, dependencies4)

@@ -55,10 +55,24 @@ export interface EnergyTypesRulesValue {
   none: RuleValue
 }
 
+export interface VehicleRulesValue {
+  ambulance: RuleValue
+  deliveryTruck: RuleValue
+  fireEngine: RuleValue
+  garbageTruck: RuleValue
+  hearse: RuleValue
+  maintenanceVehicle: RuleValue
+  personalCar: RuleValue
+  policeCar: RuleValue
+  postVan: RuleValue
+  publicTransport: RuleValue
+}
+
 export interface LaneRulesValue {
   carFlagsRules: CarFlagsRulesValue
   sizeClassRules: SizeClassRulesValue
   energyTypesRules: EnergyTypesRulesValue
+  vehicleTypeRules: VehicleRulesValue
 }
 
 export interface Lane {

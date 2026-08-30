@@ -6,6 +6,7 @@ using Game.Common;
 using Game.Net;
 using Game.Objects;
 using Game.Pathfind;
+using Game.Prefabs;
 using Game.Simulation;
 using Game.Vehicles;
 using RoadRule.Components;
@@ -23,7 +24,7 @@ public struct PatchedCarLaneSelectIterator
 
     public ComponentLookup<Lane> m_LaneData;
 
-    public ComponentLookup<CarLane> m_CarLaneData;
+    public ComponentLookup<Game.Net.CarLane> m_CarLaneData;
 
     public ComponentLookup<SlaveLane> m_SlaveLaneData;
 
@@ -31,13 +32,11 @@ public struct PatchedCarLaneSelectIterator
 
     public ComponentLookup<Moving> m_MovingData;
 
-    public ComponentLookup<Car> m_CarData;
-
     public ComponentLookup<Controller> m_ControllerData;
 
     public ComponentLookup<LaneRules> m_CarLaneRulesData;
 
-    public BufferLookup<SubLane> m_Lanes;
+    public BufferLookup<Game.Net.SubLane> m_Lanes;
 
     public BufferLookup<LaneObject> m_LaneObjects;
 
@@ -55,12 +54,6 @@ public struct PatchedCarLaneSelectIterator
 
     public Game.Net.CarLaneFlags m_PreferLaneFlags;
 
-    public CarFlags m_CarFlags;
-
-    public SizeClass m_SizeClass;
-
-    public EnergyTypes m_EnergyTypes;
-
     public PathMethod m_PathMethods;
 
     private const float TURN_AHEAD_LANE_SWITCH_COST_FACTOR = 7f;
@@ -75,6 +68,34 @@ public struct PatchedCarLaneSelectIterator
 
     private Entity m_PrevLane;
 
+    public Entity m_CarEntity;
+
+    public ComponentLookup<Car> m_CarLookup;
+
+    public ComponentLookup<PrefabRef> m_PrefabRefLookup;
+
+    public ComponentLookup<CarData> m_PrefabCarDataLookup;
+
+    public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
+
+    public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
+
+    public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
+
+    public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
+
+    public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
+
+    public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
+
+    public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
+
+    public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
+
+    public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
+
+    public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
+
     public void SetBuffer(ref CarLaneSelectBuffer buffer)
     {
         m_Buffer = buffer.Ensure();
@@ -88,12 +109,12 @@ public struct PatchedCarLaneSelectIterator
         }
         SlaveLane slaveLane = m_SlaveLaneData[navLaneData.m_Lane];
         Owner owner = m_OwnerData[navLaneData.m_Lane];
-        DynamicBuffer<SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
+        DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
         int num = math.min(slaveLane.m_MaxIndex, dynamicBuffer.Length - 1);
         float laneObjectCost = math.abs(navLaneData.m_CurvePosition.y - navLaneData.m_CurvePosition.x) * 0.49f;
         for (int i = slaveLane.m_MinIndex; i <= num; i++)
         {
-            SubLane subLane = dynamicBuffer[i];
+            Game.Net.SubLane subLane = dynamicBuffer[i];
             float num2 = CalculateLaneObjectCost(laneObjectCost, index, subLane.m_SubLane, navLaneData.m_Flags);
             if (m_LaneReservationData.TryGetComponent(subLane.m_SubLane, out var componentData))
             {
@@ -160,8 +181,8 @@ public struct PatchedCarLaneSelectIterator
         if (!m_MovingData.HasComponent(laneObject.m_LaneObject))
         {
             if (
-                m_CarData.HasComponent(laneObject.m_LaneObject)
-                && (m_CarData[laneObject.m_LaneObject].m_Flags & CarFlags.Queueing) != 0
+                m_CarLookup.HasComponent(laneObject.m_LaneObject)
+                && (m_CarLookup[laneObject.m_LaneObject].m_Flags & CarFlags.Queueing) != 0
                 && (laneFlags & Game.Vehicles.CarLaneFlags.Queue) != 0
             )
             {
@@ -180,7 +201,7 @@ public struct PatchedCarLaneSelectIterator
         )
         {
             Owner owner = m_OwnerData[navLaneData.m_Lane];
-            DynamicBuffer<SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
+            DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
             int num = math.min(componentData.m_MaxIndex, dynamicBuffer.Length - 1);
             m_LaneSwitchCost = m_LaneSwitchBaseCost + math.select(1f, 5f, (componentData.m_Flags & SlaveLaneFlags.AllowChange) == 0);
             if (m_TurnAhead)
@@ -194,7 +215,7 @@ public struct PatchedCarLaneSelectIterator
             )
             {
                 Owner owner2 = m_OwnerData[nextNavLaneData.m_Lane];
-                DynamicBuffer<SubLane> dynamicBuffer2 = m_Lanes[owner2.m_Owner];
+                DynamicBuffer<Game.Net.SubLane> dynamicBuffer2 = m_Lanes[owner2.m_Owner];
                 int num2 = math.min(componentData2.m_MaxIndex, dynamicBuffer2.Length - 1);
                 int num3 = m_BufferPos - (num2 - componentData2.m_MinIndex + 1);
                 float falseValue = 1000000f;
@@ -203,7 +224,7 @@ public struct PatchedCarLaneSelectIterator
                 int num5 = -100000;
                 for (int i = componentData.m_MinIndex; i <= num; i++)
                 {
-                    SubLane subLane = dynamicBuffer[i];
+                    Game.Net.SubLane subLane = dynamicBuffer[i];
                     Lane lane = m_LaneData[subLane.m_SubLane];
                     float num6 = 1000000f;
                     int num7;
@@ -296,7 +317,7 @@ public struct PatchedCarLaneSelectIterator
                     {
                         if (num11 < num4 || num11 > num5)
                         {
-                            SubLane subLane2 = dynamicBuffer[num11];
+                            Game.Net.SubLane subLane2 = dynamicBuffer[num11];
                             float num12 = math.select(falseValue, trueValue, num11 > num5);
                             num12 += GetLaneSwitchCost(math.max(num4 - num11, num11 - num5));
                             if (m_LaneReservationData.TryGetComponent(subLane2.m_SubLane, out var componentData5))
@@ -320,7 +341,7 @@ public struct PatchedCarLaneSelectIterator
             {
                 for (int num13 = componentData.m_MinIndex; num13 <= num; num13++)
                 {
-                    SubLane subLane3 = dynamicBuffer[num13];
+                    Game.Net.SubLane subLane3 = dynamicBuffer[num13];
                     float num14 = CalculateLaneObjectCost(laneObjectCost, index, subLane3.m_SubLane, navLaneData.m_Flags);
                     if (m_LaneReservationData.TryGetComponent(subLane3.m_SubLane, out var componentData7))
                     {
@@ -376,7 +397,7 @@ public struct PatchedCarLaneSelectIterator
                 }
                 for (int num19 = componentData.m_MinIndex; num19 <= num; num19++)
                 {
-                    SubLane subLane4 = dynamicBuffer[num19];
+                    Game.Net.SubLane subLane4 = dynamicBuffer[num19];
                     float num20 = 0f;
                     if (num15 <= num16)
                     {
@@ -412,12 +433,34 @@ public struct PatchedCarLaneSelectIterator
         return (float)math.max(0, lanePriority - m_Priority) * 1f;
     }
 
-    private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules carLaneRules)
+    private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
     {
-        float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || LaneRulesUtils.IsPrefer(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes));
+        bool isPrefer = false;
+        bool isForbidden = false;
+        LaneRulesUtils.CheckLaneRules(
+            laneRules,
+            m_CarEntity,
+            m_CarLookup,
+            m_PrefabRefLookup,
+            m_PrefabCarDataLookup,
+            m_AmbulanceLookup,
+            m_DeliveryTruckLookup,
+            m_FireEngineLookup,
+            m_GarbageTruckLookup,
+            m_HearseLookup,
+            m_MaintenanceVehicleLookup,
+            m_PersonalCarLookup,
+            m_PoliceCarLookup,
+            m_PostVanLookup,
+            m_PublicTransportLookup,
+            out isPrefer,
+            out isForbidden
+        );
+
+        float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || isPrefer);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
         float num = math.select(falseValue, trueValue, ((flags & m_ForbidLaneFlags) != 0));
-        num = math.select(num, num + 10f, LaneRulesUtils.IsForbidden(carLaneRules, m_CarFlags, m_SizeClass, m_EnergyTypes));
+        num = math.select(num, num + 10f, isForbidden);
         int num2 = math.select(index - minIndex, maxIndex - index, (flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(
             num + math.select(0f, 1.4f + (float)num2 * 0.4f, (m_PathMethods == PathMethod.Bicycle) & (pathMethods != PathMethod.Bicycle)),
@@ -440,7 +483,7 @@ public struct PatchedCarLaneSelectIterator
         if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.FixedLane) == 0 && m_SlaveLaneData.TryGetComponent(entity, out var componentData))
         {
             Owner owner = m_OwnerData[entity];
-            DynamicBuffer<SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
+            DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
             int num = math.min(componentData.m_MaxIndex, dynamicBuffer.Length - 1);
             m_LaneSwitchCost = m_LaneSwitchBaseCost + math.select(1f, 5f, (componentData.m_Flags & SlaveLaneFlags.AllowChange) == 0);
             if (m_TurnAhead)
@@ -474,12 +517,12 @@ public struct PatchedCarLaneSelectIterator
             )
             {
                 Owner owner2 = m_OwnerData[nextNavLaneData.m_Lane];
-                DynamicBuffer<SubLane> dynamicBuffer2 = m_Lanes[owner2.m_Owner];
+                DynamicBuffer<Game.Net.SubLane> dynamicBuffer2 = m_Lanes[owner2.m_Owner];
                 int num3 = math.min(componentData2.m_MaxIndex, dynamicBuffer2.Length - 1);
                 int num4 = m_BufferPos - (num3 - componentData2.m_MinIndex + 1);
                 for (int k = componentData.m_MinIndex; k <= num; k++)
                 {
-                    SubLane subLane = dynamicBuffer[k];
+                    Game.Net.SubLane subLane = dynamicBuffer[k];
                     Lane lane = m_LaneData[subLane.m_SubLane];
                     float num5 = 1000000f;
                     int num6;
@@ -562,7 +605,7 @@ public struct PatchedCarLaneSelectIterator
             {
                 for (int num10 = componentData.m_MinIndex; num10 <= num; num10++)
                 {
-                    SubLane subLane2 = dynamicBuffer[num10];
+                    Game.Net.SubLane subLane2 = dynamicBuffer[num10];
                     float num11 = CalculateLaneObjectCost(laneObjectCost, subLane2.m_SubLane, currentLane.m_CurvePosition.x, currentLane.m_LaneFlags);
                     if (m_LaneReservationData.TryGetComponent(subLane2.m_SubLane, out var componentData5))
                     {
@@ -622,7 +665,7 @@ public struct PatchedCarLaneSelectIterator
                 }
                 for (int num16 = componentData.m_MinIndex; num16 <= num; num16++)
                 {
-                    SubLane subLane3 = dynamicBuffer[num16];
+                    Game.Net.SubLane subLane3 = dynamicBuffer[num16];
                     float num17;
                     if ((num16 >= num12 && num16 <= num13) || num12 > num13)
                     {
@@ -717,7 +760,7 @@ public struct PatchedCarLaneSelectIterator
             )
             {
                 Owner owner = m_OwnerData[navLaneData.m_Lane];
-                DynamicBuffer<SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
+                DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
                 int num = math.min(slaveLane.m_MaxIndex, dynamicBuffer.Length - 1);
                 m_BufferPos -= num - slaveLane.m_MinIndex + 1;
                 int num2 = 100000;
@@ -836,7 +879,7 @@ public struct PatchedCarLaneSelectIterator
         {
             SlaveLane slaveLane = m_SlaveLaneData[navLaneData.m_Lane];
             Owner owner = m_OwnerData[navLaneData.m_Lane];
-            DynamicBuffer<SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
+            DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
             int num = math.min(slaveLane.m_MaxIndex, dynamicBuffer.Length - 1);
             if ((navLaneData.m_Flags & (Game.Vehicles.CarLaneFlags.Reserved | Game.Vehicles.CarLaneFlags.FixedLane)) == 0)
             {

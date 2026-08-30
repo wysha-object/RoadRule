@@ -5,6 +5,7 @@ import {
   RuleState,
   RuleValue,
   SizeClassRulesValue,
+  VehicleRulesValue,
 } from 'types'
 
 export function mergeRuleValues(a: RuleValue, b: RuleValue): RuleValue {
@@ -54,6 +55,27 @@ export function mergeEnergyTypesRules(
   }
 }
 
+export function mergeVehicleRules(
+  a: VehicleRulesValue,
+  b: VehicleRulesValue,
+): VehicleRulesValue {
+  return {
+    ambulance: mergeRuleValues(a.ambulance, b.ambulance),
+    deliveryTruck: mergeRuleValues(a.deliveryTruck, b.deliveryTruck),
+    fireEngine: mergeRuleValues(a.fireEngine, b.fireEngine),
+    garbageTruck: mergeRuleValues(a.garbageTruck, b.garbageTruck),
+    hearse: mergeRuleValues(a.hearse, b.hearse),
+    maintenanceVehicle: mergeRuleValues(
+      a.maintenanceVehicle,
+      b.maintenanceVehicle,
+    ),
+    personalCar: mergeRuleValues(a.personalCar, b.personalCar),
+    policeCar: mergeRuleValues(a.policeCar, b.policeCar),
+    postVan: mergeRuleValues(a.postVan, b.postVan),
+    publicTransport: mergeRuleValues(a.publicTransport, b.publicTransport),
+  }
+}
+
 export function mergeLaneRules(
   a: LaneRulesValue,
   b: LaneRulesValue,
@@ -65,5 +87,6 @@ export function mergeLaneRules(
       a.energyTypesRules,
       b.energyTypesRules,
     ),
+    vehicleTypeRules: mergeVehicleRules(a.vehicleTypeRules, b.vehicleTypeRules),
   }
 }

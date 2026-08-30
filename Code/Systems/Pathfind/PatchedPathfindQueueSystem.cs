@@ -50,6 +50,16 @@ namespace RoadRule.Systems.Pathfind
                 m_PrefabRefLookup = __instance.GetComponentLookup<PrefabRef>(true),
                 m_CarLookup = __instance.GetComponentLookup<Car>(true),
                 m_CarDataLookup = __instance.GetComponentLookup<CarData>(true),
+                m_AmbulanceLookup = __instance.GetComponentLookup<Game.Vehicles.Ambulance>(true),
+                m_DeliveryTruckLookup = __instance.GetComponentLookup<Game.Vehicles.DeliveryTruck>(true),
+                m_FireEngineLookup = __instance.GetComponentLookup<Game.Vehicles.FireEngine>(true),
+                m_GarbageTruckLookup = __instance.GetComponentLookup<Game.Vehicles.GarbageTruck>(true),
+                m_HearseLookup = __instance.GetComponentLookup<Game.Vehicles.Hearse>(true),
+                m_MaintenanceVehicleLookup = __instance.GetComponentLookup<Game.Vehicles.MaintenanceVehicle>(true),
+                m_PersonalCarLookup = __instance.GetComponentLookup<Game.Vehicles.PersonalCar>(true),
+                m_PoliceCarLookup = __instance.GetComponentLookup<Game.Vehicles.PoliceCar>(true),
+                m_PostVanLookup = __instance.GetComponentLookup<Game.Vehicles.PostVan>(true),
+                m_PublicTransportLookup = __instance.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
             };
             instanceT
                 .Field("m_TransportLineSystem")
@@ -216,6 +226,36 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<CarData> m_CarDataLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
+
             public unsafe void Execute()
             {
                 ref int location = ref m_ActionIndex.ValueAsRef();
@@ -260,6 +300,16 @@ namespace RoadRule.Systems.Pathfind
                     m_PrefabRefLookup,
                     m_CarLookup,
                     m_CarDataLookup,
+                    m_AmbulanceLookup,
+                    m_DeliveryTruckLookup,
+                    m_FireEngineLookup,
+                    m_GarbageTruckLookup,
+                    m_HearseLookup,
+                    m_MaintenanceVehicleLookup,
+                    m_PersonalCarLookup,
+                    m_PoliceCarLookup,
+                    m_PostVanLookup,
+                    m_PublicTransportLookup,
                     owner
                 );
                 Interlocked.MemoryBarrier();

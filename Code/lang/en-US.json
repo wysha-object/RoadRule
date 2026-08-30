@@ -6,6 +6,7 @@
     "EnergyTypes.Fuel": "Fuel",
     "EnergyTypes.FuelAndElectricity": "Hybrid",
     "MainPanel.ChooseEdge": "Please choose an edge",
+    "MainPanel.ChooseLane": "Please choose a lane",
     "MainPanel.ChooseMasterLane": "Please choose a side",
     "MainPanel.EdgeEntity": "Edge #{{entity-index}}",
     "MainPanel.Lane": "Lane",
@@ -34,5 +35,18 @@
     "SizeClass": "Size Class",
     "SizeClass.Large": "Large",
     "SizeClass.Medium": "Medium",
-    "SizeClass.Small": "Small"
+    "SizeClass.Small": "Small",
+    "Tooltip.AddEdge": "Add Edge",
+    "Tooltip.RemoveEdge": "Remove Edge",
+    "VehicleType": "Vehicle Type",
+    "VehicleType.Ambulance": "Ambulance",
+    "VehicleType.DeliveryTruck": "Delivery Truck",
+    "VehicleType.FireEngine": "Fire Engine",
+    "VehicleType.GarbageTruck": "Garbage Truck",
+    "VehicleType.Hearse": "Hearse",
+    "VehicleType.MaintenanceVehicle": "Maintenance Vehicle",
+    "VehicleType.PersonalCar": "Personal Car",
+    "VehicleType.PoliceCar": "Police Car",
+    "VehicleType.PostVan": "Post Van",
+    "VehicleType.PublicTransport": "Public Transport"
 }

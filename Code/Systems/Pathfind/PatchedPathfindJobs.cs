@@ -208,6 +208,36 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<CarData> m_CarDataLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
+
             public Entity m_Owner;
 
             public void Initialize(
@@ -222,6 +252,16 @@ namespace RoadRule.Systems.Pathfind
                 ComponentLookup<PrefabRef> prefabRefLookup,
                 ComponentLookup<Car> carLookup,
                 ComponentLookup<CarData> carDataLookup,
+                ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
+                ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
+                ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
+                ComponentLookup<Game.Vehicles.GarbageTruck> garbageTruckLookup,
+                ComponentLookup<Game.Vehicles.Hearse> hearseLookup,
+                ComponentLookup<Game.Vehicles.MaintenanceVehicle> maintenanceVehicleLookup,
+                ComponentLookup<Game.Vehicles.PersonalCar> personalCarLookup,
+                ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
+                ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
+                ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
                 Entity owner
             )
             {
@@ -314,6 +354,16 @@ namespace RoadRule.Systems.Pathfind
                 m_PrefabRefLookup = prefabRefLookup;
                 m_CarLookup = carLookup;
                 m_CarDataLookup = carDataLookup;
+                m_AmbulanceLookup = ambulanceLookup;
+                m_DeliveryTruckLookup = deliveryTruckLookup;
+                m_FireEngineLookup = fireEngineLookup;
+                m_GarbageTruckLookup = garbageTruckLookup;
+                m_HearseLookup = hearseLookup;
+                m_MaintenanceVehicleLookup = maintenanceVehicleLookup;
+                m_PersonalCarLookup = personalCarLookup;
+                m_PoliceCarLookup = policeCarLookup;
+                m_PostVanLookup = postVanLookup;
+                m_PublicTransportLookup = publicTransportLookup;
                 m_Owner = owner;
             }
 
@@ -752,22 +802,29 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float CalculateCost(in PathSpecification pathSpecification, EdgeFlags flags, RuleFlags rules, float2 delta, Entity edgeEntity)
             {
-                var laneRules = new LaneRules();
-                var carFlags = new CarFlags();
-                var sizeClass = new SizeClass();
-                var energyTypes = new EnergyTypes();
-                bool validLaneRules = false;
-                if (
-                    m_LaneRulesLookup.TryGetComponent(edgeEntity, out laneRules)
-                    && m_CarLookup.TryGetComponent(m_Owner, out Car car)
-                    && m_PrefabRefLookup.TryGetComponent(m_Owner, out PrefabRef ownerPrefabRef)
-                    && m_CarDataLookup.TryGetComponent(ownerPrefabRef.m_Prefab, out CarData carData)
-                )
+                bool isPrefer = false;
+                bool isForbidden = false;
+                if (m_LaneRulesLookup.TryGetComponent(edgeEntity, out var laneRules))
                 {
-                    carFlags = car.m_Flags;
-                    sizeClass = carData.m_SizeClass;
-                    energyTypes = carData.m_EnergyType;
-                    validLaneRules = true;
+                    LaneRulesUtils.CheckLaneRules(
+                        laneRules,
+                        m_Owner,
+                        m_CarLookup,
+                        m_PrefabRefLookup,
+                        m_CarDataLookup,
+                        m_AmbulanceLookup,
+                        m_DeliveryTruckLookup,
+                        m_FireEngineLookup,
+                        m_GarbageTruckLookup,
+                        m_HearseLookup,
+                        m_MaintenanceVehicleLookup,
+                        m_PersonalCarLookup,
+                        m_PoliceCarLookup,
+                        m_PostVanLookup,
+                        m_PublicTransportLookup,
+                        out isPrefer,
+                        out isForbidden
+                    );
                 }
 
                 float num = PathUtils.CalculateSpeed(in pathSpecification, in m_Parameters);
@@ -793,14 +850,7 @@ namespace RoadRule.Systems.Pathfind
                 value.xyw += pathSpecification.m_Length * new float3(1f / num, yz);
                 value.y += math.select(0f, 100f, (flags & EdgeFlags.RequireAuthorization) != 0 != math.any(pathSpecification.m_AccessRequirement == m_AuthorizationMask));
 
-                if (validLaneRules)
-                {
-                    value.y += math.select(
-                        math.select(0f, -1 * math.min(100f, math.max(0, value.y)), LaneRulesUtils.IsPrefer(laneRules, carFlags, sizeClass, energyTypes)),
-                        10000f,
-                        LaneRulesUtils.IsForbidden(laneRules, carFlags, sizeClass, energyTypes)
-                    );
-                }
+                value.y += math.select(math.select(0f, -1 * math.min(100f, math.max(0, value.y)), isPrefer), 10000f, isForbidden);
 
                 bool2 x = new float2(num2, 0f) >= new float2(0f, num2);
                 x.x &= (flags & m_FreeForward) != 0;
@@ -1387,6 +1437,36 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<CarData> m_CarDataLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
+
             public Entity m_Owner;
 
             public void Execute()
@@ -1403,6 +1483,16 @@ namespace RoadRule.Systems.Pathfind
                     m_PrefabRefLookup,
                     m_CarLookup,
                     m_CarDataLookup,
+                    m_AmbulanceLookup,
+                    m_DeliveryTruckLookup,
+                    m_FireEngineLookup,
+                    m_GarbageTruckLookup,
+                    m_HearseLookup,
+                    m_MaintenanceVehicleLookup,
+                    m_PersonalCarLookup,
+                    m_PoliceCarLookup,
+                    m_PostVanLookup,
+                    m_PublicTransportLookup,
                     m_Owner
                 );
             }
@@ -1419,6 +1509,16 @@ namespace RoadRule.Systems.Pathfind
                 ComponentLookup<PrefabRef> prefabRefLookup,
                 ComponentLookup<Car> carLookup,
                 ComponentLookup<CarData> carDataLookup,
+                ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
+                ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
+                ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
+                ComponentLookup<Game.Vehicles.GarbageTruck> garbageTruckLookup,
+                ComponentLookup<Game.Vehicles.Hearse> hearseLookup,
+                ComponentLookup<Game.Vehicles.MaintenanceVehicle> maintenanceVehicleLookup,
+                ComponentLookup<Game.Vehicles.PersonalCar> personalCarLookup,
+                ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
+                ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
+                ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
                 Entity owner
             )
             {
@@ -1463,6 +1563,16 @@ namespace RoadRule.Systems.Pathfind
                         prefabRefLookup,
                         carLookup,
                         carDataLookup,
+                        ambulanceLookup,
+                        deliveryTruckLookup,
+                        fireEngineLookup,
+                        garbageTruckLookup,
+                        hearseLookup,
+                        maintenanceVehicleLookup,
+                        personalCarLookup,
+                        policeCarLookup,
+                        postVanLookup,
+                        publicTransportLookup,
                         owner
                     );
                     pathfindExecutor.AddTargets(actionData.m_StartTargets, actionData.m_EndTargets, ref value.m_ErrorCode);
