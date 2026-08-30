@@ -1,3 +1,8 @@
+import LogoSvg from 'assets/images/logo.svg'
+
 export default function LogoIcon(props: React.SVGProps<SVGSVGElement>) {
-  return <div>RR</div>
+  return <LogoSvg
+    {...props}
+    style={{ width: '36rem', height: '36rem', ...props.style }}
+  />
 }
