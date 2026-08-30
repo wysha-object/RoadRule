@@ -19,6 +19,7 @@ export default function LeftPage() {
     <BasePage
       style={{
         width: '10em',
+        maxHeight: '56em',
       }}
       header={<TitleHeader />}
       footer={<Footer />}

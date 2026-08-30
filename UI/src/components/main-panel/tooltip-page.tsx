@@ -41,13 +41,15 @@ export function Body() {
   return (
     <div
       style={{
-        flex: '1',
+        height: '100%',
+        padding: '2em', 
+        width: '30em'
       }}
     >
       {toolState === ToolState.Choosing && (
         <div
           className='row'
-          style={{ padding: '2em', justifyContent: 'center', width: '30em' }}
+          style={{ height: '100%', justifyContent: 'center', alignItems: 'center' }}
         >
           {t('MainPanel.ChooseEdge')}
         </div>

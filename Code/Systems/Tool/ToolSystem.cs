@@ -23,6 +23,8 @@ namespace RoadRule.Systems.Tool
 
         private UI.UISystem m_UISystem;
 
+        private StringTooltip m_ChooseEdgeTooltip;
+
         private StringTooltip m_AddEdgeTooltip;
 
         private StringTooltip m_RemoveEdgeTooltip;
@@ -36,6 +38,12 @@ namespace RoadRule.Systems.Tool
             m_UISystem = World.GetOrCreateSystemManaged<UI.UISystem>();
             m_ToolSystem.EventToolChanged += ToolChanged;
 
+            m_ChooseEdgeTooltip = new StringTooltip
+            {
+                path = "RoadRule.ChooseEdge",
+                icon = "Media/Mouse/LMB.svg",
+                value = LocalizedString.Id("Tooltip.ChooseEdge"),
+            };
             m_AddEdgeTooltip = new StringTooltip
             {
                 path = "RoadRule.AddEdge",
@@ -173,7 +181,12 @@ namespace RoadRule.Systems.Tool
             m_TooltipSystem.m_TooltipList.Clear();
             if (IsValidEntity(entity))
             {
-                if (new UI.UISystem.ToolState[] { UI.UISystem.ToolState.Choosing, UI.UISystem.ToolState.Choosed }.Contains(m_UISystem.GetToolState()))
+                var toolState = m_UISystem.GetToolState();
+                if (toolState == UI.UISystem.ToolState.Choosing)
+                {
+                    m_TooltipSystem.m_TooltipList.Add(m_ChooseEdgeTooltip);
+                }
+                if (toolState == UI.UISystem.ToolState.Choosed)
                 {
                     m_TooltipSystem.m_TooltipList.Add(m_AddEdgeTooltip);
                     m_TooltipSystem.m_TooltipList.Add(m_RemoveEdgeTooltip);

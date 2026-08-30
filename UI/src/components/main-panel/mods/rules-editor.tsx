@@ -1,22 +1,22 @@
-import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable } from 'cs2/ui'
+import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable, ScrollableProps } from 'cs2/ui'
 import { useTranslate } from 'hooks/translate'
-import { CSSProperties, useCallback, useMemo, useState } from 'react'
+import { CSSProperties, HTMLAttributes, RefAttributes, useCallback, useMemo, useState } from 'react'
 import { LaneRulesValue, Rule, RuleState, RuleValue } from 'types'
 
-export default function RulesEditor(props: {
+export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   laneRulesValue: LaneRulesValue
-  onChange: (oldValue: LaneRulesValue, newValue: LaneRulesValue) => void
+  onValueChange: (oldValue: LaneRulesValue, newValue: LaneRulesValue) => void
 }) {
   const { t } = useTranslate()
 
   return (
-    <Scrollable>
+    <div>
       <PanelFoldout header={t('CarFlags')} initialExpanded={true}>
         <RuleEditor
           name={t('CarFlags.Emergency')}
           ruleValue={props.laneRulesValue.carFlagsRules.emergency}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               carFlagsRules: {
                 ...props.laneRulesValue.carFlagsRules,
@@ -31,7 +31,7 @@ export default function RulesEditor(props: {
           name={t('SizeClass.Small')}
           ruleValue={props.laneRulesValue.sizeClassRules.small}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               sizeClassRules: {
                 ...props.laneRulesValue.sizeClassRules,
@@ -44,7 +44,7 @@ export default function RulesEditor(props: {
           name={t('SizeClass.Medium')}
           ruleValue={props.laneRulesValue.sizeClassRules.medium}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               sizeClassRules: {
                 ...props.laneRulesValue.sizeClassRules,
@@ -57,7 +57,7 @@ export default function RulesEditor(props: {
           name={t('SizeClass.Large')}
           ruleValue={props.laneRulesValue.sizeClassRules.large}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               sizeClassRules: {
                 ...props.laneRulesValue.sizeClassRules,
@@ -72,7 +72,7 @@ export default function RulesEditor(props: {
           name={t('EnergyTypes.Fuel')}
           ruleValue={props.laneRulesValue.energyTypesRules.fuel}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               energyTypesRules: {
                 ...props.laneRulesValue.energyTypesRules,
@@ -85,7 +85,7 @@ export default function RulesEditor(props: {
           name={t('EnergyTypes.Electricity')}
           ruleValue={props.laneRulesValue.energyTypesRules.electricity}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               energyTypesRules: {
                 ...props.laneRulesValue.energyTypesRules,
@@ -98,7 +98,7 @@ export default function RulesEditor(props: {
           name={t('EnergyTypes.FuelAndElectricity')}
           ruleValue={props.laneRulesValue.energyTypesRules.fuelAndElectricity}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               energyTypesRules: {
                 ...props.laneRulesValue.energyTypesRules,
@@ -113,7 +113,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.Ambulance')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.ambulance}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -126,7 +126,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.DeliveryTruck')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.deliveryTruck}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -139,7 +139,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.FireEngine')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.fireEngine}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -152,7 +152,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.GarbageTruck')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.garbageTruck}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -165,7 +165,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.Hearse')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.hearse}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -178,7 +178,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.MaintenanceVehicle')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.maintenanceVehicle}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -191,7 +191,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.PersonalCar')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.personalCar}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -204,7 +204,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.PoliceCar')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.policeCar}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -217,7 +217,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.PostVan')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.postVan}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -230,7 +230,7 @@ export default function RulesEditor(props: {
           name={t('VehicleType.PublicTransport')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.publicTransport}
           onChange={(_, newValue) => {
-            props.onChange(props.laneRulesValue, {
+            props.onValueChange(props.laneRulesValue, {
               ...props.laneRulesValue,
               vehicleTypeRules: {
                 ...props.laneRulesValue.vehicleTypeRules,
@@ -240,7 +240,7 @@ export default function RulesEditor(props: {
           }}
         />
       </PanelFoldout>
-    </Scrollable>
+    </div>
   )
 }
 

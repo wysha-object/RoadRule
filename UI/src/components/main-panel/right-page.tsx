@@ -11,7 +11,7 @@ import { mergeLaneRules } from 'utils'
 import { LaneRulesValue, UIToolMode } from 'types'
 import RulesEditor from './mods/rules-editor'
 import BasePage from 'components/base/base-page'
-import { Button } from 'cs2/ui'
+import { Button, Scrollable } from 'cs2/ui'
 import { UIToolModeContext } from 'context'
 
 export default function RightPage() {
@@ -24,16 +24,19 @@ export default function RightPage() {
         left: 'calc(10em + 10rem)',
       }}
       header={<Header />}
+      footer={<></>}
     >
-      <div
-        style={{
-          width: '26em',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <LaneList />
-        <RoadRuleEditor />
+      <LaneList />
+      <div style={{ flex: '1 1 0' }}>
+        <Scrollable>
+          <div
+            style={{
+              width: '30em'
+            }}
+          >
+            <RoadRuleEditor />
+          </div>
+        </Scrollable>
       </div>
     </BasePage>
   )
@@ -45,6 +48,7 @@ function Header() {
   return (
     <div
       style={{
+        width: '30em',
         height: '100%',
         display: 'flex',
         alignItems: 'flex-end',
@@ -129,7 +133,7 @@ function RoadRuleEditor() {
   ) : (
     <RulesEditor
       laneRulesValue={laneRulesValue}
-      onChange={(_, newValue) => {
+      onValueChange={(_, newValue) => {
         for (const laneIndex of selectedLaneIndex) {
           updateLane({
             laneIndex: laneIndex,

@@ -24,6 +24,8 @@ const BasePage = forwardRef<HTMLDivElement, BasePageProps>(
           zIndex: '1000',
           overflow: 'hidden',
           color: 'var(--textColor)',
+          display: 'flex',
+          flexDirection: 'column',
           backgroundImage:
             'linear-gradient( var(--panelGradientStart) , var(--panelGradientEnd) )',
           ...props.style,
@@ -40,7 +42,11 @@ const BasePage = forwardRef<HTMLDivElement, BasePageProps>(
             {props.header}
           </div>
         )}
-        {props.children}
+        {props.children && (
+          <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0' }}>
+            {props.children}
+          </div>
+        )}
         {props.footer && (
           <div
             style={{
