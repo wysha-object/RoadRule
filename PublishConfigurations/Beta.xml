@@ -1,5 +1,5 @@
 <Publish>
-    <ModId Value="" />
+    <ModId Value="157334" />
     
     <DisplayName Value="Road Rule [Beta]" />
 
@@ -21,7 +21,7 @@ Beta version of Road Rule
     
     <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/road-rule-discussion-thread.1939879/" />
     
-    <ModVersion Value="157334" />
+    <ModVersion Value="" />
     
     <GameVersion Value="1.*" />
     
