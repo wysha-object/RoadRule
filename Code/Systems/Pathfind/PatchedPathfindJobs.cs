@@ -238,6 +238,9 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
             public Entity m_Owner;
 
             public void Initialize(
@@ -262,6 +265,7 @@ namespace RoadRule.Systems.Pathfind
                 ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
                 ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
                 ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
+                ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
                 Entity owner
             )
             {
@@ -364,6 +368,7 @@ namespace RoadRule.Systems.Pathfind
                 m_PoliceCarLookup = policeCarLookup;
                 m_PostVanLookup = postVanLookup;
                 m_PublicTransportLookup = publicTransportLookup;
+                m_TaxiLookup = taxiLookup;
                 m_Owner = owner;
             }
 
@@ -822,6 +827,7 @@ namespace RoadRule.Systems.Pathfind
                         m_PoliceCarLookup,
                         m_PostVanLookup,
                         m_PublicTransportLookup,
+                        m_TaxiLookup,
                         out isPrefer,
                         out isForbidden
                     );
@@ -1467,6 +1473,9 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
             public Entity m_Owner;
 
             public void Execute()
@@ -1493,6 +1502,7 @@ namespace RoadRule.Systems.Pathfind
                     m_PoliceCarLookup,
                     m_PostVanLookup,
                     m_PublicTransportLookup,
+                    m_TaxiLookup,
                     m_Owner
                 );
             }
@@ -1519,6 +1529,7 @@ namespace RoadRule.Systems.Pathfind
                 ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
                 ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
                 ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
+                ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
                 Entity owner
             )
             {
@@ -1573,6 +1584,7 @@ namespace RoadRule.Systems.Pathfind
                         policeCarLookup,
                         postVanLookup,
                         publicTransportLookup,
+                        taxiLookup,
                         owner
                     );
                     pathfindExecutor.AddTargets(actionData.m_StartTargets, actionData.m_EndTargets, ref value.m_ErrorCode);

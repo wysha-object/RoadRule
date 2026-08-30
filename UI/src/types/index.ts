@@ -66,6 +66,7 @@ export interface VehicleRulesValue {
   policeCar: RuleValue
   postVan: RuleValue
   publicTransport: RuleValue
+  taxi: RuleValue
 }
 
 export interface LaneRulesValue {

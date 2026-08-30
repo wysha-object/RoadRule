@@ -23,6 +23,7 @@ namespace RoadRule.Utils
             PoliceCar = 1 << 7,
             PostVan = 1 << 8,
             PublicTransport = 1 << 9,
+            Taxi = 1 << 10,
         }
 
         public static bool CheckLaneRules(
@@ -41,6 +42,7 @@ namespace RoadRule.Utils
             ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
             ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
             ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
+            ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
             out bool isPrefer,
             out bool isForbidden
         )
@@ -63,25 +65,49 @@ namespace RoadRule.Utils
 
             var vehicleTypeFlags = VehicleTypeFlags.None;
             if (ambulanceLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.Ambulance;
+            }
             if (deliveryTruckLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.DeliveryTruck;
+            }
             if (fireEngineLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.FireEngine;
+            }
             if (garbageTruckLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.GarbageTruck;
+            }
             if (hearseLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.Hearse;
+            }
             if (maintenanceVehicleLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.MaintenanceVehicle;
+            }
             if (personalCarLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.PersonalCar;
+            }
             if (policeCarLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.PoliceCar;
+            }
             if (postVanLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.PostVan;
+            }
             if (publicTransportLookup.HasComponent(carEntity))
+            {
                 vehicleTypeFlags |= VehicleTypeFlags.PublicTransport;
+            }
+            if (taxiLookup.HasComponent(carEntity))
+            {
+                vehicleTypeFlags |= VehicleTypeFlags.Taxi;
+            }
 
             isPrefer = IsPrefer(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             isForbidden = IsForbidden(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
@@ -119,7 +145,8 @@ namespace RoadRule.Utils
                 || IsPrefer((int)VehicleTypeFlags.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
                 || IsPrefer((int)VehicleTypeFlags.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
                 || IsPrefer((int)VehicleTypeFlags.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleTypeFlags.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags);
+                || IsPrefer((int)VehicleTypeFlags.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
+                || IsPrefer((int)VehicleTypeFlags.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags);
 
             return isPreferCarFlags || isPreferSizeClass || isPreferEnergyTypes || isPreferVehicleType;
         }
@@ -150,7 +177,8 @@ namespace RoadRule.Utils
                 || IsForbidden((int)VehicleTypeFlags.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
                 || IsForbidden((int)VehicleTypeFlags.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
                 || IsForbidden((int)VehicleTypeFlags.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleTypeFlags.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags);
+                || IsForbidden((int)VehicleTypeFlags.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
+                || IsForbidden((int)VehicleTypeFlags.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags);
 
             return isForbiddenCarFlags || isForbiddenSizeClass || isForbiddenEnergyTypes || isForbiddenVehicleType;
         }

@@ -96,6 +96,8 @@ public struct PatchedCarLaneSelectIterator
 
     public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
+    public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
     public void SetBuffer(ref CarLaneSelectBuffer buffer)
     {
         m_Buffer = buffer.Ensure();
@@ -453,6 +455,7 @@ public struct PatchedCarLaneSelectIterator
             m_PoliceCarLookup,
             m_PostVanLookup,
             m_PublicTransportLookup,
+            m_TaxiLookup,
             out isPrefer,
             out isForbidden
         );

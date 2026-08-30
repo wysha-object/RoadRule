@@ -60,6 +60,7 @@ namespace RoadRule.Systems.Pathfind
                 m_PoliceCarLookup = __instance.GetComponentLookup<Game.Vehicles.PoliceCar>(true),
                 m_PostVanLookup = __instance.GetComponentLookup<Game.Vehicles.PostVan>(true),
                 m_PublicTransportLookup = __instance.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
+                m_TaxiLookup = __instance.GetComponentLookup<Game.Vehicles.Taxi>(true),
             };
             instanceT
                 .Field("m_TransportLineSystem")
@@ -256,6 +257,9 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
             public unsafe void Execute()
             {
                 ref int location = ref m_ActionIndex.ValueAsRef();
@@ -310,6 +314,7 @@ namespace RoadRule.Systems.Pathfind
                     m_PoliceCarLookup,
                     m_PostVanLookup,
                     m_PublicTransportLookup,
+                    m_TaxiLookup,
                     owner
                 );
                 Interlocked.MemoryBarrier();

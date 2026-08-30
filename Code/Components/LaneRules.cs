@@ -140,6 +140,7 @@ namespace RoadRule.Components
             public Rule m_PoliceCar;
             public Rule m_PostVan;
             public Rule m_PublicTransport;
+            public Rule m_Taxi;
 
             public void Deserialize<TReader>(TReader reader)
                 where TReader : IReader
@@ -166,12 +167,18 @@ namespace RoadRule.Components
                 m_PostVan = (Rule)postVan;
                 reader.Read(out int publicTransport);
                 m_PublicTransport = (Rule)publicTransport;
+
+                if (schemaVersion >= 2)
+                {
+                    reader.Read(out int taxi);
+                    m_Taxi = (Rule)taxi;
+                }
             }
 
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 1;
+                ushort schemaVersion = 2;
                 writer.Write(schemaVersion);
 
                 writer.Write((int)m_Ambulance);
@@ -184,6 +191,8 @@ namespace RoadRule.Components
                 writer.Write((int)m_PoliceCar);
                 writer.Write((int)m_PostVan);
                 writer.Write((int)m_PublicTransport);
+
+                writer.Write((int)m_Taxi);
             }
         }
 

@@ -36,8 +36,8 @@
     "SizeClass.Large": "Large",
     "SizeClass.Medium": "Medium",
     "SizeClass.Small": "Small",
-    "Tooltip.ChooseEdge": "Choose Edge",
     "Tooltip.AddEdge": "Add Edge With Same Type",
+    "Tooltip.ChooseEdge": "Choose Edge",
     "Tooltip.RemoveEdge": "Remove Edge",
     "VehicleType": "Vehicle Type",
     "VehicleType.Ambulance": "Ambulance",
@@ -49,5 +49,6 @@
     "VehicleType.PersonalCar": "Personal Car",
     "VehicleType.PoliceCar": "Police Car",
     "VehicleType.PostVan": "Post Van",
-    "VehicleType.PublicTransport": "Public Transport"
+    "VehicleType.PublicTransport": "Public Transport",
+    "VehicleType.Taxi": "Taxi"
 }

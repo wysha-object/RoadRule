@@ -276,6 +276,9 @@ namespace RoadRule.Systems.Simulation
             [ReadOnly]
             public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
 
+            [ReadOnly]
+            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
                 NativeArray<Entity> nativeArray = chunk.GetNativeArray(m_EntityType);
@@ -1382,6 +1385,7 @@ namespace RoadRule.Systems.Simulation
                     m_PoliceCarLookup = m_PoliceCarLookup,
                     m_PostVanLookup = m_PostVanLookup,
                     m_PublicTransportLookup = m_PublicTransportLookup,
+                    m_TaxiLookup = m_TaxiLookup,
                 };
                 carLaneSelectIterator.SetBuffer(ref laneSelectBuffer);
                 if (navigationLanes.Length != 0)
@@ -3285,6 +3289,7 @@ namespace RoadRule.Systems.Simulation
                     m_PoliceCarLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PoliceCar>(true),
                     m_PostVanLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PostVan>(true),
                     m_PublicTransportLookup = SystemAPI.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
+                    m_TaxiLookup = SystemAPI.GetComponentLookup<Game.Vehicles.Taxi>(true),
                 },
                 m_VehicleQuery,
                 JobUtils.CombineDependencies(base.Dependency, dependencies, dependencies2, dependencies3, dependencies4)

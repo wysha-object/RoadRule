@@ -73,6 +73,7 @@ export function mergeVehicleRules(
     policeCar: mergeRuleValues(a.policeCar, b.policeCar),
     postVan: mergeRuleValues(a.postVan, b.postVan),
     publicTransport: mergeRuleValues(a.publicTransport, b.publicTransport),
+    taxi: mergeRuleValues(a.taxi, b.taxi),
   }
 }
 

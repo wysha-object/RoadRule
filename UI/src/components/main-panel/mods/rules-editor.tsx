@@ -239,6 +239,19 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
+        <RuleEditor
+          name={t('VehicleType.Taxi')}
+          ruleValue={props.laneRulesValue.vehicleTypeRules.taxi}
+          onChange={(_, newValue) => {
+            props.onValueChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                taxi: newValue,
+              },
+            })
+          }}
+        />
       </PanelFoldout>
     </div>
   )

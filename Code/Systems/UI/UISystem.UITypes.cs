@@ -144,6 +144,7 @@ namespace RoadRule.Systems.UI
             public RuleValue policeCar;
             public RuleValue postVan;
             public RuleValue publicTransport;
+            public RuleValue taxi;
 
             public static VehicleTypeRulesValue FromVehicleTypeRules(LaneRules.VehicleTypeRules vehicleTypeRules)
             {
@@ -159,6 +160,7 @@ namespace RoadRule.Systems.UI
                     policeCar = FromRule(vehicleTypeRules.m_PoliceCar),
                     postVan = FromRule(vehicleTypeRules.m_PostVan),
                     publicTransport = FromRule(vehicleTypeRules.m_PublicTransport),
+                    taxi = FromRule(vehicleTypeRules.m_Taxi),
                 };
             }
 
@@ -178,6 +180,7 @@ namespace RoadRule.Systems.UI
                     m_PostVan = vehicleTypeRulesValue.postVan.state == RuleState.Applied ? vehicleTypeRulesValue.postVan.rule : vehicleTypeRules.m_PostVan,
                     m_PublicTransport =
                         vehicleTypeRulesValue.publicTransport.state == RuleState.Applied ? vehicleTypeRulesValue.publicTransport.rule : vehicleTypeRules.m_PublicTransport,
+                    m_Taxi = vehicleTypeRulesValue.taxi.state == RuleState.Applied ? vehicleTypeRulesValue.taxi.rule : vehicleTypeRules.m_Taxi,
                 };
             }
 
@@ -195,6 +198,7 @@ namespace RoadRule.Systems.UI
                     policeCar = MergeRuleValues(a.policeCar, b.policeCar),
                     postVan = MergeRuleValues(a.postVan, b.postVan),
                     publicTransport = MergeRuleValues(a.publicTransport, b.publicTransport),
+                    taxi = MergeRuleValues(a.taxi, b.taxi),
                 };
             }
         }
