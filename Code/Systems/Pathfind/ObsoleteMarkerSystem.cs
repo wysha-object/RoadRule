@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Game;
 using Game.Common;
 using Game.Pathfind;
+using Game.Prefabs.Effects;
 using Game.Vehicles;
 using RoadRule.Components;
 using Unity.Burst;
@@ -96,8 +97,20 @@ namespace RoadRule.Systems.Pathfind
             base.OnCreate();
 
             m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
-            m_StartedPathfindEntityQuery = SystemAPI.QueryBuilder().WithAll<PathOwner, Target, Car>().WithNone<Deleted>().Build();
-            m_FinishedPathfindEntityQuery = SystemAPI.QueryBuilder().WithAll<PathfindReprocessed, Car>().WithNone<Deleted, PathOwner>().Build();
+            m_StartedPathfindEntityQuery = GetEntityQuery(
+                new EntityQueryDesc
+                {
+                    All = [ComponentType.ReadWrite<PathOwner>(), ComponentType.ReadOnly<Target>(), ComponentType.ReadOnly<Car>()],
+                    None = [ComponentType.ReadOnly<Deleted>()],
+                }
+            );
+            m_FinishedPathfindEntityQuery = GetEntityQuery(
+                new EntityQueryDesc
+                {
+                    All = [ComponentType.ReadOnly<PathfindReprocessed>(), ComponentType.ReadOnly<Car>()],
+                    None = [ComponentType.ReadOnly<Deleted>(), ComponentType.ReadOnly<PathOwner>()],
+                }
+            );
         }
 
         protected override void OnUpdate()

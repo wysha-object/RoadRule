@@ -846,7 +846,6 @@ namespace RoadRule.Systems.Pathfind
                         (rules & RuleFlags.AvoidBicycles) != 0
                     )
                 );
-                yz.x += math.select(1f, 0f, isPrefer);
                 yz.x += math.select(0f, 10f, isForbidden);
                 float4 value = pathSpecification.m_Costs.m_Value;
                 value.xyw += pathSpecification.m_Length * new float3(1f / num, yz);
@@ -857,6 +856,7 @@ namespace RoadRule.Systems.Pathfind
                 x.y &= (flags & m_FreeBackward) != 0;
                 x.x |= (pathSpecification.m_Methods & m_Parameters.m_Methods) == PathMethod.Boarding;
                 value.xyz = math.select(value.xyz, 0f, math.any(x));
+                value.y = math.select(value.y, 0f, isPrefer);
                 return math.dot(value, m_Parameters.m_Weights.m_Value) * math.abs(num2);
             }
 
