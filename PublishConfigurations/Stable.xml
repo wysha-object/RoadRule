@@ -6,7 +6,7 @@
     <DisplayName Value="Road Rule" />
 
     <!--Short description of the mod-->
-    <ShortDescription Value="" />
+    <ShortDescription Value="Prevent specific vehicles from using certain roads or lanes" />
     
     <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
     <!--LongDescription Value="This is a long description" /-->
