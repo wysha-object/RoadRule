@@ -200,11 +200,20 @@ namespace RoadRule.Systems.UI
                 int master = -1;
                 int invertMaster = -1;
 
+                bool haveInvert = false;
+                foreach (var netCompositionLane in netCompositionLaneBuffer)
+                {
+                    if ((netCompositionLane.m_Flags & LaneFlags.Invert) != 0)
+                    {
+                        haveInvert = true;
+                    }
+                }
+
                 foreach (var netCompositionLane in netCompositionLaneBuffer)
                 {
                     if ((netCompositionLane.m_Flags & LaneFlags.Master) != 0)
                     {
-                        if ((netCompositionLane.m_Flags & LaneFlags.Invert) != 0)
+                        if (haveInvert && ((netCompositionLane.m_Flags & LaneFlags.Invert) != 0))
                         {
                             invertMaster = netCompositionLane.m_Index;
                         }
@@ -228,6 +237,20 @@ namespace RoadRule.Systems.UI
                             else
                             {
                                 master = netCompositionLane.m_Index;
+                            }
+                        }
+                    }
+                }
+
+                if (haveInvert && invertMaster == -1)
+                {
+                    foreach (var netCompositionLane in netCompositionLaneBuffer)
+                    {
+                        if ((netCompositionLane.m_Flags & LaneFlags.Road) != 0)
+                        {
+                            if ((netCompositionLane.m_Flags & LaneFlags.Invert) != 0)
+                            {
+                                invertMaster = netCompositionLane.m_Index;
                             }
                         }
                     }

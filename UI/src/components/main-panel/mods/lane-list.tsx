@@ -17,7 +17,7 @@ export default function LaneList() {
     () =>
       mode === UIToolMode.Lane
         ? Object.values(masterMap)
-          .map((item) => item.lanes)
+          .map((item) => item.lanes.length === 0 ? [item.masterLane] : item.lanes)
           .flat()
         : Object.values(masterMap).map((item) => item.masterLane),
     [mode, JSON.stringify(masterMap)],
