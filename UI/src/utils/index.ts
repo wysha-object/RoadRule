@@ -5,7 +5,7 @@ import {
   RuleState,
   RuleValue,
   SizeClassRulesValue,
-  VehicleRulesValue,
+  VehicleTypeRulesValue,
 } from 'types'
 
 export function mergeRuleValues(a: RuleValue, b: RuleValue): RuleValue {
@@ -56,9 +56,9 @@ export function mergeEnergyTypesRules(
 }
 
 export function mergeVehicleRules(
-  a: VehicleRulesValue,
-  b: VehicleRulesValue,
-): VehicleRulesValue {
+  a: VehicleTypeRulesValue,
+  b: VehicleTypeRulesValue,
+): VehicleTypeRulesValue {
   return {
     ambulance: mergeRuleValues(a.ambulance, b.ambulance),
     deliveryTruck: mergeRuleValues(a.deliveryTruck, b.deliveryTruck),

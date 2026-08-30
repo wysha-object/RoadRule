@@ -55,7 +55,7 @@ export interface EnergyTypesRulesValue {
   none: RuleValue
 }
 
-export interface VehicleRulesValue {
+export interface VehicleTypeRulesValue {
   ambulance: RuleValue
   deliveryTruck: RuleValue
   fireEngine: RuleValue
@@ -73,7 +73,7 @@ export interface LaneRulesValue {
   carFlagsRules: CarFlagsRulesValue
   sizeClassRules: SizeClassRulesValue
   energyTypesRules: EnergyTypesRulesValue
-  vehicleTypeRules: VehicleRulesValue
+  vehicleTypeRules: VehicleTypeRulesValue
 }
 
 export interface Lane {
