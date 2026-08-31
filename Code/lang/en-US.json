@@ -32,6 +32,8 @@
     "Rule.Forbidden": "Forbidden",
     "Rule.None": "None",
     "Rule.Prefer": "Prefer",
+    "RuleEditor.HaveFlagRuleTooltip": "This rule will be applied to vehicles that have the flag",
+    "RuleEditor.NoneFlagRuleTooltip": "This rule will be applied to vehicles that do not have the flag",
     "SizeClass": "Size Class",
     "SizeClass.Large": "Large",
     "SizeClass.Medium": "Medium",

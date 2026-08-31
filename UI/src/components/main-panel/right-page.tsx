@@ -59,6 +59,9 @@ function Header() {
         style={{
           flex: '1 0 0',
           margin: '0 0.3em',
+          borderStyle: mode === UIToolMode.MasterLane ? 'solid' : 'none',
+          borderWidth: '1rem 2rem 0',
+          borderColor: 'white',
         }}
         variant='flat'
         className='top-option-button'
@@ -70,6 +73,9 @@ function Header() {
         style={{
           flex: '1 0 0',
           margin: '0 0.3em',
+          borderStyle: mode === UIToolMode.Lane ? 'solid' : 'none',
+          borderWidth: '1rem 2rem 0',
+          borderColor: 'white',
         }}
         variant='flat'
         className='top-option-button'

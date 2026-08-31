@@ -1,3 +1,4 @@
+import TipArea from 'components/base/tip-area'
 import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable, ScrollableProps } from 'cs2/ui'
 import { useTranslate } from 'hooks/translate'
 import { CSSProperties, HTMLAttributes, RefAttributes, useCallback, useMemo, useState } from 'react'
@@ -374,11 +375,13 @@ function RuleEditor(props: {
           </>
         }
       >
-        <DropdownToggle style={DropdownToggleStyle}>
-          {t(
-            `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === noneFlagRule)}`,
-          )}
-        </DropdownToggle>
+        <TipArea position={'right'} tooltip={t('RuleEditor.NoneFlagRuleTooltip')}>
+          <DropdownToggle style={DropdownToggleStyle}>
+            {t(
+              `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === noneFlagRule)}`,
+            )}
+          </DropdownToggle>
+        </TipArea>
       </Dropdown>
       <Dropdown
         content={
@@ -400,11 +403,13 @@ function RuleEditor(props: {
           </>
         }
       >
-        <DropdownToggle style={DropdownToggleStyle}>
-          {t(
-            `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === haveFlagRule)}`,
-          )}
-        </DropdownToggle>
+        <TipArea position={'right'} tooltip={t('RuleEditor.HaveFlagRuleTooltip')}>
+          <DropdownToggle style={DropdownToggleStyle}>
+            {t(
+              `Rule.${Object.keys(DropdownItemValue).find((key) => DropdownItemValue[key as keyof typeof DropdownItemValue] === haveFlagRule)}`,
+            )}
+          </DropdownToggle>
+        </TipArea>
       </Dropdown>
     </div>
   )
