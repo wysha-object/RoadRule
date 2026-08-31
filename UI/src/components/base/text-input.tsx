@@ -40,20 +40,8 @@ export default function TextInput(props: {
       <div style={{ flexGrow: 1, flexBasis: 0 }}>
         {textFieldActive ? (
           <input
-            style={{ 
-              width: '100%',
-              backgroundColor: 'rgba(28, 37, 52, 0.72)',
-              borderTopColor: 'rgba(255, 255, 255, 0.5)',
-              borderLeftColor: 'rgba(255, 255, 255, 0.5)',
-              borderRightColor: 'rgba(255, 255, 255, 0.5)',
-              borderBottomColor: 'rgba(255, 255, 255, 0.5)',
-              borderTopLeftRadius: '3rem 3rem',
-              borderTopRightRadius: '3rem 3rem',
-              borderBottomLeftRadius: '3rem 3rem',
-              borderBottomRightRadius: '3rem 3rem',
-              textAlign: 'center',
-              lineHeight: '1em',
-              color: 'var(--textColor)',
+            style={{
+              width: '100%'
             }}
             type='text'
             onChange={textFieldChangeHandler}

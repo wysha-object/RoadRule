@@ -2,7 +2,7 @@ import TipArea from 'components/base/tip-area'
 import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable, ScrollableProps } from 'cs2/ui'
 import { useTranslate } from 'hooks/translate'
 import { CSSProperties, HTMLAttributes, RefAttributes, useCallback, useMemo, useState } from 'react'
-import { LaneRulesValue, Rule, RuleState, RuleValue } from 'types'
+import { LaneRulesValue, Rule, FieldState, FieldValue } from 'types'
 
 export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   laneRulesValue: LaneRulesValue
@@ -13,7 +13,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   return (
     <div>
       <PanelFoldout header={t('CarFlags')} initialExpanded={true}>
-        <RuleEditor
+        <RuleEditorRow
           name={t('CarFlags.Emergency')}
           ruleValue={props.laneRulesValue.carFlagsRules.emergency}
           onChange={(_, newValue) => {
@@ -28,7 +28,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
         />
       </PanelFoldout>
       <PanelFoldout header={t('SizeClass')} initialExpanded={true}>
-        <RuleEditor
+        <RuleEditorRow
           name={t('SizeClass.Small')}
           ruleValue={props.laneRulesValue.sizeClassRules.small}
           onChange={(_, newValue) => {
@@ -41,7 +41,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('SizeClass.Medium')}
           ruleValue={props.laneRulesValue.sizeClassRules.medium}
           onChange={(_, newValue) => {
@@ -54,7 +54,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('SizeClass.Large')}
           ruleValue={props.laneRulesValue.sizeClassRules.large}
           onChange={(_, newValue) => {
@@ -69,7 +69,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
         />
       </PanelFoldout>
       <PanelFoldout header={t('EnergyTypes')} initialExpanded={true}>
-        <RuleEditor
+        <RuleEditorRow
           name={t('EnergyTypes.Fuel')}
           ruleValue={props.laneRulesValue.energyTypesRules.fuel}
           onChange={(_, newValue) => {
@@ -82,7 +82,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('EnergyTypes.Electricity')}
           ruleValue={props.laneRulesValue.energyTypesRules.electricity}
           onChange={(_, newValue) => {
@@ -95,7 +95,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('EnergyTypes.FuelAndElectricity')}
           ruleValue={props.laneRulesValue.energyTypesRules.fuelAndElectricity}
           onChange={(_, newValue) => {
@@ -110,7 +110,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
         />
       </PanelFoldout>
       <PanelFoldout header={t('VehicleType')} initialExpanded={true}>
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.Ambulance')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.ambulance}
           onChange={(_, newValue) => {
@@ -123,7 +123,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.DeliveryTruck')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.deliveryTruck}
           onChange={(_, newValue) => {
@@ -136,7 +136,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.FireEngine')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.fireEngine}
           onChange={(_, newValue) => {
@@ -149,7 +149,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.GarbageTruck')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.garbageTruck}
           onChange={(_, newValue) => {
@@ -162,7 +162,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.Hearse')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.hearse}
           onChange={(_, newValue) => {
@@ -175,7 +175,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.MaintenanceVehicle')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.maintenanceVehicle}
           onChange={(_, newValue) => {
@@ -188,7 +188,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.PersonalCar')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.personalCar}
           onChange={(_, newValue) => {
@@ -201,7 +201,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.PoliceCar')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.policeCar}
           onChange={(_, newValue) => {
@@ -214,7 +214,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.PostVan')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.postVan}
           onChange={(_, newValue) => {
@@ -227,7 +227,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.PublicTransport')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.publicTransport}
           onChange={(_, newValue) => {
@@ -240,7 +240,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditor
+        <RuleEditorRow
           name={t('VehicleType.Taxi')}
           ruleValue={props.laneRulesValue.vehicleTypeRules.taxi}
           onChange={(_, newValue) => {
@@ -269,15 +269,15 @@ const DropdownToggleStyle: CSSProperties = {
   margin: '0 0.5em',
 }
 
-function RuleEditor(props: {
+function RuleEditorRow(props: {
   name: string
-  ruleValue: RuleValue
-  onChange: (oldValue: RuleValue, newValue: RuleValue) => void
+  ruleValue: FieldValue<Rule>
+  onChange: (oldValue: FieldValue<Rule>, newValue: FieldValue<Rule>) => void
 }) {
   const { t } = useTranslate()
 
   const { noneFlagRule, haveFlagRule } = useMemo(() => {
-    switch (props.ruleValue.rule) {
+    switch (props.ruleValue.value) {
       case Rule.None:
         return { noneFlagRule: DropdownItemValue.None, haveFlagRule: DropdownItemValue.None }
       case Rule.PreferOrNone:
@@ -293,43 +293,43 @@ function RuleEditor(props: {
       case Rule.PreferOrForbidden:
         return { noneFlagRule: DropdownItemValue.Prefer, haveFlagRule: DropdownItemValue.Forbidden }
     }
-  }, [props.ruleValue.rule])
+  }, [props.ruleValue.value])
 
   const handleChange = useCallback((noneFlagRule: DropdownItemValue, haveFlagRule: DropdownItemValue) => {
     switch (noneFlagRule) {
       case DropdownItemValue.None:
         switch (haveFlagRule) {
           case DropdownItemValue.None:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.None })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.None })
             break
           case DropdownItemValue.Prefer:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.NoneOrPrefer })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.NoneOrPrefer })
             break
           case DropdownItemValue.Forbidden:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.NoneOrForbidden })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.NoneOrForbidden })
             break
         }
         break
       case DropdownItemValue.Prefer:
         switch (haveFlagRule) {
           case DropdownItemValue.None:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.PreferOrNone })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.PreferOrNone })
             break
           case DropdownItemValue.Prefer:
             // Invalid combination
             break
           case DropdownItemValue.Forbidden:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.PreferOrForbidden })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.PreferOrForbidden })
             break
         }
         break
       case DropdownItemValue.Forbidden:
         switch (haveFlagRule) {
           case DropdownItemValue.None:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.ForbiddenOrNone })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.ForbiddenOrNone })
             break
           case DropdownItemValue.Prefer:
-            props.onChange(props.ruleValue, { state: RuleState.Applied, rule: Rule.ForbiddenOrPrefer })
+            props.onChange(props.ruleValue, { state: FieldState.Applied, value: Rule.ForbiddenOrPrefer })
             break
           case DropdownItemValue.Forbidden:
             // Invalid combination
@@ -339,7 +339,7 @@ function RuleEditor(props: {
   }, [props.onChange])
 
   return (
-    <div className='row'>
+    <div className='row-with-hover-effect'>
       <div
         style={{
           flex: '1',
@@ -353,7 +353,7 @@ function RuleEditor(props: {
           textAlign: 'right',
         }}
       >
-        {props.ruleValue.state === RuleState.PartiallyApplied && <>!</>}
+        {props.ruleValue.state === FieldState.PartiallyApplied && <>!</>}
       </div>
       <Dropdown
         content={

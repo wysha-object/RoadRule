@@ -1,6 +1,8 @@
 {
     "CarFlags": "车辆标志",
     "CarFlags.Emergency": "紧急",
+    "CarLane": "车道",
+    "CarLane.SpeedLimit": "速度限制",
     "EnergyTypes": "能源类型",
     "EnergyTypes.Electricity": "电力",
     "EnergyTypes.Fuel": "燃料",

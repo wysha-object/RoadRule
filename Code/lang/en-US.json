@@ -1,6 +1,8 @@
 {
     "CarFlags": "Car Flags",
     "CarFlags.Emergency": "Emergency",
+    "CarLane": "Car Lane",
+    "CarLane.SpeedLimit": "Speed Limit",
     "EnergyTypes": "Energy Types",
     "EnergyTypes.Electricity": "Electricity",
     "EnergyTypes.Fuel": "Fuel",

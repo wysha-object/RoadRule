@@ -1,22 +1,69 @@
 import {
   updateLane,
   useGetLanesCmd,
-  useGetSelectedEdgeEntityCmd,
   useGetSelectedLaneIndexCmd,
 } from 'hooks/cmd'
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 import LaneList from './mods/lane-list'
 import { useTranslate } from 'hooks/translate'
-import { mergeLaneRules } from 'utils'
-import { LaneRulesValue, UIToolMode } from 'types'
-import RulesEditor from './mods/rules-editor'
+import { mergeCarLaneValues, mergeLaneRules } from 'utils'
+import { CarLaneValue, LaneRulesValue, UIToolMode } from 'types'
+import RulesEditor from './mods/lane-rules-editor'
 import BasePage from 'components/base/base-page'
 import { Button, Scrollable } from 'cs2/ui'
 import { UIToolModeContext } from 'context'
+import CarLaneEditor from './mods/car-lane-editor'
 
 export default function RightPage() {
   const { t } = useTranslate()
-  const slectedEdgeEntities = useGetSelectedEdgeEntityCmd()
+  const [mode] = useContext(UIToolModeContext)
+
+  const masterMap = useGetLanesCmd()
+  const selectedLaneIndex = useGetSelectedLaneIndexCmd()
+  let laneRulesValue: LaneRulesValue | undefined = undefined
+  let carLaneValue: CarLaneValue | undefined = undefined
+  if (mode === UIToolMode.Lane) {
+    for (const lane of Object.values(masterMap)
+      .map((item) => item.lanes)
+      .flat()) {
+      if (!selectedLaneIndex.includes(lane.laneIndex)) {
+        continue
+      }
+
+      if (laneRulesValue === undefined) {
+        laneRulesValue = lane.laneRules
+      } else {
+        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
+      }
+    }
+    for (const lane of Object.values(masterMap)
+      .map((item) => [...item.lanes, item.masterLane])
+      .flat()) {
+      if (!selectedLaneIndex.includes(lane.laneIndex)) {
+        continue
+      }
+
+      if (carLaneValue === undefined) {
+        carLaneValue = lane.carLane
+      } else {
+        carLaneValue = mergeCarLaneValues(carLaneValue, lane.carLane)
+      }
+    }
+  } else {
+    for (const lane of Object.values(masterMap).map(
+      (item) => item.masterLane,
+    )) {
+      if (!selectedLaneIndex.includes(lane.laneIndex)) {
+        continue
+      }
+
+      if (laneRulesValue === undefined) {
+        laneRulesValue = lane.laneRules
+      } else {
+        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
+      }
+    }
+  }
 
   return (
     <BasePage
@@ -34,7 +81,50 @@ export default function RightPage() {
               width: '30em'
             }}
           >
-            <RoadRuleEditor />
+            {selectedLaneIndex.length == 0 ? (
+              <div
+                style={{
+                  padding: '2em',
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
+                {mode === UIToolMode.Lane
+                  ? t('MainPanel.ChooseLane')
+                  : t('MainPanel.ChooseMasterLane')}
+              </div>
+            ) : (
+              <>
+                {carLaneValue !== undefined &&
+                  <CarLaneEditor
+                    lanePropertiesValue={carLaneValue}
+                    onValueChange={function (oldValue: CarLaneValue, newValue: CarLaneValue): void {
+                      for (const laneIndex of selectedLaneIndex) {
+                        updateLane({
+                          laneIndex: laneIndex,
+                          key: 'car-lane',
+                          value: newValue,
+                        })
+                      }
+                    }}
+                  />
+                }
+                {laneRulesValue !== undefined &&
+                  <RulesEditor
+                    laneRulesValue={laneRulesValue}
+                    onValueChange={(_, newValue) => {
+                      for (const laneIndex of selectedLaneIndex) {
+                        updateLane({
+                          laneIndex: laneIndex,
+                          key: 'lane-rules',
+                          value: newValue,
+                        })
+                      }
+                    }}
+                  />
+                }
+              </>
+            )}
           </div>
         </Scrollable>
       </div>
@@ -84,70 +174,5 @@ function Header() {
         {t('MainPanel.Lane')}
       </Button>
     </div>
-  )
-}
-
-function RoadRuleEditor() {
-  const { t } = useTranslate()
-  const [mode] = useContext(UIToolModeContext)
-
-  const masterMap = useGetLanesCmd()
-  const selectedLaneIndex = useGetSelectedLaneIndexCmd()
-  let laneRulesValue: LaneRulesValue | undefined = undefined
-  if (mode === UIToolMode.Lane) {
-    for (const lane of Object.values(masterMap)
-      .map((item) => item.lanes)
-      .flat()) {
-      if (!selectedLaneIndex.includes(lane.laneIndex)) {
-        continue
-      }
-
-      if (laneRulesValue === undefined) {
-        laneRulesValue = lane.laneRules
-      } else {
-        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
-      }
-    }
-  } else {
-    for (const lane of Object.values(masterMap).map(
-      (item) => item.masterLane,
-    )) {
-      if (!selectedLaneIndex.includes(lane.laneIndex)) {
-        continue
-      }
-
-      if (laneRulesValue === undefined) {
-        laneRulesValue = lane.laneRules
-      } else {
-        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
-      }
-    }
-  }
-
-  return laneRulesValue === undefined ? (
-    <div
-      style={{
-        padding: '2em',
-        display: 'flex',
-        justifyContent: 'center',
-      }}
-    >
-      {mode === UIToolMode.Lane
-        ? t('MainPanel.ChooseLane')
-        : t('MainPanel.ChooseMasterLane')}
-    </div>
-  ) : (
-    <RulesEditor
-      laneRulesValue={laneRulesValue}
-      onValueChange={(_, newValue) => {
-        for (const laneIndex of selectedLaneIndex) {
-          updateLane({
-            laneIndex: laneIndex,
-            key: 'lane-rules',
-            value: newValue,
-          })
-        }
-      }}
-    />
   )
 }

@@ -27,46 +27,46 @@ export enum Rule {
   PreferOrForbidden = 96,
 }
 
-export const enum RuleState {
+export const enum FieldState {
   Applied = 0,
   PartiallyApplied = 1,
 }
 
-export interface RuleValue {
-  state: RuleState
-  rule: Rule
+export interface FieldValue<T> {
+  state: FieldState
+  value: T
 }
 
 export interface CarFlagsRulesValue {
-  emergency: RuleValue
+  emergency: FieldValue<Rule>
 }
 
 export interface SizeClassRulesValue {
-  small: RuleValue
-  medium: RuleValue
-  large: RuleValue
-  undefined: RuleValue
+  small: FieldValue<Rule>
+  medium: FieldValue<Rule>
+  large: FieldValue<Rule>
+  undefined: FieldValue<Rule>
 }
 
 export interface EnergyTypesRulesValue {
-  fuel: RuleValue
-  electricity: RuleValue
-  fuelAndElectricity: RuleValue
-  none: RuleValue
+  fuel: FieldValue<Rule>
+  electricity: FieldValue<Rule>
+  fuelAndElectricity: FieldValue<Rule>
+  none: FieldValue<Rule>
 }
 
 export interface VehicleTypeRulesValue {
-  ambulance: RuleValue
-  deliveryTruck: RuleValue
-  fireEngine: RuleValue
-  garbageTruck: RuleValue
-  hearse: RuleValue
-  maintenanceVehicle: RuleValue
-  personalCar: RuleValue
-  policeCar: RuleValue
-  postVan: RuleValue
-  publicTransport: RuleValue
-  taxi: RuleValue
+  ambulance: FieldValue<Rule>
+  deliveryTruck: FieldValue<Rule>
+  fireEngine: FieldValue<Rule>
+  garbageTruck: FieldValue<Rule>
+  hearse: FieldValue<Rule>
+  maintenanceVehicle: FieldValue<Rule>
+  personalCar: FieldValue<Rule>
+  policeCar: FieldValue<Rule>
+  postVan: FieldValue<Rule>
+  publicTransport: FieldValue<Rule>
+  taxi: FieldValue<Rule>
 }
 
 export interface LaneRulesValue {
@@ -76,11 +76,17 @@ export interface LaneRulesValue {
   vehicleTypeRules: VehicleTypeRulesValue
 }
 
+export interface CarLaneValue {
+  speedLimit: FieldValue<number>
+  defaultSpeedLimit: FieldValue<number>
+}
+
 export interface Lane {
   laneIndex: number
   position: Position
   screenPoint: ScreenPoint
   laneRules: LaneRulesValue
+  carLane: CarLaneValue
 }
 
 export interface Edge {

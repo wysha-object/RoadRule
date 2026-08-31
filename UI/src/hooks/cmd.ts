@@ -1,6 +1,6 @@
 import { useValue, bindValue, call } from 'cs2/api'
 import { Entity } from 'cs2/utils'
-import { Lane, ToolState, Edge, LaneRulesValue } from 'types'
+import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue } from 'types'
 
 export function useGetToolStateCmd(): ToolState {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetToolState')))
@@ -32,10 +32,13 @@ export async function setToolStateCmd(inputValue: ToolState): Promise<void> {
   return await call('RoadRule', 'SetToolState', inputValue)
 }
 export async function updateLane(
-  inputValue: { laneIndex: number } & {
+  inputValue: { laneIndex: number } & ({
     key: 'lane-rules'
     value: LaneRulesValue
-  },
+  } | {
+    key: 'car-lane'
+    value: CarLaneValue
+  }),
 ): Promise<void> {
   return await call(
     'RoadRule',

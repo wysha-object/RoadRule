@@ -2,22 +2,27 @@ import {
   CarFlagsRulesValue,
   EnergyTypesRulesValue,
   LaneRulesValue,
-  RuleState,
-  RuleValue,
+  FieldState,
+  FieldValue,
   SizeClassRulesValue,
   VehicleTypeRulesValue,
+  Rule,
+  CarLaneValue,
 } from 'types'
 
-export function mergeRuleValues(a: RuleValue, b: RuleValue): RuleValue {
+export function mergeRuleValues(
+  a: FieldValue<Rule>,
+  b: FieldValue<Rule>,
+): FieldValue<Rule> {
   if (
-    a.rule === b.rule &&
+    a.value === b.value &&
     a.state === b.state &&
-    a.state === RuleState.Applied
+    a.state === FieldState.Applied
   ) {
-    return { state: a.state, rule: a.rule }
+    return Object.assign({}, a)
   } else {
-    const mergedRule = Math.max(a.rule, b.rule)
-    return { state: RuleState.PartiallyApplied, rule: mergedRule }
+    const mergedRule = Math.max(a.value, b.value)
+    return { state: FieldState.PartiallyApplied, value: mergedRule }
   }
 }
 
@@ -89,5 +94,34 @@ export function mergeLaneRules(
       b.energyTypesRules,
     ),
     vehicleTypeRules: mergeVehicleRules(a.vehicleTypeRules, b.vehicleTypeRules),
+  }
+}
+
+export function mergeSpeedLimitValues(
+  a: FieldValue<number>,
+  b: FieldValue<number>,
+): FieldValue<number> {
+  if (
+    a.value === b.value &&
+    a.state === b.state &&
+    a.state === FieldState.Applied
+  ) {
+    return Object.assign({}, a)
+  } else {
+    const mergedSpeedLimit = Math.min(a.value, b.value)
+    return { state: FieldState.PartiallyApplied, value: mergedSpeedLimit }
+  }
+}
+
+export function mergeCarLaneValues(
+  a: CarLaneValue,
+  b: CarLaneValue,
+): CarLaneValue {
+  return {
+    speedLimit: mergeSpeedLimitValues(a.speedLimit, b.speedLimit),
+    defaultSpeedLimit: mergeSpeedLimitValues(
+      a.defaultSpeedLimit,
+      b.defaultSpeedLimit,
+    ),
   }
 }

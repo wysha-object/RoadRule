@@ -102,16 +102,25 @@ namespace RoadRule.Systems.UI
                                 }
 
                                 LaneRulesValue? laneRulesValue = null;
+                                CarLaneValue? CarLaneValue = null;
                                 foreach (var subLaneEntity in laneIndexKVP.Value)
                                 {
                                     if (!EntityManager.TryGetComponent<LaneRules>(subLaneEntity, out var laneRules))
                                     {
                                         laneRules = new LaneRules();
                                     }
+                                    if (!EntityManager.TryGetComponent<CarLane>(subLaneEntity, out var carLane))
+                                    {
+                                        return JsonConvert.SerializeObject(new Dictionary<int, object>());
+                                    }
                                     laneRulesValue =
                                         laneRulesValue == null
                                             ? LaneRulesValue.FromRules(laneRules)
                                             : LaneRulesValue.MergeRulesValues(laneRulesValue.Value, LaneRulesValue.FromRules(laneRules));
+                                    CarLaneValue =
+                                        CarLaneValue == null
+                                            ? UISystem.CarLaneValue.FromCarLane(carLane)
+                                            : UISystem.CarLaneValue.MergeLanePropertyValues(CarLaneValue.Value, UISystem.CarLaneValue.FromCarLane(carLane));
                                 }
 
                                 var worldPosition = curve.m_Bezier.d;
@@ -128,15 +137,20 @@ namespace RoadRule.Systems.UI
                                         },
                                         screenPoint = new ScreenPointValue { top = Screen.height - screenPoint.y, left = screenPoint.x },
                                         laneRules = laneRulesValue.Value,
+                                        carLane = CarLaneValue.Value,
                                     }
                                 );
                             }
 
-                            if (!EntityManager.TryGetComponent<Curve>(kvp.Value.m_MasterLaneEntities[0], out var masterCurve))
+                            if (
+                                !EntityManager.TryGetComponent<Curve>(kvp.Value.m_MasterLaneEntities[0], out var masterCurve)
+                                || !EntityManager.TryGetComponent<CarLane>(kvp.Value.m_MasterLaneEntities[0], out var masterCarLane)
+                            )
                             {
                                 return JsonConvert.SerializeObject(new Dictionary<int, object>());
                             }
                             LaneRulesValue? masterLaneRulesValue = null;
+                            CarLaneValue? masterCarLaneValue = null;
                             foreach (var masterLaneEntity in kvp.Value.m_MasterLaneEntities)
                             {
                                 if (!EntityManager.TryGetComponent<LaneRules>(masterLaneEntity, out var laneRules))
@@ -147,6 +161,10 @@ namespace RoadRule.Systems.UI
                                     masterLaneRulesValue == null
                                         ? LaneRulesValue.FromRules(laneRules)
                                         : LaneRulesValue.MergeRulesValues(masterLaneRulesValue.Value, LaneRulesValue.FromRules(laneRules));
+                                masterCarLaneValue =
+                                    masterCarLaneValue == null
+                                        ? CarLaneValue.FromCarLane(masterCarLane)
+                                        : CarLaneValue.MergeLanePropertyValues(masterCarLaneValue.Value, CarLaneValue.FromCarLane(masterCarLane));
                             }
 
                             var masterWorldPosition = masterCurve.m_Bezier.d;
@@ -166,6 +184,7 @@ namespace RoadRule.Systems.UI
                                         },
                                         screenPoint = new ScreenPointValue { top = Screen.height - masterScreenPoint.y, left = masterScreenPoint.x },
                                         laneRules = masterLaneRulesValue.Value,
+                                        carLane = masterCarLaneValue.Value,
                                     },
                                     lanes = laneList,
                                 }
@@ -280,6 +299,19 @@ namespace RoadRule.Systems.UI
 
                                 laneRules = LaneRulesValue.ApplyRulesValue(laneRules, value);
                                 EntityManager.SetComponentData(e, laneRules);
+                            }
+                        }
+                        else if (inputValue.key == "car-lane")
+                        {
+                            var value = JsonConvert.DeserializeAnonymousType(inputValue.value, new CarLaneValue());
+                            foreach (var e in laneIndexDictionary[inputValue.laneIndex])
+                            {
+                                if (!EntityManager.TryGetComponent<CarLane>(e, out var carLane))
+                                {
+                                    return "";
+                                }
+                                carLane = CarLaneValue.ApplyLanePropertyValue(carLane, value);
+                                EntityManager.SetComponentData(e, carLane);
                             }
                         }
                         else
