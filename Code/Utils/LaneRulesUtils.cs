@@ -183,65 +183,77 @@ namespace RoadRule.Utils
             return isForbiddenCarFlags || isForbiddenSizeClass || isForbiddenEnergyTypes || isForbiddenVehicleType;
         }
 
-        public static bool IsPrefer(int flag, LaneRules.Rule rule, int flags)
+        public static bool IsPrefer(int flag, LaneRules.RuleOptions rule, int flags)
         {
             var value = (flags & flag) != 0;
             return IsPrefer(rule, value);
         }
 
-        public static bool IsForbidden(int flag, LaneRules.Rule rule, int flags)
+        public static bool IsForbidden(int flag, LaneRules.RuleOptions rule, int flags)
         {
             var value = (flags & flag) != 0;
             return IsForbidden(rule, value);
         }
 
-        public static bool IsPrefer(LaneRules.Rule rule, bool value)
+        public static bool IsPrefer(LaneRules.RuleOptions rule, bool value)
         {
-            if (IsForbidden(rule, value))
+            var noFlagRule = rule & LaneRules.RuleOptions.NoFlagRuleMask;
+            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
+
+            if (value)
             {
-                return false;
+                switch (hasFlagRule)
+                {
+                    case LaneRules.RuleOptions.HasFlagPrefer:
+                        return true;
+                    case LaneRules.RuleOptions.HasFlagForbidden:
+                        return false;
+                    default:
+                        return false;
+                }
             }
-            switch (rule)
+            else
             {
-                case LaneRules.Rule.None:
-                    return false;
-                case LaneRules.Rule.PreferOrNone:
-                    return value == false;
-                case LaneRules.Rule.NoneOrPrefer:
-                    return value == true;
-                case LaneRules.Rule.ForbiddenOrNone:
-                    return false;
-                case LaneRules.Rule.NoneOrForbidden:
-                    return false;
-                case LaneRules.Rule.ForbiddenOrPrefer:
-                    return value == true;
-                case LaneRules.Rule.PreferOrForbidden:
-                    return value == false;
-                default:
-                    return false;
+                switch (noFlagRule)
+                {
+                    case LaneRules.RuleOptions.NoFlagPrefer:
+                        return true;
+                    case LaneRules.RuleOptions.NoFlagForbidden:
+                        return false;
+                    default:
+                        return false;
+                }
             }
         }
 
-        public static bool IsForbidden(LaneRules.Rule rule, bool value)
+        public static bool IsForbidden(LaneRules.RuleOptions rule, bool value)
         {
-            switch (rule)
+            var noFlagRule = rule & LaneRules.RuleOptions.NoFlagRuleMask;
+            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
+
+            if (value)
             {
-                case LaneRules.Rule.None:
-                    return false;
-                case LaneRules.Rule.PreferOrNone:
-                    return false;
-                case LaneRules.Rule.NoneOrPrefer:
-                    return false;
-                case LaneRules.Rule.ForbiddenOrNone:
-                    return value == false;
-                case LaneRules.Rule.NoneOrForbidden:
-                    return value == true;
-                case LaneRules.Rule.ForbiddenOrPrefer:
-                    return value == false;
-                case LaneRules.Rule.PreferOrForbidden:
-                    return value == true;
-                default:
-                    return false;
+                switch (hasFlagRule)
+                {
+                    case LaneRules.RuleOptions.HasFlagPrefer:
+                        return false;
+                    case LaneRules.RuleOptions.HasFlagForbidden:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            else
+            {
+                switch (noFlagRule)
+                {
+                    case LaneRules.RuleOptions.NoFlagPrefer:
+                        return false;
+                    case LaneRules.RuleOptions.NoFlagForbidden:
+                        return true;
+                    default:
+                        return false;
+                }
             }
         }
     }

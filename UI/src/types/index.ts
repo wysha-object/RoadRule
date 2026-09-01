@@ -11,20 +11,15 @@ export const enum ToolState {
   Choosed = 2,
 }
 
-export enum Rule {
+export enum RuleValue {
   None = 0,
+  Prefer = 1,
+  Forbidden = 2,
+}
 
-  PreferOrNone = 16,
-
-  NoneOrPrefer = 32,
-
-  ForbiddenOrNone = 48,
-
-  NoneOrForbidden = 64,
-
-  ForbiddenOrPrefer = 80,
-
-  PreferOrForbidden = 96,
+export interface RuleOptionsValue {
+  noFlag: RuleValue
+  hasFlag: RuleValue
 }
 
 export const enum FieldState {
@@ -38,35 +33,35 @@ export interface FieldValue<T> {
 }
 
 export interface CarFlagsRulesValue {
-  emergency: FieldValue<Rule>
+  emergency: FieldValue<RuleOptionsValue>
 }
 
 export interface SizeClassRulesValue {
-  small: FieldValue<Rule>
-  medium: FieldValue<Rule>
-  large: FieldValue<Rule>
-  undefined: FieldValue<Rule>
+  small: FieldValue<RuleOptionsValue>
+  medium: FieldValue<RuleOptionsValue>
+  large: FieldValue<RuleOptionsValue>
+  undefined: FieldValue<RuleOptionsValue>
 }
 
 export interface EnergyTypesRulesValue {
-  fuel: FieldValue<Rule>
-  electricity: FieldValue<Rule>
-  fuelAndElectricity: FieldValue<Rule>
-  none: FieldValue<Rule>
+  fuel: FieldValue<RuleOptionsValue>
+  electricity: FieldValue<RuleOptionsValue>
+  fuelAndElectricity: FieldValue<RuleOptionsValue>
+  none: FieldValue<RuleOptionsValue>
 }
 
 export interface VehicleTypeRulesValue {
-  ambulance: FieldValue<Rule>
-  deliveryTruck: FieldValue<Rule>
-  fireEngine: FieldValue<Rule>
-  garbageTruck: FieldValue<Rule>
-  hearse: FieldValue<Rule>
-  maintenanceVehicle: FieldValue<Rule>
-  personalCar: FieldValue<Rule>
-  policeCar: FieldValue<Rule>
-  postVan: FieldValue<Rule>
-  publicTransport: FieldValue<Rule>
-  taxi: FieldValue<Rule>
+  ambulance: FieldValue<RuleOptionsValue>
+  deliveryTruck: FieldValue<RuleOptionsValue>
+  fireEngine: FieldValue<RuleOptionsValue>
+  garbageTruck: FieldValue<RuleOptionsValue>
+  hearse: FieldValue<RuleOptionsValue>
+  maintenanceVehicle: FieldValue<RuleOptionsValue>
+  personalCar: FieldValue<RuleOptionsValue>
+  policeCar: FieldValue<RuleOptionsValue>
+  postVan: FieldValue<RuleOptionsValue>
+  publicTransport: FieldValue<RuleOptionsValue>
+  taxi: FieldValue<RuleOptionsValue>
 }
 
 export interface LaneRulesValue {

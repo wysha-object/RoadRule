@@ -6,22 +6,26 @@ import {
   FieldValue,
   SizeClassRulesValue,
   VehicleTypeRulesValue,
-  Rule,
   CarLaneValue,
+  RuleOptionsValue,
 } from 'types'
 
 export function mergeRuleValues(
-  a: FieldValue<Rule>,
-  b: FieldValue<Rule>,
-): FieldValue<Rule> {
+  a: FieldValue<RuleOptionsValue>,
+  b: FieldValue<RuleOptionsValue>,
+): FieldValue<RuleOptionsValue> {
   if (
-    a.value === b.value &&
+    a.value.noFlag === b.value.noFlag &&
+    a.value.hasFlag === b.value.hasFlag &&
     a.state === b.state &&
     a.state === FieldState.Applied
   ) {
     return Object.assign({}, a)
   } else {
-    const mergedRule = Math.max(a.value, b.value)
+    const mergedRule = {
+      noFlag: Math.max(a.value.noFlag, b.value.noFlag),
+      hasFlag: Math.max(a.value.hasFlag, b.value.hasFlag),
+    }
     return { state: FieldState.PartiallyApplied, value: mergedRule }
   }
 }

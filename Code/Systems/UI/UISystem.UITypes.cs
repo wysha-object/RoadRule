@@ -13,6 +13,29 @@ namespace RoadRule.Systems.UI
 {
     public partial class UISystem
     {
+        private enum RuleValue
+        {
+            None = 0,
+            Prefer = 1,
+            Forbidden = 2,
+        }
+
+        private struct RuleOptionsValue
+        {
+            public RuleValue noFlag;
+            public RuleValue hasFlag;
+
+            public static bool operator ==(RuleOptionsValue a, RuleOptionsValue b)
+            {
+                return a.noFlag == b.noFlag && a.hasFlag == b.hasFlag;
+            }
+
+            public static bool operator !=(RuleOptionsValue a, RuleOptionsValue b)
+            {
+                return a.noFlag != b.noFlag || a.hasFlag != b.hasFlag;
+            }
+        }
+
         public enum FieldState
         {
             Applied = 0,
@@ -27,7 +50,7 @@ namespace RoadRule.Systems.UI
 
         private struct CarFlagsRulesValue
         {
-            public FieldValue<LaneRules.Rule> emergency;
+            public FieldValue<RuleOptionsValue> emergency;
 
             public static CarFlagsRulesValue FromCarFlagsRules(LaneRules.CarFlagsRules carFlagsRules)
             {
@@ -36,10 +59,7 @@ namespace RoadRule.Systems.UI
 
             public static LaneRules.CarFlagsRules ApplyCarFlagsRulesValue(LaneRules.CarFlagsRules carFlagsRules, CarFlagsRulesValue carFlagsRulesValue)
             {
-                return new LaneRules.CarFlagsRules
-                {
-                    m_Emergency = carFlagsRulesValue.emergency.state == FieldState.Applied ? carFlagsRulesValue.emergency.value : carFlagsRules.m_Emergency,
-                };
+                return new LaneRules.CarFlagsRules { m_Emergency = ApplyRuleOptionsValue(carFlagsRules.m_Emergency, carFlagsRulesValue.emergency) };
             }
 
             public static CarFlagsRulesValue MergeCarFlagsRules(CarFlagsRulesValue a, CarFlagsRulesValue b)
@@ -50,10 +70,10 @@ namespace RoadRule.Systems.UI
 
         private struct SizeClassRulesValue
         {
-            public FieldValue<LaneRules.Rule> small;
-            public FieldValue<LaneRules.Rule> medium;
-            public FieldValue<LaneRules.Rule> large;
-            public FieldValue<LaneRules.Rule> undefined;
+            public FieldValue<RuleOptionsValue> small;
+            public FieldValue<RuleOptionsValue> medium;
+            public FieldValue<RuleOptionsValue> large;
+            public FieldValue<RuleOptionsValue> undefined;
 
             public static SizeClassRulesValue FromSizeClassRules(LaneRules.SizeClassRules sizeClassRules)
             {
@@ -70,10 +90,10 @@ namespace RoadRule.Systems.UI
             {
                 return new LaneRules.SizeClassRules
                 {
-                    m_Small = sizeClassFlagsRulesValue.small.state == FieldState.Applied ? sizeClassFlagsRulesValue.small.value : sizeClassRules.m_Small,
-                    m_Medium = sizeClassFlagsRulesValue.medium.state == FieldState.Applied ? sizeClassFlagsRulesValue.medium.value : sizeClassRules.m_Medium,
-                    m_Large = sizeClassFlagsRulesValue.large.state == FieldState.Applied ? sizeClassFlagsRulesValue.large.value : sizeClassRules.m_Large,
-                    m_Undefined = sizeClassFlagsRulesValue.undefined.state == FieldState.Applied ? sizeClassFlagsRulesValue.undefined.value : sizeClassRules.m_Undefined,
+                    m_Small = ApplyRuleOptionsValue(sizeClassRules.m_Small, sizeClassFlagsRulesValue.small),
+                    m_Medium = ApplyRuleOptionsValue(sizeClassRules.m_Medium, sizeClassFlagsRulesValue.medium),
+                    m_Large = ApplyRuleOptionsValue(sizeClassRules.m_Large, sizeClassFlagsRulesValue.large),
+                    m_Undefined = ApplyRuleOptionsValue(sizeClassRules.m_Undefined, sizeClassFlagsRulesValue.undefined),
                 };
             }
 
@@ -91,10 +111,10 @@ namespace RoadRule.Systems.UI
 
         private struct EnergyTypesRulesValue
         {
-            public FieldValue<LaneRules.Rule> fuel;
-            public FieldValue<LaneRules.Rule> electricity;
-            public FieldValue<LaneRules.Rule> fuelAndElectricity;
-            public FieldValue<LaneRules.Rule> none;
+            public FieldValue<RuleOptionsValue> fuel;
+            public FieldValue<RuleOptionsValue> electricity;
+            public FieldValue<RuleOptionsValue> fuelAndElectricity;
+            public FieldValue<RuleOptionsValue> none;
 
             public static EnergyTypesRulesValue FromEnergyTypesRules(LaneRules.EnergyTypesRules energyTypesRules)
             {
@@ -111,14 +131,10 @@ namespace RoadRule.Systems.UI
             {
                 return new LaneRules.EnergyTypesRules
                 {
-                    m_Fuel = energyTypesFlagsRulesValue.fuel.state == FieldState.Applied ? energyTypesFlagsRulesValue.fuel.value : energyTypesRules.m_Fuel,
-                    m_Electricity =
-                        energyTypesFlagsRulesValue.electricity.state == FieldState.Applied ? energyTypesFlagsRulesValue.electricity.value : energyTypesRules.m_Electricity,
-                    m_FuelAndElectricity =
-                        energyTypesFlagsRulesValue.fuelAndElectricity.state == FieldState.Applied
-                            ? energyTypesFlagsRulesValue.fuelAndElectricity.value
-                            : energyTypesRules.m_FuelAndElectricity,
-                    m_None = energyTypesFlagsRulesValue.none.state == FieldState.Applied ? energyTypesFlagsRulesValue.none.value : energyTypesRules.m_None,
+                    m_Fuel = ApplyRuleOptionsValue(energyTypesRules.m_Fuel, energyTypesFlagsRulesValue.fuel),
+                    m_Electricity = ApplyRuleOptionsValue(energyTypesRules.m_Electricity, energyTypesFlagsRulesValue.electricity),
+                    m_FuelAndElectricity = ApplyRuleOptionsValue(energyTypesRules.m_FuelAndElectricity, energyTypesFlagsRulesValue.fuelAndElectricity),
+                    m_None = ApplyRuleOptionsValue(energyTypesRules.m_None, energyTypesFlagsRulesValue.none),
                 };
             }
 
@@ -136,17 +152,17 @@ namespace RoadRule.Systems.UI
 
         private struct VehicleTypeRulesValue
         {
-            public FieldValue<LaneRules.Rule> ambulance;
-            public FieldValue<LaneRules.Rule> deliveryTruck;
-            public FieldValue<LaneRules.Rule> fireEngine;
-            public FieldValue<LaneRules.Rule> garbageTruck;
-            public FieldValue<LaneRules.Rule> hearse;
-            public FieldValue<LaneRules.Rule> maintenanceVehicle;
-            public FieldValue<LaneRules.Rule> personalCar;
-            public FieldValue<LaneRules.Rule> policeCar;
-            public FieldValue<LaneRules.Rule> postVan;
-            public FieldValue<LaneRules.Rule> publicTransport;
-            public FieldValue<LaneRules.Rule> taxi;
+            public FieldValue<RuleOptionsValue> ambulance;
+            public FieldValue<RuleOptionsValue> deliveryTruck;
+            public FieldValue<RuleOptionsValue> fireEngine;
+            public FieldValue<RuleOptionsValue> garbageTruck;
+            public FieldValue<RuleOptionsValue> hearse;
+            public FieldValue<RuleOptionsValue> maintenanceVehicle;
+            public FieldValue<RuleOptionsValue> personalCar;
+            public FieldValue<RuleOptionsValue> policeCar;
+            public FieldValue<RuleOptionsValue> postVan;
+            public FieldValue<RuleOptionsValue> publicTransport;
+            public FieldValue<RuleOptionsValue> taxi;
 
             public static VehicleTypeRulesValue FromVehicleTypeRules(LaneRules.VehicleTypeRules vehicleTypeRules)
             {
@@ -170,22 +186,17 @@ namespace RoadRule.Systems.UI
             {
                 return new LaneRules.VehicleTypeRules
                 {
-                    m_Ambulance = vehicleTypeRulesValue.ambulance.state == FieldState.Applied ? vehicleTypeRulesValue.ambulance.value : vehicleTypeRules.m_Ambulance,
-                    m_DeliveryTruck =
-                        vehicleTypeRulesValue.deliveryTruck.state == FieldState.Applied ? vehicleTypeRulesValue.deliveryTruck.value : vehicleTypeRules.m_DeliveryTruck,
-                    m_FireEngine = vehicleTypeRulesValue.fireEngine.state == FieldState.Applied ? vehicleTypeRulesValue.fireEngine.value : vehicleTypeRules.m_FireEngine,
-                    m_GarbageTruck = vehicleTypeRulesValue.garbageTruck.state == FieldState.Applied ? vehicleTypeRulesValue.garbageTruck.value : vehicleTypeRules.m_GarbageTruck,
-                    m_Hearse = vehicleTypeRulesValue.hearse.state == FieldState.Applied ? vehicleTypeRulesValue.hearse.value : vehicleTypeRules.m_Hearse,
-                    m_MaintenanceVehicle =
-                        vehicleTypeRulesValue.maintenanceVehicle.state == FieldState.Applied
-                            ? vehicleTypeRulesValue.maintenanceVehicle.value
-                            : vehicleTypeRules.m_MaintenanceVehicle,
-                    m_PersonalCar = vehicleTypeRulesValue.personalCar.state == FieldState.Applied ? vehicleTypeRulesValue.personalCar.value : vehicleTypeRules.m_PersonalCar,
-                    m_PoliceCar = vehicleTypeRulesValue.policeCar.state == FieldState.Applied ? vehicleTypeRulesValue.policeCar.value : vehicleTypeRules.m_PoliceCar,
-                    m_PostVan = vehicleTypeRulesValue.postVan.state == FieldState.Applied ? vehicleTypeRulesValue.postVan.value : vehicleTypeRules.m_PostVan,
-                    m_PublicTransport =
-                        vehicleTypeRulesValue.publicTransport.state == FieldState.Applied ? vehicleTypeRulesValue.publicTransport.value : vehicleTypeRules.m_PublicTransport,
-                    m_Taxi = vehicleTypeRulesValue.taxi.state == FieldState.Applied ? vehicleTypeRulesValue.taxi.value : vehicleTypeRules.m_Taxi,
+                    m_Ambulance = ApplyRuleOptionsValue(vehicleTypeRules.m_Ambulance, vehicleTypeRulesValue.ambulance),
+                    m_DeliveryTruck = ApplyRuleOptionsValue(vehicleTypeRules.m_DeliveryTruck, vehicleTypeRulesValue.deliveryTruck),
+                    m_FireEngine = ApplyRuleOptionsValue(vehicleTypeRules.m_FireEngine, vehicleTypeRulesValue.fireEngine),
+                    m_GarbageTruck = ApplyRuleOptionsValue(vehicleTypeRules.m_GarbageTruck, vehicleTypeRulesValue.garbageTruck),
+                    m_Hearse = ApplyRuleOptionsValue(vehicleTypeRules.m_Hearse, vehicleTypeRulesValue.hearse),
+                    m_MaintenanceVehicle = ApplyRuleOptionsValue(vehicleTypeRules.m_MaintenanceVehicle, vehicleTypeRulesValue.maintenanceVehicle),
+                    m_PersonalCar = ApplyRuleOptionsValue(vehicleTypeRules.m_PersonalCar, vehicleTypeRulesValue.personalCar),
+                    m_PoliceCar = ApplyRuleOptionsValue(vehicleTypeRules.m_PoliceCar, vehicleTypeRulesValue.policeCar),
+                    m_PostVan = ApplyRuleOptionsValue(vehicleTypeRules.m_PostVan, vehicleTypeRulesValue.postVan),
+                    m_PublicTransport = ApplyRuleOptionsValue(vehicleTypeRules.m_PublicTransport, vehicleTypeRulesValue.publicTransport),
+                    m_Taxi = ApplyRuleOptionsValue(vehicleTypeRules.m_Taxi, vehicleTypeRulesValue.taxi),
                 };
             }
 
@@ -249,21 +260,97 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private static FieldValue<LaneRules.Rule> FromRule(LaneRules.Rule rule)
+        private static FieldValue<RuleOptionsValue> FromRule(LaneRules.RuleOptions rule)
         {
-            return new FieldValue<LaneRules.Rule> { state = FieldState.Applied, value = rule };
+            var noFlag = RuleValue.None;
+            switch (rule & LaneRules.RuleOptions.NoFlagRuleMask)
+            {
+                case LaneRules.RuleOptions.None:
+                    noFlag = RuleValue.None;
+                    break;
+                case LaneRules.RuleOptions.NoFlagPrefer:
+                    noFlag = RuleValue.Prefer;
+                    break;
+                case LaneRules.RuleOptions.NoFlagForbidden:
+                    noFlag = RuleValue.Forbidden;
+                    break;
+                default:
+                    noFlag = RuleValue.None;
+                    break;
+            }
+
+            var hasFlag = RuleValue.None;
+            switch (rule & LaneRules.RuleOptions.HasFlagRuleMask)
+            {
+                case LaneRules.RuleOptions.None:
+                    hasFlag = RuleValue.None;
+                    break;
+                case LaneRules.RuleOptions.HasFlagPrefer:
+                    hasFlag = RuleValue.Prefer;
+                    break;
+                case LaneRules.RuleOptions.HasFlagForbidden:
+                    hasFlag = RuleValue.Forbidden;
+                    break;
+                default:
+                    hasFlag = RuleValue.None;
+                    break;
+            }
+
+            return new FieldValue<RuleOptionsValue>
+            {
+                state = FieldState.Applied,
+                value = new RuleOptionsValue { noFlag = noFlag, hasFlag = hasFlag },
+            };
         }
 
-        private static FieldValue<LaneRules.Rule> MergeRuleValues(FieldValue<LaneRules.Rule> a, FieldValue<LaneRules.Rule> b)
+        private static LaneRules.RuleOptions ToRuleOptions(RuleOptionsValue ruleOptionsValue)
         {
-            if (a.value == b.value && a.state == b.state && a.state == FieldState.Applied)
+            LaneRules.RuleOptions rule = LaneRules.RuleOptions.None;
+            switch (ruleOptionsValue.noFlag)
             {
-                return new FieldValue<LaneRules.Rule> { state = FieldState.Applied, value = a.value };
+                case RuleValue.Prefer:
+                    rule |= LaneRules.RuleOptions.NoFlagPrefer;
+                    break;
+                case RuleValue.Forbidden:
+                    rule |= LaneRules.RuleOptions.NoFlagForbidden;
+                    break;
+            }
+            switch (ruleOptionsValue.hasFlag)
+            {
+                case RuleValue.Prefer:
+                    rule |= LaneRules.RuleOptions.HasFlagPrefer;
+                    break;
+                case RuleValue.Forbidden:
+                    rule |= LaneRules.RuleOptions.HasFlagForbidden;
+                    break;
+            }
+            return rule;
+        }
+
+        private static LaneRules.RuleOptions ApplyRuleOptionsValue(LaneRules.RuleOptions ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
+        {
+            if (ruleOptionsValue.state == FieldState.Applied)
+            {
+                return ToRuleOptions(ruleOptionsValue.value);
             }
             else
             {
-                var mergedRule = (LaneRules.Rule)Math.Max((int)a.value, (int)b.value);
-                return new FieldValue<LaneRules.Rule> { state = FieldState.PartiallyApplied, value = mergedRule };
+                return ruleOptions;
+            }
+        }
+
+        private static FieldValue<RuleOptionsValue> MergeRuleValues(FieldValue<RuleOptionsValue> a, FieldValue<RuleOptionsValue> b)
+        {
+            if (a.value == b.value && a.state == b.state && a.state == FieldState.Applied)
+            {
+                return new FieldValue<RuleOptionsValue> { state = FieldState.Applied, value = a.value };
+            }
+            else
+            {
+                var noFlag = (RuleValue)Math.Max((int)a.value.noFlag, (int)b.value.noFlag);
+                var hasFlag = (RuleValue)Math.Max((int)a.value.hasFlag, (int)b.value.hasFlag);
+                var mergedRule = new RuleOptionsValue { noFlag = noFlag, hasFlag = hasFlag };
+                return new FieldValue<RuleOptionsValue> { state = FieldState.PartiallyApplied, value = mergedRule };
             }
         }
 
