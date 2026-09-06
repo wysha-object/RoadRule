@@ -11,8 +11,10 @@ import { CarLaneValue, LaneRulesValue, UIToolMode } from 'types'
 import RulesEditor from './mods/lane-rules-editor'
 import BasePage from 'components/base/base-page'
 import { Button, Scrollable } from 'cs2/ui'
-import { UIToolModeContext } from 'context'
+import { RulesClipboardContext, UIToolModeContext } from 'context'
 import CarLaneEditor from './mods/car-lane-editor'
+import CopySvg from 'assets/images/copy.svg'
+import PasteSvg from 'assets/images/paste.svg'
 
 export default function RightPage() {
   const { t } = useTranslate()
@@ -71,7 +73,20 @@ export default function RightPage() {
         left: 'calc(10em + 10rem)',
       }}
       header={<Header />}
-      footer={<></>}
+      footer={
+        <Footer
+          value={laneRulesValue}
+          onPaste={(value) => {
+            for (const laneIndex of selectedLaneIndex) {
+              updateLane({
+                laneIndex: laneIndex,
+                key: 'lane-rules',
+                value: value,
+              })
+            }
+          }}
+        />
+      }
     >
       <LaneList />
       <div style={{ flex: '1 1 0' }}>
@@ -174,5 +189,45 @@ function Header() {
         {t('MainPanel.Lane')}
       </Button>
     </div>
+  )
+}
+
+function Footer(props: { value?: LaneRulesValue, onPaste: (value: LaneRulesValue) => void }) {
+  const clipboard = useContext(RulesClipboardContext)
+  return (
+    <>
+      {props.value &&
+        <div
+          style={{
+            width: 'var(--right-panel-width)',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 0.5em',
+          }}
+        >
+          <Button
+            variant='round'
+            onClick={() => {
+              clipboard.setClipboard(props.value!)
+            }}
+          >
+            <CopySvg />
+          </Button>
+          <div className='vertical-gap' />
+          <Button
+            disabled={!clipboard.value}
+            variant='round'
+            onClick={() => {
+              if (clipboard.value && props.onPaste) {
+                props.onPaste(clipboard.value)
+              }
+            }}
+          >
+            <PasteSvg />
+          </Button>
+        </div>
+      }
+    </>
   )
 }

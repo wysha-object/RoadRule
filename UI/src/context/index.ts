@@ -1,8 +1,16 @@
 import { createContext } from 'react'
-import { UIToolMode } from 'types'
+import { LaneRulesValue, UIToolMode } from 'types'
 
 const UIToolModeContext = createContext<
   [UIToolMode, (mode: UIToolMode) => void]
 >([UIToolMode.Lane, () => {}])
 
-export { UIToolModeContext }
+const RulesClipboardContext = createContext<{
+  value: LaneRulesValue | null
+  setClipboard: (value: LaneRulesValue | null) => void
+}>({
+  value: null,
+  setClipboard: () => {},
+})
+
+export { UIToolModeContext, RulesClipboardContext }
