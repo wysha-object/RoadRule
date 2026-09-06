@@ -45,7 +45,7 @@
     "Tooltip.AddEdge": "添加相同类型的边",
     "Tooltip.ChooseEdge": "选择边",
     "Tooltip.RemoveEdge": "移除边",
-    "VehicleType": "车辆类型",
+    "VehicleTypes": "车辆类型",
     "VehicleType.Ambulance": "救护车",
     "VehicleType.DeliveryTruck": "送货卡车",
     "VehicleType.FireEngine": "消防车",
@@ -56,5 +56,9 @@
     "VehicleType.PoliceCar": "警车",
     "VehicleType.PostVan": "邮政车",
     "VehicleType.PublicTransport": "公交车",
-    "VehicleType.Taxi": "出租车"
+    "VehicleType.Taxi": "出租车",
+    "VehicleTypes.EmergencyVehicles": "应急车辆",
+    "VehicleTypes.PrivateVehicles": "私人车辆",
+    "VehicleTypes.PublicVehicles": "公共车辆",
+    "VehicleTypes.ServiceVehicles": "服务车辆"
 }

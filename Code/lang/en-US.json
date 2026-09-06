@@ -44,7 +44,7 @@
     "Tooltip.AddEdge": "Add Edge With Same Type",
     "Tooltip.ChooseEdge": "Choose Edge",
     "Tooltip.RemoveEdge": "Remove Edge",
-    "VehicleType": "Vehicle Type",
+    "VehicleTypes": "Vehicle Type",
     "VehicleType.Ambulance": "Ambulance",
     "VehicleType.DeliveryTruck": "Delivery Truck",
     "VehicleType.FireEngine": "Fire Engine",
@@ -55,5 +55,9 @@
     "VehicleType.PoliceCar": "Police Car",
     "VehicleType.PostVan": "Post Van",
     "VehicleType.PublicTransport": "Public Transport",
-    "VehicleType.Taxi": "Taxi"
+    "VehicleType.Taxi": "Taxi",
+    "VehicleTypes.EmergencyVehicles": "Emergency Vehicles",
+    "VehicleTypes.PrivateVehicles": "Private Vehicles",
+    "VehicleTypes.PublicVehicles": "Public Vehicles",
+    "VehicleTypes.ServiceVehicles": "Service Vehicles"
 }

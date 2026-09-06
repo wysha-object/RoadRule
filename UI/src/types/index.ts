@@ -51,6 +51,10 @@ export interface EnergyTypesRulesValue {
   none: FieldValue<RuleOptionsValue>
 }
 
+/// emergency vehicles: ambulance fireEngine policeCar
+/// service vehicles: garbageTruck hearse maintenanceVehicle postVan
+/// public vehicles: publicTransport taxi
+/// private vehicles: personalCar deliveryTruck
 export interface VehicleTypeRulesValue {
   ambulance: FieldValue<RuleOptionsValue>
   deliveryTruck: FieldValue<RuleOptionsValue>

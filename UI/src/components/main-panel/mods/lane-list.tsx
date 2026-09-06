@@ -27,7 +27,7 @@ export default function LaneList() {
     <div
       className='row'
       style={{
-        width: '30em'
+        width: 'var(--right-panel-width)',
       }}
     >
       {lanes.map((lane) => (

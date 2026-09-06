@@ -78,7 +78,7 @@ export default function RightPage() {
         <Scrollable>
           <div
             style={{
-              width: '30em'
+              width: 'var(--right-panel-width)',
             }}
           >
             {selectedLaneIndex.length == 0 ? (
@@ -138,7 +138,7 @@ function Header() {
   return (
     <div
       style={{
-        width: '30em',
+        width: 'var(--right-panel-width)',
         height: '100%',
         display: 'flex',
         alignItems: 'flex-end',
