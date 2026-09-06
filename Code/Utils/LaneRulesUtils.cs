@@ -44,7 +44,8 @@ namespace RoadRule.Utils
             ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
             ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
             out bool isPrefer,
-            out bool isForbidden
+            out bool isForbidden,
+            out bool isDisallow
         )
         {
             if (
@@ -55,6 +56,7 @@ namespace RoadRule.Utils
             {
                 isPrefer = false;
                 isForbidden = false;
+                isDisallow = false;
                 return false;
             }
 
@@ -111,12 +113,17 @@ namespace RoadRule.Utils
 
             isPrefer = IsPrefer(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             isForbidden = IsForbidden(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
+            isDisallow = IsDisallow(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             return true;
         }
 
         public static bool IsPrefer(LaneRules laneRules, CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)
         {
             if (IsForbidden(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags))
+            {
+                return false;
+            }
+            if (IsDisallow(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags))
             {
                 return false;
             }
@@ -153,6 +160,11 @@ namespace RoadRule.Utils
 
         public static bool IsForbidden(LaneRules laneRules, CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)
         {
+            if (IsDisallow(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags))
+            {
+                return false;
+            }
+
             bool isForbiddenCarFlags = IsForbidden((int)CarFlags.Emergency, laneRules.m_CarFlagsRules.m_Emergency, (int)carFlags);
 
             bool isForbiddenSizeClass =
@@ -183,6 +195,38 @@ namespace RoadRule.Utils
             return isForbiddenCarFlags || isForbiddenSizeClass || isForbiddenEnergyTypes || isForbiddenVehicleType;
         }
 
+        public static bool IsDisallow(LaneRules laneRules, CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)
+        {
+            bool isDisallowCarFlags = IsDisallow((int)CarFlags.Emergency, laneRules.m_CarFlagsRules.m_Emergency, (int)carFlags);
+
+            bool isDisallowSizeClass =
+                IsDisallow(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
+                || IsDisallow(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
+                || IsDisallow(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
+                || IsDisallow(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
+
+            bool isDisallowEnergyTypes =
+                IsDisallow(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
+                || IsDisallow(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
+                || IsDisallow(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
+                || IsDisallow(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
+
+            bool isDisallowVehicleType =
+                IsDisallow((int)VehicleTypeFlags.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.DeliveryTruck, laneRules.m_VehicleType.m_DeliveryTruck, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.FireEngine, laneRules.m_VehicleType.m_FireEngine, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.GarbageTruck, laneRules.m_VehicleType.m_GarbageTruck, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.Hearse, laneRules.m_VehicleType.m_Hearse, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.MaintenanceVehicle, laneRules.m_VehicleType.m_MaintenanceVehicle, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
+                || IsDisallow((int)VehicleTypeFlags.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags);
+
+            return isDisallowCarFlags || isDisallowSizeClass || isDisallowEnergyTypes || isDisallowVehicleType;
+        }
+
         public static bool IsPrefer(int flag, LaneRules.RuleOptions rule, int flags)
         {
             var value = (flags & flag) != 0;
@@ -193,6 +237,12 @@ namespace RoadRule.Utils
         {
             var value = (flags & flag) != 0;
             return IsForbidden(rule, value);
+        }
+
+        public static bool IsDisallow(int flag, LaneRules.RuleOptions rule, int flags)
+        {
+            var value = (flags & flag) != 0;
+            return IsDisallow(rule, value);
         }
 
         public static bool IsPrefer(LaneRules.RuleOptions rule, bool value)
@@ -206,8 +256,6 @@ namespace RoadRule.Utils
                 {
                     case LaneRules.RuleOptions.HasFlagPrefer:
                         return true;
-                    case LaneRules.RuleOptions.HasFlagForbidden:
-                        return false;
                     default:
                         return false;
                 }
@@ -218,8 +266,6 @@ namespace RoadRule.Utils
                 {
                     case LaneRules.RuleOptions.NoFlagPrefer:
                         return true;
-                    case LaneRules.RuleOptions.NoFlagForbidden:
-                        return false;
                     default:
                         return false;
                 }
@@ -235,8 +281,6 @@ namespace RoadRule.Utils
             {
                 switch (hasFlagRule)
                 {
-                    case LaneRules.RuleOptions.HasFlagPrefer:
-                        return false;
                     case LaneRules.RuleOptions.HasFlagForbidden:
                         return true;
                     default:
@@ -247,9 +291,33 @@ namespace RoadRule.Utils
             {
                 switch (noFlagRule)
                 {
-                    case LaneRules.RuleOptions.NoFlagPrefer:
-                        return false;
                     case LaneRules.RuleOptions.NoFlagForbidden:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        public static bool IsDisallow(LaneRules.RuleOptions rule, bool value)
+        {
+            var noFlagRule = rule & LaneRules.RuleOptions.NoFlagRuleMask;
+            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
+            if (value)
+            {
+                switch (hasFlagRule)
+                {
+                    case LaneRules.RuleOptions.HasFlagDisallow:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            else
+            {
+                switch (noFlagRule)
+                {
+                    case LaneRules.RuleOptions.NoFlagDisallow:
                         return true;
                     default:
                         return false;

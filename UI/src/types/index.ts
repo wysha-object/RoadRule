@@ -15,6 +15,7 @@ export enum RuleValue {
   None = 0,
   Prefer = 1,
   Forbidden = 2,
+  Disallow = 3,
 }
 
 export interface RuleOptionsValue {

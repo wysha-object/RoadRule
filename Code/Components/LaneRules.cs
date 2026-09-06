@@ -63,11 +63,15 @@ namespace RoadRule.Components
 
             NoFlagForbidden = 2 << 4,
 
+            NoFlagDisallow = 3 << 4,
+
             HasFlagRuleMask = 0xf,
 
             HasFlagPrefer = 1,
 
             HasFlagForbidden = 2,
+
+            HasFlagDisallow = 3,
         }
 
         public struct CarFlagsRules : ISerializable

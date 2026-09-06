@@ -31,6 +31,7 @@
     "Options.TAB[RoadRule.RoadRule.Mod.TabKeyBindings]": "Key Bindings",
     "Options.WARNING[RoadRule.RoadRule.Mod.Settings.ResetBindings]": "This will reset all key bindings to their default values. Are you sure you want to continue?",
     "RoadRule": "Road Rule",
+    "Rule.Disallow": "Disallow",
     "Rule.Forbidden": "Forbidden",
     "Rule.None": "None",
     "Rule.Prefer": "Prefer",

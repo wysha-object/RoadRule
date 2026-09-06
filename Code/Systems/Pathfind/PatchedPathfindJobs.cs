@@ -829,7 +829,8 @@ namespace RoadRule.Systems.Pathfind
                         m_PublicTransportLookup,
                         m_TaxiLookup,
                         out isPrefer,
-                        out isForbidden
+                        out isForbidden,
+                        out _
                     );
                 }
 
@@ -1279,6 +1280,36 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool DisallowConnection(PathMethod prevMethod, PathfindItemFlags itemFlags, in PathSpecification newSpec, ref EdgeFlags edgeFlags, Entity newOwner)
             {
+                bool isDisallow = false;
+                if (m_LaneRulesLookup.TryGetComponent(newOwner, out var laneRules))
+                {
+                    LaneRulesUtils.CheckLaneRules(
+                        laneRules,
+                        m_Owner,
+                        m_CarLookup,
+                        m_PrefabRefLookup,
+                        m_CarDataLookup,
+                        m_AmbulanceLookup,
+                        m_DeliveryTruckLookup,
+                        m_FireEngineLookup,
+                        m_GarbageTruckLookup,
+                        m_HearseLookup,
+                        m_MaintenanceVehicleLookup,
+                        m_PersonalCarLookup,
+                        m_PoliceCarLookup,
+                        m_PostVanLookup,
+                        m_PublicTransportLookup,
+                        m_TaxiLookup,
+                        out _,
+                        out _,
+                        out isDisallow
+                    );
+                }
+                if (isDisallow)
+                {
+                    return true;
+                }
+
                 if ((newSpec.m_Methods & m_Parameters.m_Methods) == 0 || ((itemFlags & PathfindItemFlags.SingleOnly) != 0 && (newSpec.m_Flags & EdgeFlags.SingleOnly) != 0))
                 {
                     return true;

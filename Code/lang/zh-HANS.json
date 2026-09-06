@@ -32,6 +32,7 @@
     "Options.TAB[RoadRule.RoadRule.Mod.TabKeyBindings]": "按键绑定",
     "Options.WARNING[RoadRule.RoadRule.Mod.Settings.ResetBindings]": "这将把所有按键绑定重置为默认值。您确定要继续吗？",
     "RoadRule": "道路规则",
+    "Rule.Disallow": "不允许",
     "Rule.Forbidden": "禁止",
     "Rule.None": "无",
     "Rule.Prefer": "优先",

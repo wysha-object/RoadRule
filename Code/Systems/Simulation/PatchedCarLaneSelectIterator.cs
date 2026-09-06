@@ -437,8 +437,6 @@ public struct PatchedCarLaneSelectIterator
 
     private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
     {
-        bool isPrefer = false;
-        bool isForbidden = false;
         LaneRulesUtils.CheckLaneRules(
             laneRules,
             m_CarEntity,
@@ -456,14 +454,16 @@ public struct PatchedCarLaneSelectIterator
             m_PostVanLookup,
             m_PublicTransportLookup,
             m_TaxiLookup,
-            out isPrefer,
-            out isForbidden
+            out var isPrefer,
+            out var isForbidden,
+            out var isDisallow
         );
 
         float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || isPrefer);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
         float num = math.select(falseValue, trueValue, ((flags & m_ForbidLaneFlags) != 0));
         num = math.select(num, num + 10f, isForbidden);
+        num = math.select(num, num + 1000f, isDisallow);
         int num2 = math.select(index - minIndex, maxIndex - index, (flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(
             num + math.select(0f, 1.4f + (float)num2 * 0.4f, (m_PathMethods == PathMethod.Bicycle) & (pathMethods != PathMethod.Bicycle)),

@@ -18,6 +18,7 @@ namespace RoadRule.Systems.UI
             None = 0,
             Prefer = 1,
             Forbidden = 2,
+            Disallow = 3,
         }
 
         private struct RuleOptionsValue
@@ -274,6 +275,9 @@ namespace RoadRule.Systems.UI
                 case LaneRules.RuleOptions.NoFlagForbidden:
                     noFlag = RuleValue.Forbidden;
                     break;
+                case LaneRules.RuleOptions.NoFlagDisallow:
+                    noFlag = RuleValue.Disallow;
+                    break;
                 default:
                     noFlag = RuleValue.None;
                     break;
@@ -290,6 +294,9 @@ namespace RoadRule.Systems.UI
                     break;
                 case LaneRules.RuleOptions.HasFlagForbidden:
                     hasFlag = RuleValue.Forbidden;
+                    break;
+                case LaneRules.RuleOptions.HasFlagDisallow:
+                    hasFlag = RuleValue.Disallow;
                     break;
                 default:
                     hasFlag = RuleValue.None;
@@ -314,6 +321,9 @@ namespace RoadRule.Systems.UI
                 case RuleValue.Forbidden:
                     rule |= LaneRules.RuleOptions.NoFlagForbidden;
                     break;
+                case RuleValue.Disallow:
+                    rule |= LaneRules.RuleOptions.NoFlagDisallow;
+                    break;
             }
             switch (ruleOptionsValue.hasFlag)
             {
@@ -322,6 +332,9 @@ namespace RoadRule.Systems.UI
                     break;
                 case RuleValue.Forbidden:
                     rule |= LaneRules.RuleOptions.HasFlagForbidden;
+                    break;
+                case RuleValue.Disallow:
+                    rule |= LaneRules.RuleOptions.HasFlagDisallow;
                     break;
             }
             return rule;
