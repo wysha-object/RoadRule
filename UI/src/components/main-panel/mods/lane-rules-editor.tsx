@@ -163,7 +163,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
                 ruleValue={emergencyVehiclesRules}
                 combined={true}
                 onChange={(_, newValue) => {
-                  console.log(newValue)
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
                     vehicleTypeRules: {
