@@ -161,7 +161,9 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.EmergencyVehicles')}
                 ruleValue={emergencyVehiclesRules}
+                combined={true}
                 onChange={(_, newValue) => {
+                  console.log(newValue)
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
                     vehicleTypeRules: {
@@ -176,7 +178,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             </FocusDisabled>
           }
         >
-          <div className='horizontal-gap'/>
+          <div className='horizontal-gap' />
           <RuleEditorRow
             name={t('VehicleType.Ambulance')}
             ruleValue={props.laneRulesValue.vehicleTypeRules.ambulance}
@@ -223,6 +225,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.ServiceVehicles')}
                 ruleValue={serviceVehiclesRules}
+                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -239,7 +242,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             </FocusDisabled>
           }
         >
-          <div className='horizontal-gap'/>
+          <div className='horizontal-gap' />
           <RuleEditorRow
             name={t('VehicleType.GarbageTruck')}
             ruleValue={props.laneRulesValue.vehicleTypeRules.garbageTruck}
@@ -299,6 +302,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.PublicVehicles')}
                 ruleValue={publicVehiclesRules}
+                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -313,7 +317,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             </FocusDisabled>
           }
         >
-          <div className='horizontal-gap'/>
+          <div className='horizontal-gap' />
           <RuleEditorRow
             name={t('VehicleType.PublicTransport')}
             ruleValue={props.laneRulesValue.vehicleTypeRules.publicTransport}
@@ -347,6 +351,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.PrivateVehicles')}
                 ruleValue={privateVehiclesRules}
+                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -361,7 +366,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             </FocusDisabled>
           }
         >
-          <div className='horizontal-gap'/>
+          <div className='horizontal-gap' />
           <RuleEditorRow
             name={t('VehicleType.DeliveryTruck')}
             ruleValue={props.laneRulesValue.vehicleTypeRules.deliveryTruck}
@@ -402,13 +407,18 @@ const DropdownToggleStyle: CSSProperties = {
 function RuleEditorRow(props: {
   name: string
   ruleValue: FieldValue<RuleOptionsValue>
+  combined?: boolean
   onChange: (oldValue: FieldValue<RuleOptionsValue>, newValue: FieldValue<RuleOptionsValue>) => void
 }) {
   const { t } = useTranslate()
 
   const handleChange = useCallback((noneFlagRule: RuleValue, haveFlagRule: RuleValue) => {
+    if (props.combined) {
+      noneFlagRule = RuleValue.None
+    }
     props.onChange(props.ruleValue, {
-      state: FieldState.Applied, value: {
+      state: FieldState.Applied,
+      value: {
         noFlag: noneFlagRule,
         hasFlag: haveFlagRule,
       }
@@ -430,36 +440,38 @@ function RuleEditorRow(props: {
           textAlign: 'right',
         }}
       >
-        {props.ruleValue.state === FieldState.PartiallyApplied && <>!</>}
+        {((props.ruleValue.state === FieldState.PartiallyApplied) || (props.combined && props.ruleValue.value.noFlag !== RuleValue.None))  && <>!</>}
       </div>
-      <Dropdown
-        content={
-          <>
-            {Object.values(RuleValue).map((item) => {
-              if (typeof item !== 'string') {
-                return null
-              }
-              return (
-                <DropdownItem
-                  value={item}
-                  key={item}
-                  onChange={(value) => handleChange(RuleValue[value as keyof typeof RuleValue], props.ruleValue.value.hasFlag)}
-                >
-                  <div>{t(`Rule.${item}`)}</div>
-                </DropdownItem>
-              )
-            })}
-          </>
-        }
-      >
-        <TipArea position={'right'} tooltip={t('RuleEditor.NoneFlagRuleTooltip')}>
-          <DropdownToggle style={DropdownToggleStyle}>
-            {t(
-              `Rule.${Object.keys(RuleValue).find((key) => RuleValue[key as keyof typeof RuleValue] === props.ruleValue.value.noFlag)}`,
-            )}
-          </DropdownToggle>
-        </TipArea>
-      </Dropdown>
+      {!props.combined &&
+        <Dropdown
+          content={
+            <>
+              {Object.values(RuleValue).map((item) => {
+                if (typeof item !== 'string') {
+                  return null
+                }
+                return (
+                  <DropdownItem
+                    value={item}
+                    key={item}
+                    onChange={(value) => handleChange(RuleValue[value as keyof typeof RuleValue], props.ruleValue.value.hasFlag)}
+                  >
+                    <div>{t(`Rule.${item}`)}</div>
+                  </DropdownItem>
+                )
+              })}
+            </>
+          }
+        >
+          <TipArea position={'right'} tooltip={t('RuleEditor.NoneFlagRuleTooltip')}>
+            <DropdownToggle style={DropdownToggleStyle}>
+              {t(
+                `Rule.${Object.keys(RuleValue).find((key) => RuleValue[key as keyof typeof RuleValue] === props.ruleValue.value.noFlag)}`,
+              )}
+            </DropdownToggle>
+          </TipArea>
+        </Dropdown>
+      }
       <Dropdown
         content={
           <>
