@@ -78,7 +78,7 @@ namespace RoadRule.Systems.Pathfind
                     }
                     Interlocked.Increment(ref ((int*)NativeArrayUnsafeUtility.GetUnsafePtr(m_RequestCount))[(int)minIndex]);
 
-                    m_EntityCommandBuffer.AddComponent(unfilteredChunkIndex, entity, new PathfindReprocessRequest { m_Frame = m_Frame + 8 + minIndex });
+                    m_EntityCommandBuffer.AddComponent(unfilteredChunkIndex, entity, new PathfindReprocessRequest { m_Frame = m_Frame + 64 + minIndex });
                 }
             }
         }
