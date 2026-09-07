@@ -68,35 +68,9 @@ public struct PatchedCarLaneSelectIterator
 
     private Entity m_PrevLane;
 
-    public Entity m_CarEntity;
-
     public ComponentLookup<Car> m_CarLookup;
 
-    public ComponentLookup<PrefabRef> m_PrefabRefLookup;
-
-    public ComponentLookup<CarData> m_PrefabCarDataLookup;
-
-    public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
-
-    public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
-
-    public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
-
-    public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
-
-    public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
-
-    public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
-
-    public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
-
-    public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
-
-    public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
-
-    public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
-
-    public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+    public LaneRulesUtils.CarParameters m_CarParameters;
 
     public void SetBuffer(ref CarLaneSelectBuffer buffer)
     {
@@ -437,27 +411,7 @@ public struct PatchedCarLaneSelectIterator
 
     private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
     {
-        LaneRulesUtils.CheckLaneRules(
-            laneRules,
-            m_CarEntity,
-            m_CarLookup,
-            m_PrefabRefLookup,
-            m_PrefabCarDataLookup,
-            m_AmbulanceLookup,
-            m_DeliveryTruckLookup,
-            m_FireEngineLookup,
-            m_GarbageTruckLookup,
-            m_HearseLookup,
-            m_MaintenanceVehicleLookup,
-            m_PersonalCarLookup,
-            m_PoliceCarLookup,
-            m_PostVanLookup,
-            m_PublicTransportLookup,
-            m_TaxiLookup,
-            out var isPrefer,
-            out var isForbidden,
-            out var isDisallow
-        );
+        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out var isPrefer, out var isForbidden, out var isDisallow);
 
         float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || isPrefer);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);

@@ -32,9 +32,6 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentTypeHandle<Target> m_TargetType;
 
-            [ReadOnly]
-            public ComponentTypeHandle<PathfindReprocessed> m_PathfindReprocessedType;
-
             public EntityCommandBuffer.ParallelWriter m_EntityCommandBuffer;
 
             public bool m_ForceMark;
@@ -48,22 +45,14 @@ namespace RoadRule.Systems.Pathfind
             {
                 NativeArray<Entity> entityArray = chunk.GetNativeArray(m_EntityType);
                 NativeArray<Target> targetArray = chunk.GetNativeArray(ref m_TargetType);
-                NativeArray<PathfindReprocessed> pathfindReprocessedArray = chunk.GetNativeArray(ref m_PathfindReprocessedType);
                 for (int i = 0; i < chunk.Count; i++)
                 {
                     var entity = entityArray[i];
                     var target = targetArray[i];
 
                     if (!m_ForceMark)
-                    { // 检查是否需要更新
-                        if (pathfindReprocessedArray.Length > 0)
-                        {
-                            var pathfindReprocessed = pathfindReprocessedArray[i];
-                            if (pathfindReprocessed.m_LastTargetEntity == target.m_Target)
-                            {
-                                continue;
-                            }
-                        }
+                    {
+                        continue;
                     }
 
                     uint minIndex = 0;
@@ -78,7 +67,7 @@ namespace RoadRule.Systems.Pathfind
                     }
                     Interlocked.Increment(ref ((int*)NativeArrayUnsafeUtility.GetUnsafePtr(m_RequestCount))[(int)minIndex]);
 
-                    m_EntityCommandBuffer.AddComponent(unfilteredChunkIndex, entity, new PathfindReprocessRequest { m_Frame = m_Frame + 64 + minIndex });
+                    m_EntityCommandBuffer.AddComponent(unfilteredChunkIndex, entity, new PathfindReprocessRequest { m_Frame = m_Frame + minIndex });
                 }
             }
         }
@@ -145,7 +134,6 @@ namespace RoadRule.Systems.Pathfind
                 {
                     m_EntityType = SystemAPI.GetEntityTypeHandle(),
                     m_TargetType = SystemAPI.GetComponentTypeHandle<Target>(true),
-                    m_PathfindReprocessedType = SystemAPI.GetComponentTypeHandle<PathfindReprocessed>(true),
                     m_EntityCommandBuffer = m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter(),
                     m_ForceMark = m_ForceMarkNext,
                     m_Frame = m_SimulationSystem.frameIndex,

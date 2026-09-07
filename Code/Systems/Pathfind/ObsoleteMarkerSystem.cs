@@ -61,7 +61,6 @@ namespace RoadRule.Systems.Pathfind
                     pathOwner.m_State |= PathFlags.Obsolete;
                     pathOwnerArray[i] = pathOwner;
 
-                    m_EntityCommandBuffer.AddComponent(unfilteredChunkIndex, entity, new PathfindReprocessed() { m_LastTargetEntity = target.m_Target });
                     m_EntityCommandBuffer.RemoveComponent<PathfindReprocessRequest>(unfilteredChunkIndex, entity);
                 }
             }

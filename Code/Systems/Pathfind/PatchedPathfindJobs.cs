@@ -199,49 +199,7 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<LaneRules> m_LaneRulesLookup;
 
-            [ReadOnly]
-            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Car> m_CarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<CarData> m_CarDataLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
-
-            public Entity m_Owner;
+            public LaneRulesUtils.CarParameters m_CarParameters;
 
             public void Initialize(
                 NativePathfindData pathfindData,
@@ -252,21 +210,7 @@ namespace RoadRule.Systems.Pathfind
                 float maxPassengerTransportSpeed,
                 float maxCargoTransportSpeed,
                 ComponentLookup<LaneRules> laneRulesLookup,
-                ComponentLookup<PrefabRef> prefabRefLookup,
-                ComponentLookup<Car> carLookup,
-                ComponentLookup<CarData> carDataLookup,
-                ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
-                ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
-                ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
-                ComponentLookup<Game.Vehicles.GarbageTruck> garbageTruckLookup,
-                ComponentLookup<Game.Vehicles.Hearse> hearseLookup,
-                ComponentLookup<Game.Vehicles.MaintenanceVehicle> maintenanceVehicleLookup,
-                ComponentLookup<Game.Vehicles.PersonalCar> personalCarLookup,
-                ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
-                ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
-                ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
-                ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
-                Entity owner
+                LaneRulesUtils.CarParameters carParameters
             )
             {
                 m_PathfindData = pathfindData.GetReadOnlyData();
@@ -355,21 +299,7 @@ namespace RoadRule.Systems.Pathfind
                 m_NodeIndex.Resize(num);
                 m_NodeIndexBits.Resize(num2, NativeArrayOptions.ClearMemory);
                 m_LaneRulesLookup = laneRulesLookup;
-                m_PrefabRefLookup = prefabRefLookup;
-                m_CarLookup = carLookup;
-                m_CarDataLookup = carDataLookup;
-                m_AmbulanceLookup = ambulanceLookup;
-                m_DeliveryTruckLookup = deliveryTruckLookup;
-                m_FireEngineLookup = fireEngineLookup;
-                m_GarbageTruckLookup = garbageTruckLookup;
-                m_HearseLookup = hearseLookup;
-                m_MaintenanceVehicleLookup = maintenanceVehicleLookup;
-                m_PersonalCarLookup = personalCarLookup;
-                m_PoliceCarLookup = policeCarLookup;
-                m_PostVanLookup = postVanLookup;
-                m_PublicTransportLookup = publicTransportLookup;
-                m_TaxiLookup = taxiLookup;
-                m_Owner = owner;
+                m_CarParameters = carParameters;
             }
 
             public void Release()
@@ -811,27 +741,14 @@ namespace RoadRule.Systems.Pathfind
                 bool isForbidden = false;
                 if (m_LaneRulesLookup.TryGetComponent(edgeEntity, out var laneRules))
                 {
-                    LaneRulesUtils.CheckLaneRules(
-                        laneRules,
-                        m_Owner,
-                        m_CarLookup,
-                        m_PrefabRefLookup,
-                        m_CarDataLookup,
-                        m_AmbulanceLookup,
-                        m_DeliveryTruckLookup,
-                        m_FireEngineLookup,
-                        m_GarbageTruckLookup,
-                        m_HearseLookup,
-                        m_MaintenanceVehicleLookup,
-                        m_PersonalCarLookup,
-                        m_PoliceCarLookup,
-                        m_PostVanLookup,
-                        m_PublicTransportLookup,
-                        m_TaxiLookup,
-                        out isPrefer,
-                        out isForbidden,
-                        out _
-                    );
+                    if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
+                    {
+                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out isPrefer, out isForbidden, out _);
+                    }
+                    else
+                    {
+                        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out isPrefer, out isForbidden, out _);
+                    }
                 }
 
                 float num = PathUtils.CalculateSpeed(in pathSpecification, in m_Parameters);
@@ -1283,27 +1200,14 @@ namespace RoadRule.Systems.Pathfind
                 bool isDisallow = false;
                 if (m_LaneRulesLookup.TryGetComponent(newOwner, out var laneRules))
                 {
-                    LaneRulesUtils.CheckLaneRules(
-                        laneRules,
-                        m_Owner,
-                        m_CarLookup,
-                        m_PrefabRefLookup,
-                        m_CarDataLookup,
-                        m_AmbulanceLookup,
-                        m_DeliveryTruckLookup,
-                        m_FireEngineLookup,
-                        m_GarbageTruckLookup,
-                        m_HearseLookup,
-                        m_MaintenanceVehicleLookup,
-                        m_PersonalCarLookup,
-                        m_PoliceCarLookup,
-                        m_PostVanLookup,
-                        m_PublicTransportLookup,
-                        m_TaxiLookup,
-                        out _,
-                        out _,
-                        out isDisallow
-                    );
+                    if ((newSpec.m_Methods & PathMethod.Taxi) != 0)
+                    {
+                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out _, out _, out isDisallow);
+                    }
+                    else
+                    {
+                        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out _, out _, out isDisallow);
+                    }
                 }
                 if (isDisallow)
                 {
@@ -1465,49 +1369,7 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<LaneRules> m_LaneRulesLookup;
 
-            [ReadOnly]
-            public ComponentLookup<PrefabRef> m_PrefabRefLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Car> m_CarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<CarData> m_CarDataLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
-
-            public Entity m_Owner;
+            public LaneRulesUtils.CarParameters m_CarParameters;
 
             public void Execute()
             {
@@ -1520,21 +1382,7 @@ namespace RoadRule.Systems.Pathfind
                     m_MaxCargoTransportSpeed,
                     ref m_Action.data,
                     m_LaneRulesLookup,
-                    m_PrefabRefLookup,
-                    m_CarLookup,
-                    m_CarDataLookup,
-                    m_AmbulanceLookup,
-                    m_DeliveryTruckLookup,
-                    m_FireEngineLookup,
-                    m_GarbageTruckLookup,
-                    m_HearseLookup,
-                    m_MaintenanceVehicleLookup,
-                    m_PersonalCarLookup,
-                    m_PoliceCarLookup,
-                    m_PostVanLookup,
-                    m_PublicTransportLookup,
-                    m_TaxiLookup,
-                    m_Owner
+                    m_CarParameters
                 );
             }
 
@@ -1547,21 +1395,7 @@ namespace RoadRule.Systems.Pathfind
                 float maxCargoTransportSpeed,
                 ref PathfindActionData actionData,
                 ComponentLookup<LaneRules> laneRulesLookup,
-                ComponentLookup<PrefabRef> prefabRefLookup,
-                ComponentLookup<Car> carLookup,
-                ComponentLookup<CarData> carDataLookup,
-                ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
-                ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
-                ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
-                ComponentLookup<Game.Vehicles.GarbageTruck> garbageTruckLookup,
-                ComponentLookup<Game.Vehicles.Hearse> hearseLookup,
-                ComponentLookup<Game.Vehicles.MaintenanceVehicle> maintenanceVehicleLookup,
-                ComponentLookup<Game.Vehicles.PersonalCar> personalCarLookup,
-                ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
-                ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
-                ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
-                ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
-                Entity owner
+                LaneRulesUtils.CarParameters carParameters
             )
             {
                 PathfindResult value = new PathfindResult
@@ -1602,21 +1436,7 @@ namespace RoadRule.Systems.Pathfind
                         maxPassengerTransportSpeed,
                         maxCargoTransportSpeed,
                         laneRulesLookup,
-                        prefabRefLookup,
-                        carLookup,
-                        carDataLookup,
-                        ambulanceLookup,
-                        deliveryTruckLookup,
-                        fireEngineLookup,
-                        garbageTruckLookup,
-                        hearseLookup,
-                        maintenanceVehicleLookup,
-                        personalCarLookup,
-                        policeCarLookup,
-                        postVanLookup,
-                        publicTransportLookup,
-                        taxiLookup,
-                        owner
+                        carParameters
                     );
                     pathfindExecutor.AddTargets(actionData.m_StartTargets, actionData.m_EndTargets, ref value.m_ErrorCode);
                     int endNode;

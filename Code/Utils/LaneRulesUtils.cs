@@ -1,5 +1,7 @@
 using System;
+using Colossal.Entities;
 using Game.Prefabs;
+using Game.Simulation;
 using Game.Vehicles;
 using RoadRule.Components;
 using Unity.Entities;
@@ -26,8 +28,36 @@ namespace RoadRule.Utils
             Taxi = 1 << 10,
         }
 
-        public static bool CheckLaneRules(
-            LaneRules laneRules,
+        public struct CarParameters
+        {
+            public bool isValid;
+            public CarFlags carFlags;
+            public SizeClass sizeClass;
+            public EnergyTypes energyTypes;
+            public VehicleTypeFlags vehicleTypeFlags;
+
+            public CarParameters(CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)
+            {
+                this.isValid = false;
+                this.carFlags = carFlags;
+                this.sizeClass = sizeClass;
+                this.energyTypes = energyTypes;
+                this.vehicleTypeFlags = vehicleTypeFlags;
+            }
+
+            public CarParameters()
+            {
+                this.isValid = false;
+                this.carFlags = 0;
+                this.sizeClass = SizeClass.Undefined;
+                this.energyTypes = EnergyTypes.None;
+                this.vehicleTypeFlags = VehicleTypeFlags.None;
+            }
+        }
+
+        public static readonly CarParameters TAXI_CAR_PARAMETERS = new CarParameters(0, SizeClass.Undefined, EnergyTypes.None, VehicleTypeFlags.Taxi) { isValid = true };
+
+        public static bool GetCarParameters(
             Entity carEntity,
             ComponentLookup<Car> carLookup,
             ComponentLookup<PrefabRef> prefabRefLookup,
@@ -43,78 +73,271 @@ namespace RoadRule.Utils
             ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
             ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
             ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
-            out bool isPrefer,
-            out bool isForbidden,
-            out bool isDisallow
+            out CarParameters carParameters
         )
         {
             if (
-                !carLookup.TryGetComponent(carEntity, out var car)
-                || !prefabRefLookup.TryGetComponent(carEntity, out var prefabRef)
-                || !carDataLookup.TryGetComponent(prefabRef.m_Prefab, out var carData)
+                carLookup.TryGetComponent(carEntity, out var car)
+                && prefabRefLookup.TryGetComponent(carEntity, out var prefabRef)
+                && carDataLookup.TryGetComponent(prefabRef.m_Prefab, out var carData)
             )
+            {
+                var vehicleTypeFlags = VehicleTypeFlags.None;
+                if (ambulanceLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.Ambulance;
+                }
+                if (deliveryTruckLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.DeliveryTruck;
+                }
+                if (fireEngineLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.FireEngine;
+                }
+                if (garbageTruckLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.GarbageTruck;
+                }
+                if (hearseLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.Hearse;
+                }
+                if (maintenanceVehicleLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.MaintenanceVehicle;
+                }
+                if (personalCarLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.PersonalCar;
+                }
+                if (policeCarLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.PoliceCar;
+                }
+                if (postVanLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.PostVan;
+                }
+                if (publicTransportLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.PublicTransport;
+                }
+                if (taxiLookup.HasComponent(carEntity))
+                {
+                    vehicleTypeFlags |= VehicleTypeFlags.Taxi;
+                }
+
+                carParameters = new CarParameters(car.m_Flags, carData.m_SizeClass, carData.m_EnergyType, vehicleTypeFlags) { isValid = true };
+                return true;
+            }
+
+            carParameters = new CarParameters();
+            return false;
+        }
+
+        public static bool FindCarEntity(
+            Entity requestOwner,
+            ComponentLookup<Car> carLookup,
+            ComponentLookup<PrefabRef> prefabRefLookup,
+            ComponentLookup<CarData> carDataLookup,
+            ComponentLookup<Game.Creatures.Resident> residentLookup,
+            ComponentLookup<Game.Citizens.CarKeeper> carKeeperLookup,
+            out Entity carEntity
+        )
+        {
+            if (carLookup.HasComponent(requestOwner) && prefabRefLookup.HasComponent(requestOwner) && carDataLookup.HasComponent(prefabRefLookup[requestOwner].m_Prefab))
+            {
+                // owner 是 car
+                carEntity = requestOwner;
+                return true;
+            }
+
+            if (carKeeperLookup.TryGetEnabledComponent(requestOwner, out var carKeeper))
+            {
+                // owner 是 citizen
+                carEntity = carKeeper.m_Car;
+                return true;
+            }
+
+            if (residentLookup.TryGetComponent(requestOwner, out var resident) && carKeeperLookup.TryGetEnabledComponent(resident.m_Citizen, out var residentCitizenCarKeeper))
+            {
+                // owner 是 resident
+                carEntity = residentCitizenCarKeeper.m_Car;
+                return true;
+            }
+
+            carEntity = Entity.Null;
+            return false;
+        }
+
+        public static bool FindCarParameters(
+            Entity requestOwner,
+            ComponentLookup<Car> carLookup,
+            ComponentLookup<PrefabRef> prefabRefLookup,
+            ComponentLookup<CarData> carDataLookup,
+            ComponentLookup<Game.Creatures.Resident> residentLookup,
+            ComponentLookup<Game.Citizens.CarKeeper> carKeeperLookup,
+            ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
+            ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
+            ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
+            ComponentLookup<Game.Vehicles.GarbageTruck> garbageTruckLookup,
+            ComponentLookup<Game.Vehicles.Hearse> hearseLookup,
+            ComponentLookup<Game.Vehicles.MaintenanceVehicle> maintenanceVehicleLookup,
+            ComponentLookup<Game.Vehicles.PersonalCar> personalCarLookup,
+            ComponentLookup<Game.Vehicles.PoliceCar> policeCarLookup,
+            ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
+            ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
+            ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
+            ComponentLookup<EvacuationRequest> evacuationRequestLookup,
+            ComponentLookup<FireRescueRequest> fireRescueRequestLookup,
+            ComponentLookup<GarbageCollectionRequest> garbageCollectionRequestLookup,
+            ComponentLookup<GarbageTransferRequest> garbageTransferRequestLookup,
+            ComponentLookup<GoodsDeliveryRequest> goodsDeliveryRequestLookup,
+            ComponentLookup<HealthcareRequest> healthcareRequestLookup,
+            ComponentLookup<MailTransferRequest> mailTransferRequestLookup,
+            ComponentLookup<MaintenanceRequest> maintenanceRequestLookup,
+            ComponentLookup<PoliceEmergencyRequest> policeEmergencyRequestLookup,
+            ComponentLookup<PolicePatrolRequest> policePatrolRequestLookup,
+            ComponentLookup<PostVanRequest> postVanRequestLookup,
+            ComponentLookup<PrisonerTransportRequest> prisonerTransportRequestLookup,
+            ComponentLookup<RandomTrafficRequest> randomTrafficRequestLookup,
+            ComponentLookup<TaxiRequest> taxiRequestLookup,
+            ComponentLookup<TransportVehicleRequest> transportVehicleRequestLookup,
+            out CarParameters carParameters
+        )
+        {
+            if (FindCarEntity(requestOwner, carLookup, prefabRefLookup, carDataLookup, residentLookup, carKeeperLookup, out var carEntity))
+            {
+                GetCarParameters(
+                    carEntity,
+                    carLookup,
+                    prefabRefLookup,
+                    carDataLookup,
+                    ambulanceLookup,
+                    deliveryTruckLookup,
+                    fireEngineLookup,
+                    garbageTruckLookup,
+                    hearseLookup,
+                    maintenanceVehicleLookup,
+                    personalCarLookup,
+                    policeCarLookup,
+                    postVanLookup,
+                    publicTransportLookup,
+                    taxiLookup,
+                    out carParameters
+                );
+                return carParameters.isValid;
+            }
+
+            CarFlags carFlags = 0;
+            var sizeClass = SizeClass.Undefined;
+            var energyTypes = EnergyTypes.None;
+            var vehicleTypeFlags = VehicleTypeFlags.None;
+            if (evacuationRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PublicTransport;
+            }
+            else if (fireRescueRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.FireEngine;
+            }
+            else if (garbageCollectionRequestLookup.HasComponent(requestOwner) || garbageTransferRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.GarbageTruck;
+            }
+            else if (goodsDeliveryRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.DeliveryTruck;
+            }
+            else if (healthcareRequestLookup.TryGetComponent(requestOwner, out var healthcareRequest))
+            {
+                if (healthcareRequest.m_Type == HealthcareRequestType.Ambulance)
+                {
+                    vehicleTypeFlags = VehicleTypeFlags.Ambulance;
+                }
+                else if (healthcareRequest.m_Type == HealthcareRequestType.Hearse)
+                {
+                    vehicleTypeFlags = VehicleTypeFlags.Hearse;
+                }
+            }
+            else if (mailTransferRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PostVan;
+            }
+            else if (maintenanceRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.MaintenanceVehicle;
+            }
+            else if (policeEmergencyRequestLookup.HasComponent(requestOwner) || policePatrolRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PoliceCar;
+            }
+            else if (postVanRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PostVan;
+            }
+            else if (prisonerTransportRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PublicTransport;
+            }
+            else if (randomTrafficRequestLookup.TryGetComponent(requestOwner, out var randomTrafficRequest))
+            {
+                sizeClass = randomTrafficRequest.m_SizeClass;
+                energyTypes = randomTrafficRequest.m_EnergyTypes;
+                if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.DeliveryTruck) != 0)
+                {
+                    vehicleTypeFlags = VehicleTypeFlags.DeliveryTruck;
+                }
+                else if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.TransportVehicle) != 0)
+                {
+                    vehicleTypeFlags = VehicleTypeFlags.PublicTransport;
+                }
+                else
+                {
+                    vehicleTypeFlags = VehicleTypeFlags.PersonalCar;
+                }
+            }
+            else if (taxiRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.Taxi;
+            }
+            else if (transportVehicleRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleTypeFlags.PublicTransport;
+            }
+            carParameters = new CarParameters();
+            if (vehicleTypeFlags != VehicleTypeFlags.None)
+            {
+                carParameters.carFlags = carFlags;
+                carParameters.sizeClass = sizeClass;
+                carParameters.energyTypes = energyTypes;
+                carParameters.vehicleTypeFlags = vehicleTypeFlags;
+                carParameters.isValid = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static void CheckLaneRules(LaneRules laneRules, CarParameters carParameters, out bool isPrefer, out bool isForbidden, out bool isDisallow)
+        {
+            if (!carParameters.isValid)
             {
                 isPrefer = false;
                 isForbidden = false;
                 isDisallow = false;
-                return false;
+                return;
             }
 
-            var carFlags = car.m_Flags;
-
-            var sizeClass = carData.m_SizeClass;
-            var energyTypes = carData.m_EnergyType;
-
-            var vehicleTypeFlags = VehicleTypeFlags.None;
-            if (ambulanceLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.Ambulance;
-            }
-            if (deliveryTruckLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.DeliveryTruck;
-            }
-            if (fireEngineLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.FireEngine;
-            }
-            if (garbageTruckLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.GarbageTruck;
-            }
-            if (hearseLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.Hearse;
-            }
-            if (maintenanceVehicleLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.MaintenanceVehicle;
-            }
-            if (personalCarLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.PersonalCar;
-            }
-            if (policeCarLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.PoliceCar;
-            }
-            if (postVanLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.PostVan;
-            }
-            if (publicTransportLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.PublicTransport;
-            }
-            if (taxiLookup.HasComponent(carEntity))
-            {
-                vehicleTypeFlags |= VehicleTypeFlags.Taxi;
-            }
+            var carFlags = carParameters.carFlags;
+            var sizeClass = carParameters.sizeClass;
+            var energyTypes = carParameters.energyTypes;
+            var vehicleTypeFlags = carParameters.vehicleTypeFlags;
 
             isPrefer = IsPrefer(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             isForbidden = IsForbidden(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             isDisallow = IsDisallow(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
-            return true;
         }
 
         public static bool IsPrefer(LaneRules laneRules, CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)

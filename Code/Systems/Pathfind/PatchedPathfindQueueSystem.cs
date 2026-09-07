@@ -50,6 +50,8 @@ namespace RoadRule.Systems.Pathfind
                 m_PrefabRefLookup = __instance.GetComponentLookup<PrefabRef>(true),
                 m_CarLookup = __instance.GetComponentLookup<Car>(true),
                 m_CarDataLookup = __instance.GetComponentLookup<CarData>(true),
+                m_ResidentLookup = __instance.GetComponentLookup<Game.Creatures.Resident>(true),
+                m_CarKeeperLookup = __instance.GetComponentLookup<Game.Citizens.CarKeeper>(true),
                 m_AmbulanceLookup = __instance.GetComponentLookup<Game.Vehicles.Ambulance>(true),
                 m_DeliveryTruckLookup = __instance.GetComponentLookup<Game.Vehicles.DeliveryTruck>(true),
                 m_FireEngineLookup = __instance.GetComponentLookup<Game.Vehicles.FireEngine>(true),
@@ -61,6 +63,21 @@ namespace RoadRule.Systems.Pathfind
                 m_PostVanLookup = __instance.GetComponentLookup<Game.Vehicles.PostVan>(true),
                 m_PublicTransportLookup = __instance.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
                 m_TaxiLookup = __instance.GetComponentLookup<Game.Vehicles.Taxi>(true),
+                m_EvacuationRequestLookup = __instance.GetComponentLookup<EvacuationRequest>(true),
+                m_FireRescueRequestLookup = __instance.GetComponentLookup<FireRescueRequest>(true),
+                m_GarbageCollectionRequestLookup = __instance.GetComponentLookup<GarbageCollectionRequest>(true),
+                m_GarbageTransferRequestLookup = __instance.GetComponentLookup<GarbageTransferRequest>(true),
+                m_GoodsDeliveryRequestLookup = __instance.GetComponentLookup<GoodsDeliveryRequest>(true),
+                m_HealthcareRequestLookup = __instance.GetComponentLookup<HealthcareRequest>(true),
+                m_MailTransferRequestLookup = __instance.GetComponentLookup<MailTransferRequest>(true),
+                m_MaintenanceRequestLookup = __instance.GetComponentLookup<MaintenanceRequest>(true),
+                m_PoliceEmergencyRequestLookup = __instance.GetComponentLookup<PoliceEmergencyRequest>(true),
+                m_PolicePatrolRequestLookup = __instance.GetComponentLookup<PolicePatrolRequest>(true),
+                m_PostVanRequestLookup = __instance.GetComponentLookup<PostVanRequest>(true),
+                m_PrisonerTransportRequestLookup = __instance.GetComponentLookup<PrisonerTransportRequest>(true),
+                m_RandomTrafficRequestLookup = __instance.GetComponentLookup<RandomTrafficRequest>(true),
+                m_TaxiRequestLookup = __instance.GetComponentLookup<TaxiRequest>(true),
+                m_TransportVehicleRequestLookup = __instance.GetComponentLookup<TransportVehicleRequest>(true),
             };
             instanceT
                 .Field("m_TransportLineSystem")
@@ -228,6 +245,12 @@ namespace RoadRule.Systems.Pathfind
             public ComponentLookup<CarData> m_CarDataLookup;
 
             [ReadOnly]
+            public ComponentLookup<Game.Creatures.Resident> m_ResidentLookup;
+
+            [ReadOnly]
+            public ComponentLookup<Game.Citizens.CarKeeper> m_CarKeeperLookup;
+
+            [ReadOnly]
             public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
 
             [ReadOnly]
@@ -259,6 +282,51 @@ namespace RoadRule.Systems.Pathfind
 
             [ReadOnly]
             public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
+
+            [ReadOnly]
+            public ComponentLookup<EvacuationRequest> m_EvacuationRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<FireRescueRequest> m_FireRescueRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<GarbageCollectionRequest> m_GarbageCollectionRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<GarbageTransferRequest> m_GarbageTransferRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<GoodsDeliveryRequest> m_GoodsDeliveryRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<HealthcareRequest> m_HealthcareRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<MailTransferRequest> m_MailTransferRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<MaintenanceRequest> m_MaintenanceRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PoliceEmergencyRequest> m_PoliceEmergencyRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PolicePatrolRequest> m_PolicePatrolRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PostVanRequest> m_PostVanRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<PrisonerTransportRequest> m_PrisonerTransportRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<RandomTrafficRequest> m_RandomTrafficRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TaxiRequest> m_TaxiRequestLookup;
+
+            [ReadOnly]
+            public ComponentLookup<TransportVehicleRequest> m_TransportVehicleRequestLookup;
 
             public unsafe void Execute()
             {
@@ -292,18 +360,13 @@ namespace RoadRule.Systems.Pathfind
 
             private void Execute(ref PathfindActionData actionData, int index, Allocator allocator, Entity owner)
             {
-                PatchedPathfindJobs.PatchedPathfindJob.Execute(
-                    m_PathfindData,
-                    allocator,
-                    m_RandomSeed.GetRandom(index),
-                    m_PathfindHeuristicData,
-                    m_MaxPassengerTransportSpeed,
-                    m_MaxCargoTransportSpeed,
-                    ref actionData,
-                    m_LaneRulesLookup,
-                    m_PrefabRefLookup,
+                LaneRulesUtils.FindCarParameters(
+                    owner,
                     m_CarLookup,
+                    m_PrefabRefLookup,
                     m_CarDataLookup,
+                    m_ResidentLookup,
+                    m_CarKeeperLookup,
                     m_AmbulanceLookup,
                     m_DeliveryTruckLookup,
                     m_FireEngineLookup,
@@ -315,7 +378,33 @@ namespace RoadRule.Systems.Pathfind
                     m_PostVanLookup,
                     m_PublicTransportLookup,
                     m_TaxiLookup,
-                    owner
+                    m_EvacuationRequestLookup,
+                    m_FireRescueRequestLookup,
+                    m_GarbageCollectionRequestLookup,
+                    m_GarbageTransferRequestLookup,
+                    m_GoodsDeliveryRequestLookup,
+                    m_HealthcareRequestLookup,
+                    m_MailTransferRequestLookup,
+                    m_MaintenanceRequestLookup,
+                    m_PoliceEmergencyRequestLookup,
+                    m_PolicePatrolRequestLookup,
+                    m_PostVanRequestLookup,
+                    m_PrisonerTransportRequestLookup,
+                    m_RandomTrafficRequestLookup,
+                    m_TaxiRequestLookup,
+                    m_TransportVehicleRequestLookup,
+                    out var carParameters
+                );
+                PatchedPathfindJobs.PatchedPathfindJob.Execute(
+                    m_PathfindData,
+                    allocator,
+                    m_RandomSeed.GetRandom(index),
+                    m_PathfindHeuristicData,
+                    m_MaxPassengerTransportSpeed,
+                    m_MaxCargoTransportSpeed,
+                    ref actionData,
+                    m_LaneRulesLookup,
+                    carParameters
                 );
                 Interlocked.MemoryBarrier();
                 actionData.m_State = PathfindActionState.Completed;

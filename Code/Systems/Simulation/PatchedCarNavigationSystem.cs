@@ -19,6 +19,7 @@ using Game.Simulation;
 using Game.Tools;
 using Game.Vehicles;
 using RoadRule.Components;
+using RoadRule.Utils;
 using Unity.Burst;
 using Unity.Burst.Intrinsics;
 using Unity.Collections;
@@ -1350,6 +1351,24 @@ namespace RoadRule.Systems.Simulation
                     currentLane.m_LaneFlags &= ~(Game.Vehicles.CarLaneFlags.FixedLane | Game.Vehicles.CarLaneFlags.IsBlocked);
                     currentLane.m_LaneFlags |= Game.Vehicles.CarLaneFlags.IgnoreBlocker;
                 }
+                LaneRulesUtils.GetCarParameters(
+                    entity,
+                    m_CarLookup,
+                    m_PrefabRefLookup,
+                    m_PrefabCarDataLookup,
+                    m_AmbulanceLookup,
+                    m_DeliveryTruckLookup,
+                    m_FireEngineLookup,
+                    m_GarbageTruckLookup,
+                    m_HearseLookup,
+                    m_MaintenanceVehicleLookup,
+                    m_PersonalCarLookup,
+                    m_PoliceCarLookup,
+                    m_PostVanLookup,
+                    m_PublicTransportLookup,
+                    m_TaxiLookup,
+                    out var carParameters
+                );
                 PatchedCarLaneSelectIterator carLaneSelectIterator = new PatchedCarLaneSelectIterator
                 {
                     m_OwnerData = m_OwnerData,
@@ -1370,21 +1389,8 @@ namespace RoadRule.Systems.Simulation
                     m_ForbidLaneFlags = VehicleUtils.GetForbiddenLaneFlags(car, isBicycle),
                     m_PreferLaneFlags = VehicleUtils.GetPreferredLaneFlags(car),
                     m_PathMethods = (isBicycle ? PathMethod.Bicycle : PathMethod.Road),
-                    m_CarEntity = entity,
                     m_CarLookup = m_CarLookup,
-                    m_PrefabCarDataLookup = m_PrefabCarDataLookup,
-                    m_PrefabRefLookup = m_PrefabRefLookup,
-                    m_AmbulanceLookup = m_AmbulanceLookup,
-                    m_DeliveryTruckLookup = m_DeliveryTruckLookup,
-                    m_FireEngineLookup = m_FireEngineLookup,
-                    m_GarbageTruckLookup = m_GarbageTruckLookup,
-                    m_HearseLookup = m_HearseLookup,
-                    m_MaintenanceVehicleLookup = m_MaintenanceVehicleLookup,
-                    m_PersonalCarLookup = m_PersonalCarLookup,
-                    m_PoliceCarLookup = m_PoliceCarLookup,
-                    m_PostVanLookup = m_PostVanLookup,
-                    m_PublicTransportLookup = m_PublicTransportLookup,
-                    m_TaxiLookup = m_TaxiLookup,
+                    m_CarParameters = carParameters,
                 };
                 carLaneSelectIterator.SetBuffer(ref laneSelectBuffer);
                 if (navigationLanes.Length != 0)
