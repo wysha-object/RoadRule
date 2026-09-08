@@ -91,47 +91,47 @@ namespace RoadRule.Utils
                 var vehicleTypeFlags = VehicleTypeFlags.None;
                 if (ambulanceLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.Ambulance;
+                    vehicleTypeFlags = VehicleTypeFlags.Ambulance;
                 }
-                if (deliveryTruckLookup.HasComponent(carEntity))
+                else if (deliveryTruckLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.DeliveryTruck;
+                    vehicleTypeFlags = VehicleTypeFlags.DeliveryTruck;
                 }
-                if (fireEngineLookup.HasComponent(carEntity))
+                else if (fireEngineLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.FireEngine;
+                    vehicleTypeFlags = VehicleTypeFlags.FireEngine;
                 }
-                if (garbageTruckLookup.HasComponent(carEntity))
+                else if (garbageTruckLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.GarbageTruck;
+                    vehicleTypeFlags = VehicleTypeFlags.GarbageTruck;
                 }
-                if (hearseLookup.HasComponent(carEntity))
+                else if (hearseLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.Hearse;
+                    vehicleTypeFlags = VehicleTypeFlags.Hearse;
                 }
-                if (maintenanceVehicleLookup.HasComponent(carEntity))
+                else if (maintenanceVehicleLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.MaintenanceVehicle;
+                    vehicleTypeFlags = VehicleTypeFlags.MaintenanceVehicle;
                 }
-                if (personalCarLookup.HasComponent(carEntity))
+                else if (personalCarLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.PersonalCar;
+                    vehicleTypeFlags = VehicleTypeFlags.PersonalCar;
                 }
-                if (policeCarLookup.HasComponent(carEntity))
+                else if (policeCarLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.PoliceCar;
+                    vehicleTypeFlags = VehicleTypeFlags.PoliceCar;
                 }
-                if (postVanLookup.HasComponent(carEntity))
+                else if (postVanLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.PostVan;
+                    vehicleTypeFlags = VehicleTypeFlags.PostVan;
                 }
-                if (publicTransportLookup.HasComponent(carEntity))
+                else if (publicTransportLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.PublicTransport;
+                    vehicleTypeFlags = VehicleTypeFlags.PublicTransport;
                 }
-                if (taxiLookup.HasComponent(carEntity))
+                else if (taxiLookup.HasComponent(carEntity))
                 {
-                    vehicleTypeFlags |= VehicleTypeFlags.Taxi;
+                    vehicleTypeFlags = VehicleTypeFlags.Taxi;
                 }
 
                 carParameters = new CarParameters(car.m_Flags, carData.m_SizeClass, carData.m_EnergyType, vehicleTypeFlags) { m_IsValid = true };
@@ -246,6 +246,7 @@ namespace RoadRule.Utils
             }
             else if (fireRescueRequestLookup.HasComponent(requestOwner))
             {
+                carFlags |= CarFlags.Emergency;
                 vehicleTypeFlags = VehicleTypeFlags.FireEngine;
             }
             else if (garbageCollectionRequestLookup.HasComponent(requestOwner) || garbageTransferRequestLookup.HasComponent(requestOwner))
@@ -260,6 +261,7 @@ namespace RoadRule.Utils
             {
                 if (healthcareRequest.m_Type == HealthcareRequestType.Ambulance)
                 {
+                    carFlags |= CarFlags.Emergency;
                     vehicleTypeFlags = VehicleTypeFlags.Ambulance;
                 }
                 else if (healthcareRequest.m_Type == HealthcareRequestType.Hearse)
@@ -275,7 +277,12 @@ namespace RoadRule.Utils
             {
                 vehicleTypeFlags = VehicleTypeFlags.MaintenanceVehicle;
             }
-            else if (policeEmergencyRequestLookup.HasComponent(requestOwner) || policePatrolRequestLookup.HasComponent(requestOwner))
+            else if (policeEmergencyRequestLookup.HasComponent(requestOwner))
+            {
+                carFlags |= CarFlags.Emergency;
+                vehicleTypeFlags = VehicleTypeFlags.PoliceCar;
+            }
+            else if (policePatrolRequestLookup.HasComponent(requestOwner))
             {
                 vehicleTypeFlags = VehicleTypeFlags.PoliceCar;
             }
