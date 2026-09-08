@@ -30,32 +30,38 @@ namespace RoadRule.Utils
 
         public struct CarParameters
         {
-            public bool isValid;
-            public CarFlags carFlags;
-            public SizeClass sizeClass;
-            public EnergyTypes energyTypes;
-            public VehicleTypeFlags vehicleTypeFlags;
+            public bool m_IsValid;
+            public CarFlags m_CarFlags;
+            public SizeClass m_SizeClass;
+            public EnergyTypes m_EnergyTypes;
+            public VehicleTypeFlags m_VehicleTypeFlags;
 
             public CarParameters(CarFlags carFlags, SizeClass sizeClass, EnergyTypes energyTypes, VehicleTypeFlags vehicleTypeFlags)
             {
-                this.isValid = false;
-                this.carFlags = carFlags;
-                this.sizeClass = sizeClass;
-                this.energyTypes = energyTypes;
-                this.vehicleTypeFlags = vehicleTypeFlags;
+                this.m_IsValid = false;
+                this.m_CarFlags = carFlags;
+                this.m_SizeClass = sizeClass;
+                this.m_EnergyTypes = energyTypes;
+                this.m_VehicleTypeFlags = vehicleTypeFlags;
             }
 
             public CarParameters()
             {
-                this.isValid = false;
-                this.carFlags = 0;
-                this.sizeClass = SizeClass.Undefined;
-                this.energyTypes = EnergyTypes.None;
-                this.vehicleTypeFlags = VehicleTypeFlags.None;
+                this.m_IsValid = false;
+                this.m_CarFlags = 0;
+                this.m_SizeClass = SizeClass.Undefined;
+                this.m_EnergyTypes = EnergyTypes.None;
+                this.m_VehicleTypeFlags = VehicleTypeFlags.None;
             }
         }
 
-        public static readonly CarParameters TAXI_CAR_PARAMETERS = new CarParameters(0, SizeClass.Undefined, EnergyTypes.None, VehicleTypeFlags.Taxi) { isValid = true };
+        /// 当处理`Road`边时, 如果之前没拿到`CarParameters`, 就使用这个默认参数.
+        public static readonly CarParameters FALLBACK_CAR_PARAMETERS = new CarParameters(0, SizeClass.Undefined, EnergyTypes.None, VehicleTypeFlags.PersonalCar)
+        {
+            m_IsValid = true,
+        };
+
+        public static readonly CarParameters TAXI_CAR_PARAMETERS = new CarParameters(0, SizeClass.Undefined, EnergyTypes.None, VehicleTypeFlags.Taxi) { m_IsValid = true };
 
         public static bool GetCarParameters(
             Entity carEntity,
@@ -128,7 +134,7 @@ namespace RoadRule.Utils
                     vehicleTypeFlags |= VehicleTypeFlags.Taxi;
                 }
 
-                carParameters = new CarParameters(car.m_Flags, carData.m_SizeClass, carData.m_EnergyType, vehicleTypeFlags) { isValid = true };
+                carParameters = new CarParameters(car.m_Flags, carData.m_SizeClass, carData.m_EnergyType, vehicleTypeFlags) { m_IsValid = true };
                 return true;
             }
 
@@ -227,7 +233,7 @@ namespace RoadRule.Utils
                     taxiLookup,
                     out carParameters
                 );
-                return carParameters.isValid;
+                return carParameters.m_IsValid;
             }
 
             CarFlags carFlags = 0;
@@ -309,11 +315,11 @@ namespace RoadRule.Utils
             carParameters = new CarParameters();
             if (vehicleTypeFlags != VehicleTypeFlags.None)
             {
-                carParameters.carFlags = carFlags;
-                carParameters.sizeClass = sizeClass;
-                carParameters.energyTypes = energyTypes;
-                carParameters.vehicleTypeFlags = vehicleTypeFlags;
-                carParameters.isValid = true;
+                carParameters.m_CarFlags = carFlags;
+                carParameters.m_SizeClass = sizeClass;
+                carParameters.m_EnergyTypes = energyTypes;
+                carParameters.m_VehicleTypeFlags = vehicleTypeFlags;
+                carParameters.m_IsValid = true;
                 return true;
             }
 
@@ -322,7 +328,7 @@ namespace RoadRule.Utils
 
         public static void CheckLaneRules(LaneRules laneRules, CarParameters carParameters, out bool isPrefer, out bool isForbidden, out bool isDisallow)
         {
-            if (!carParameters.isValid)
+            if (!carParameters.m_IsValid)
             {
                 isPrefer = false;
                 isForbidden = false;
@@ -330,10 +336,10 @@ namespace RoadRule.Utils
                 return;
             }
 
-            var carFlags = carParameters.carFlags;
-            var sizeClass = carParameters.sizeClass;
-            var energyTypes = carParameters.energyTypes;
-            var vehicleTypeFlags = carParameters.vehicleTypeFlags;
+            var carFlags = carParameters.m_CarFlags;
+            var sizeClass = carParameters.m_SizeClass;
+            var energyTypes = carParameters.m_EnergyTypes;
+            var vehicleTypeFlags = carParameters.m_VehicleTypeFlags;
 
             isPrefer = IsPrefer(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);
             isForbidden = IsForbidden(laneRules, carFlags, sizeClass, energyTypes, vehicleTypeFlags);

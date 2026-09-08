@@ -739,17 +739,7 @@ namespace RoadRule.Systems.Pathfind
             {
                 bool isPrefer = false;
                 bool isForbidden = false;
-                if (m_LaneRulesLookup.TryGetComponent(edgeEntity, out var laneRules))
-                {
-                    if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
-                    {
-                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out isPrefer, out isForbidden, out _);
-                    }
-                    else
-                    {
-                        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out isPrefer, out isForbidden, out _);
-                    }
-                }
+                CheckPathRules(edgeEntity, pathSpecification, out isPrefer, out isForbidden, out _);
 
                 float num = PathUtils.CalculateSpeed(in pathSpecification, in m_Parameters);
                 float num2 = delta.y - delta.x;
@@ -1198,17 +1188,7 @@ namespace RoadRule.Systems.Pathfind
             private bool DisallowConnection(PathMethod prevMethod, PathfindItemFlags itemFlags, in PathSpecification newSpec, ref EdgeFlags edgeFlags, Entity newOwner)
             {
                 bool isDisallow = false;
-                if (m_LaneRulesLookup.TryGetComponent(newOwner, out var laneRules))
-                {
-                    if ((newSpec.m_Methods & PathMethod.Taxi) != 0)
-                    {
-                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out _, out _, out isDisallow);
-                    }
-                    else
-                    {
-                        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out _, out _, out isDisallow);
-                    }
-                }
+                CheckPathRules(newOwner, newSpec, out _, out _, out isDisallow);
                 if (isDisallow)
                 {
                     return true;
@@ -1343,6 +1323,31 @@ namespace RoadRule.Systems.Pathfind
                     }
                 }
                 path.ElementAt(0).m_Flags |= PathElementFlags.PathStart;
+            }
+
+            private void CheckPathRules(Entity edgeEntity, PathSpecification pathSpecification, out bool isPrefer, out bool isForbidden, out bool isDisallow)
+            {
+                isPrefer = false;
+                isForbidden = false;
+                isDisallow = false;
+                if (m_LaneRulesLookup.TryGetComponent(edgeEntity, out var laneRules))
+                {
+                    if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
+                    {
+                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out isPrefer, out isForbidden, out isDisallow);
+                    }
+                    else if ((pathSpecification.m_Methods & (PathMethod.Road | PathMethod.MediumRoad)) != 0)
+                    {
+                        if (m_CarParameters.m_IsValid)
+                        {
+                            LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out isPrefer, out isForbidden, out isDisallow);
+                        }
+                        else
+                        {
+                            LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.FALLBACK_CAR_PARAMETERS, out isPrefer, out isForbidden, out isDisallow);
+                        }
+                    }
+                }
             }
         }
 
