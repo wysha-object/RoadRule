@@ -41,14 +41,11 @@ export interface SizeClassRulesValue {
   small: FieldValue<RuleOptionsValue>
   medium: FieldValue<RuleOptionsValue>
   large: FieldValue<RuleOptionsValue>
-  undefined: FieldValue<RuleOptionsValue>
 }
 
 export interface EnergyTypesRulesValue {
   fuel: FieldValue<RuleOptionsValue>
   electricity: FieldValue<RuleOptionsValue>
-  fuelAndElectricity: FieldValue<RuleOptionsValue>
-  none: FieldValue<RuleOptionsValue>
 }
 
 /// emergency vehicles: ambulance fireEngine policeCar

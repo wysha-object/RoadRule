@@ -6,7 +6,6 @@
     "EnergyTypes": "能源类型",
     "EnergyTypes.Electricity": "电力",
     "EnergyTypes.Fuel": "燃料",
-    "EnergyTypes.FuelAndElectricity": "混合动力",
     "MainPanel.ChooseEdge": "选择一条边",
     "MainPanel.ChooseLane": "选择一条车道",
     "MainPanel.ChooseMasterLane": "选择一侧",

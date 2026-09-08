@@ -6,7 +6,6 @@
     "EnergyTypes": "Energy Types",
     "EnergyTypes.Electricity": "Electricity",
     "EnergyTypes.Fuel": "Fuel",
-    "EnergyTypes.FuelAndElectricity": "Hybrid",
     "MainPanel.ChooseEdge": "Please choose an edge",
     "MainPanel.ChooseLane": "Please choose a lane",
     "MainPanel.ChooseMasterLane": "Please choose a side",

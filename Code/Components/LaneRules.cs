@@ -111,7 +111,6 @@ namespace RoadRule.Components
             public RuleOptions m_Small;
             public RuleOptions m_Medium;
             public RuleOptions m_Large;
-            public RuleOptions m_Undefined;
 
             public void Deserialize<TReader>(TReader reader)
                 where TReader : IReader
@@ -129,8 +128,7 @@ namespace RoadRule.Components
                     reader.Read(out int large);
                     m_Large = migrateRule(large);
 
-                    reader.Read(out int undefined);
-                    m_Undefined = migrateRule(undefined);
+                    reader.Read(out int _);
                 }
 
                 if (schemaVersion >= 2)
@@ -144,21 +142,22 @@ namespace RoadRule.Components
                     reader.Read(out byte large);
                     m_Large = (RuleOptions)large;
 
-                    reader.Read(out byte undefined);
-                    m_Undefined = (RuleOptions)undefined;
+                    if (schemaVersion == 2)
+                    {
+                        reader.Read(out byte _);
+                    }
                 }
             }
 
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 2;
+                ushort schemaVersion = 3;
                 writer.Write(schemaVersion);
 
                 writer.Write((byte)m_Small);
                 writer.Write((byte)m_Medium);
                 writer.Write((byte)m_Large);
-                writer.Write((byte)m_Undefined);
             }
         }
 
@@ -166,8 +165,6 @@ namespace RoadRule.Components
         {
             public RuleOptions m_Fuel;
             public RuleOptions m_Electricity;
-            public RuleOptions m_FuelAndElectricity;
-            public RuleOptions m_None;
 
             public void Deserialize<TReader>(TReader reader)
                 where TReader : IReader
@@ -182,11 +179,9 @@ namespace RoadRule.Components
                     reader.Read(out int electricity);
                     m_Electricity = migrateRule(electricity);
 
-                    reader.Read(out int fuelAndElectricity);
-                    m_FuelAndElectricity = migrateRule(fuelAndElectricity);
+                    reader.Read(out int _);
 
-                    reader.Read(out int none);
-                    m_None = migrateRule(none);
+                    reader.Read(out int _);
                 }
 
                 if (schemaVersion >= 2)
@@ -197,24 +192,22 @@ namespace RoadRule.Components
                     reader.Read(out byte electricity);
                     m_Electricity = (RuleOptions)electricity;
 
-                    reader.Read(out byte fuelAndElectricity);
-                    m_FuelAndElectricity = (RuleOptions)fuelAndElectricity;
-
-                    reader.Read(out byte none);
-                    m_None = (RuleOptions)none;
+                    if (schemaVersion == 2)
+                    {
+                        reader.Read(out byte _);
+                        reader.Read(out byte _);
+                    }
                 }
             }
 
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 2;
+                ushort schemaVersion = 3;
                 writer.Write(schemaVersion);
 
                 writer.Write((byte)m_Fuel);
                 writer.Write((byte)m_Electricity);
-                writer.Write((byte)m_FuelAndElectricity);
-                writer.Write((byte)m_None);
             }
         }
 

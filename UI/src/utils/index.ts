@@ -45,7 +45,6 @@ export function mergeSizeClassRules(
     small: mergeRuleValues(a.small, b.small),
     medium: mergeRuleValues(a.medium, b.medium),
     large: mergeRuleValues(a.large, b.large),
-    undefined: mergeRuleValues(a.undefined, b.undefined),
   }
 }
 
@@ -56,11 +55,6 @@ export function mergeEnergyTypesRules(
   return {
     fuel: mergeRuleValues(a.fuel, b.fuel),
     electricity: mergeRuleValues(a.electricity, b.electricity),
-    fuelAndElectricity: mergeRuleValues(
-      a.fuelAndElectricity,
-      b.fuelAndElectricity,
-    ),
-    none: mergeRuleValues(a.none, b.none),
   }
 }
 

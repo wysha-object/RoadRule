@@ -74,7 +74,6 @@ namespace RoadRule.Systems.UI
             public FieldValue<RuleOptionsValue> small;
             public FieldValue<RuleOptionsValue> medium;
             public FieldValue<RuleOptionsValue> large;
-            public FieldValue<RuleOptionsValue> undefined;
 
             public static SizeClassRulesValue FromSizeClassRules(LaneRules.SizeClassRules sizeClassRules)
             {
@@ -83,7 +82,6 @@ namespace RoadRule.Systems.UI
                     small = FromRule(sizeClassRules.m_Small),
                     medium = FromRule(sizeClassRules.m_Medium),
                     large = FromRule(sizeClassRules.m_Large),
-                    undefined = FromRule(sizeClassRules.m_Undefined),
                 };
             }
 
@@ -94,7 +92,6 @@ namespace RoadRule.Systems.UI
                     m_Small = ApplyRuleOptionsValue(sizeClassRules.m_Small, sizeClassFlagsRulesValue.small),
                     m_Medium = ApplyRuleOptionsValue(sizeClassRules.m_Medium, sizeClassFlagsRulesValue.medium),
                     m_Large = ApplyRuleOptionsValue(sizeClassRules.m_Large, sizeClassFlagsRulesValue.large),
-                    m_Undefined = ApplyRuleOptionsValue(sizeClassRules.m_Undefined, sizeClassFlagsRulesValue.undefined),
                 };
             }
 
@@ -105,7 +102,6 @@ namespace RoadRule.Systems.UI
                     small = MergeRuleValues(a.small, b.small),
                     medium = MergeRuleValues(a.medium, b.medium),
                     large = MergeRuleValues(a.large, b.large),
-                    undefined = MergeRuleValues(a.undefined, b.undefined),
                 };
             }
         }
@@ -114,18 +110,10 @@ namespace RoadRule.Systems.UI
         {
             public FieldValue<RuleOptionsValue> fuel;
             public FieldValue<RuleOptionsValue> electricity;
-            public FieldValue<RuleOptionsValue> fuelAndElectricity;
-            public FieldValue<RuleOptionsValue> none;
 
             public static EnergyTypesRulesValue FromEnergyTypesRules(LaneRules.EnergyTypesRules energyTypesRules)
             {
-                return new EnergyTypesRulesValue
-                {
-                    fuel = FromRule(energyTypesRules.m_Fuel),
-                    electricity = FromRule(energyTypesRules.m_Electricity),
-                    fuelAndElectricity = FromRule(energyTypesRules.m_FuelAndElectricity),
-                    none = FromRule(energyTypesRules.m_None),
-                };
+                return new EnergyTypesRulesValue { fuel = FromRule(energyTypesRules.m_Fuel), electricity = FromRule(energyTypesRules.m_Electricity) };
             }
 
             public static LaneRules.EnergyTypesRules ApplyEnergyTypesRulesValue(LaneRules.EnergyTypesRules energyTypesRules, EnergyTypesRulesValue energyTypesFlagsRulesValue)
@@ -134,20 +122,12 @@ namespace RoadRule.Systems.UI
                 {
                     m_Fuel = ApplyRuleOptionsValue(energyTypesRules.m_Fuel, energyTypesFlagsRulesValue.fuel),
                     m_Electricity = ApplyRuleOptionsValue(energyTypesRules.m_Electricity, energyTypesFlagsRulesValue.electricity),
-                    m_FuelAndElectricity = ApplyRuleOptionsValue(energyTypesRules.m_FuelAndElectricity, energyTypesFlagsRulesValue.fuelAndElectricity),
-                    m_None = ApplyRuleOptionsValue(energyTypesRules.m_None, energyTypesFlagsRulesValue.none),
                 };
             }
 
             public static EnergyTypesRulesValue MergeEnergyTypesRules(EnergyTypesRulesValue a, EnergyTypesRulesValue b)
             {
-                return new EnergyTypesRulesValue
-                {
-                    fuel = MergeRuleValues(a.fuel, b.fuel),
-                    electricity = MergeRuleValues(a.electricity, b.electricity),
-                    fuelAndElectricity = MergeRuleValues(a.fuelAndElectricity, b.fuelAndElectricity),
-                    none = MergeRuleValues(a.none, b.none),
-                };
+                return new EnergyTypesRulesValue { fuel = MergeRuleValues(a.fuel, b.fuel), electricity = MergeRuleValues(a.electricity, b.electricity) };
             }
         }
 

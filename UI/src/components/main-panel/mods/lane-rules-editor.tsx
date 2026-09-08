@@ -140,19 +140,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             })
           }}
         />
-        <RuleEditorRow
-          name={t('EnergyTypes.FuelAndElectricity')}
-          ruleValue={props.laneRulesValue.energyTypesRules.fuelAndElectricity}
-          onChange={(_, newValue) => {
-            props.onValueChange(props.laneRulesValue, {
-              ...props.laneRulesValue,
-              energyTypesRules: {
-                ...props.laneRulesValue.energyTypesRules,
-                fuelAndElectricity: newValue,
-              },
-            })
-          }}
-        />
       </PanelFoldout>
       <PanelFoldout header={t('VehicleTypes')} initialExpanded={true}>
         <PanelFoldout

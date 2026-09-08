@@ -369,14 +369,11 @@ namespace RoadRule.Utils
             bool isPreferSizeClass =
                 IsPrefer(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
                 || IsPrefer(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
-                || IsPrefer(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
-                || IsPrefer(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
+                || IsPrefer(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large);
 
             bool isPreferEnergyTypes =
                 IsPrefer(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
-                || IsPrefer(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
-                || IsPrefer(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
-                || IsPrefer(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
+                || IsPrefer(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity);
 
             bool isPreferVehicleType =
                 IsPrefer((int)VehicleTypeFlags.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
@@ -406,14 +403,11 @@ namespace RoadRule.Utils
             bool isForbiddenSizeClass =
                 IsForbidden(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
                 || IsForbidden(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
-                || IsForbidden(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
-                || IsForbidden(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
+                || IsForbidden(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large);
 
             bool isForbiddenEnergyTypes =
                 IsForbidden(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
-                || IsForbidden(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
-                || IsForbidden(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
-                || IsForbidden(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
+                || IsForbidden(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity);
 
             bool isForbiddenVehicleType =
                 IsForbidden((int)VehicleTypeFlags.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
@@ -438,14 +432,11 @@ namespace RoadRule.Utils
             bool isDisallowSizeClass =
                 IsDisallow(laneRules.m_SizeClassRules.m_Small, sizeClass == SizeClass.Small)
                 || IsDisallow(laneRules.m_SizeClassRules.m_Medium, sizeClass == SizeClass.Medium)
-                || IsDisallow(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large)
-                || IsDisallow(laneRules.m_SizeClassRules.m_Undefined, sizeClass == SizeClass.Undefined);
+                || IsDisallow(laneRules.m_SizeClassRules.m_Large, sizeClass == SizeClass.Large);
 
             bool isDisallowEnergyTypes =
                 IsDisallow(laneRules.m_EnergyTypesRules.m_Fuel, energyTypes == EnergyTypes.Fuel)
-                || IsDisallow(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity)
-                || IsDisallow(laneRules.m_EnergyTypesRules.m_FuelAndElectricity, energyTypes == EnergyTypes.FuelAndElectricity)
-                || IsDisallow(laneRules.m_EnergyTypesRules.m_None, energyTypes == EnergyTypes.None);
+                || IsDisallow(laneRules.m_EnergyTypesRules.m_Electricity, energyTypes == EnergyTypes.Electricity);
 
             bool isDisallowVehicleType =
                 IsDisallow((int)VehicleTypeFlags.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
