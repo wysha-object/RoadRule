@@ -1,5 +1,5 @@
 files:
-  - source: /Code/lang/en-US
+  - source: /Code/lang/en-US.json
     translation: /Code/lang/%locale%.json
 project_id: 929291
 api_token_env: "CROWDIN_PERSONAL_TOKEN"
