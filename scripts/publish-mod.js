@@ -53,7 +53,7 @@ if (args[0] === 'STABLE') {
   parsedPublishConfiguration['Publish']['ModVersion']['@_Value'] =
     `${parsedModConfiguration['version']}-beta.${date}+${commitHash}`
 }
-parsedModConfiguration['ChangeLog'] = changelog
+parsedPublishConfiguration['Publish']['ChangeLog'] = changelog
 
 const releaseVersion =
   parsedPublishConfiguration['Publish']['ModVersion']['@_Value']
@@ -62,6 +62,9 @@ publishConfiguration = new XMLBuilder({
   ignoreAttributes: false,
   format: true,
 }).build(parsedPublishConfiguration)
+
+console.log(`Release Version: ${releaseVersion}`)
+console.log(`Changelog: ${changelog}`)
 
 fs.writeFileSync(
   './Code/Properties/PublishConfiguration.xml',
