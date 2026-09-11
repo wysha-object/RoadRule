@@ -1,4 +1,5 @@
-import { XMLParser, XMLBuilder } from 'fast-xml-parser'
+import { XMLParser } from 'fast-xml-parser'
+import XMLBuilder from 'fast-xml-builder'
 import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 
