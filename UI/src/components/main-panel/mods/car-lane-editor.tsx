@@ -34,7 +34,7 @@ export default function CarLaneEditor(props: HTMLAttributes<HTMLDivElement> & {
                     valueSuffix={""}
                     defaultValue={defaultSpeedLimit}
                     min={30}
-                    max={300}
+                    max={200}
                     step={10}
                 />
             </PanelFoldout>

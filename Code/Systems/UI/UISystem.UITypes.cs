@@ -256,6 +256,7 @@ namespace RoadRule.Systems.UI
 
             public static CarLane ApplyLanePropertyValue(CarLane carLane, CarLaneValue lanePropertyValue)
             {
+                carLane.m_SpeedLimit = lanePropertyValue.speedLimit.state == FieldState.Applied ? lanePropertyValue.speedLimit.value / 1.8f : carLane.m_SpeedLimit;
                 carLane.m_DefaultSpeedLimit = lanePropertyValue.speedLimit.state == FieldState.Applied ? lanePropertyValue.speedLimit.value / 1.8f : carLane.m_DefaultSpeedLimit;
                 return carLane;
             }

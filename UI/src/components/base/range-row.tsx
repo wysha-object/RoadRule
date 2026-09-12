@@ -68,9 +68,9 @@ function Range(props: {
       let newValue =
         Math.round(
           (((clientX - sliderLeft) / sliderWidth) * (props.max - props.min)) /
-            props.step,
+          props.step,
         ) *
-          props.step +
+        props.step +
         props.min
       if (newValue < props.min) {
         newValue = props.min
@@ -165,8 +165,14 @@ export default function RangeRow(props: {
   const textFieldRegExp = useMemo(() => {
     return props.textFieldRegExp ? new RegExp(props.textFieldRegExp) : null
   }, [props.textFieldRegExp])
+  const draggingRef = useRef(false)
   const updateHandler = (value: number) => {
+    draggingRef.current = true
     setValue(value)
+  }
+  const changeHandler = (value: number) => {
+    draggingRef.current = false
+    props.onChange(value)
   }
   const enableTextField = () => {
     setTextFieldValue('')
@@ -199,9 +205,13 @@ export default function RangeRow(props: {
     setTextFieldActive(false)
     props.onChange(props.defaultValue)
   }
-  useEffect(() => {
+
+  const preValueRef = useRef(props.value)
+  if (preValueRef.current !== props.value || (!draggingRef.current && value !== props.value)) {
     setValue(props.value)
-  }, [props.value])
+    preValueRef.current = props.value
+  }
+
   return (
     <div className='row-with-hover-effect' style={{ flexDirection: 'column' }}>
       <div
@@ -216,8 +226,8 @@ export default function RangeRow(props: {
           <div style={{ flex: '1' }}>{props.label}</div>
           {!textFieldActive
             ? t(props.valuePrefix) +
-              `${Math.round(value * 100) / 100}` +
-              t(props.valueSuffix)
+            `${Math.round(value * 100) / 100}` +
+            t(props.valueSuffix)
             : ''}
         </div>
         {textFieldActive && (
@@ -263,7 +273,7 @@ export default function RangeRow(props: {
         max={props.max}
         step={props.step}
         value={props.value}
-        onChange={props.onChange}
+        onChange={changeHandler}
         onUpdate={updateHandler}
       />
     </div>
