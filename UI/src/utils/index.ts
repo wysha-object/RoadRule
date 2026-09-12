@@ -1,10 +1,7 @@
 import {
-  CarFlagsRulesValue,
-  EnergyTypesRulesValue,
   LaneRulesValue,
   FieldState,
   FieldValue,
-  SizeClassRulesValue,
   VehicleTypeRulesValue,
   CarLaneValue,
   RuleOptionsValue,
@@ -27,34 +24,6 @@ export function mergeRuleValues(
       hasFlag: Math.max(a.value.hasFlag, b.value.hasFlag),
     }
     return { state: FieldState.PartiallyApplied, value: mergedRule }
-  }
-}
-
-export function mergeCarFlagsRules(
-  a: CarFlagsRulesValue,
-  b: CarFlagsRulesValue,
-): CarFlagsRulesValue {
-  return { emergency: mergeRuleValues(a.emergency, b.emergency) }
-}
-
-export function mergeSizeClassRules(
-  a: SizeClassRulesValue,
-  b: SizeClassRulesValue,
-): SizeClassRulesValue {
-  return {
-    small: mergeRuleValues(a.small, b.small),
-    medium: mergeRuleValues(a.medium, b.medium),
-    large: mergeRuleValues(a.large, b.large),
-  }
-}
-
-export function mergeEnergyTypesRules(
-  a: EnergyTypesRulesValue,
-  b: EnergyTypesRulesValue,
-): EnergyTypesRulesValue {
-  return {
-    fuel: mergeRuleValues(a.fuel, b.fuel),
-    electricity: mergeRuleValues(a.electricity, b.electricity),
   }
 }
 
@@ -85,12 +54,6 @@ export function mergeLaneRules(
   b: LaneRulesValue,
 ): LaneRulesValue {
   return {
-    carFlagsRules: mergeCarFlagsRules(a.carFlagsRules, b.carFlagsRules),
-    sizeClassRules: mergeSizeClassRules(a.sizeClassRules, b.sizeClassRules),
-    energyTypesRules: mergeEnergyTypesRules(
-      a.energyTypesRules,
-      b.energyTypesRules,
-    ),
     vehicleTypeRules: mergeVehicleRules(a.vehicleTypeRules, b.vehicleTypeRules),
   }
 }
@@ -116,10 +79,6 @@ export function mergeCarLaneValues(
   b: CarLaneValue,
 ): CarLaneValue {
   return {
-    speedLimit: mergeSpeedLimitValues(a.speedLimit, b.speedLimit),
-    defaultSpeedLimit: mergeSpeedLimitValues(
-      a.defaultSpeedLimit,
-      b.defaultSpeedLimit,
-    ),
+    speedLimit: mergeSpeedLimitValues(a.speedLimit, b.speedLimit)
   }
 }

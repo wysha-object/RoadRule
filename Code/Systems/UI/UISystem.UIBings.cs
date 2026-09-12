@@ -4,13 +4,11 @@ using Colossal.Entities;
 using Colossal.UI.Binding;
 using Game.Common;
 using Game.Net;
-using Game.Pathfind;
+using Game.Prefabs;
 using Game.Rendering;
-using Game.Vehicles;
 using Newtonsoft.Json;
 using RoadRule.Components;
 using Unity.Entities;
-using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -19,11 +17,11 @@ namespace RoadRule.Systems.UI
     public partial class UISystem
     {
         private ValueBinding<int> m_GetToolStateBinding;
-        private GetterValueBinding<string> m_LocalisationBinding;
         private GetterValueBinding<string> m_GetCameraBinding;
         private GetterValueBinding<string> m_GetLanesBinding;
         private GetterValueBinding<string> m_GetSelectedLaneIndexBinding;
         private GetterValueBinding<string> m_GetSelectedEdgeBinding;
+        private GetterValueBinding<string> m_GetCompositionBinding;
 
         private void AddUIBindings()
         {
@@ -109,7 +107,7 @@ namespace RoadRule.Systems.UI
                                     {
                                         laneRules = new LaneRules();
                                     }
-                                    if (!EntityManager.TryGetComponent<CarLane>(subLaneEntity, out var carLane))
+                                    if (!EntityManager.TryGetComponent<Game.Net.CarLane>(subLaneEntity, out var carLane))
                                     {
                                         return JsonConvert.SerializeObject(new Dictionary<int, object>());
                                     }
@@ -144,7 +142,7 @@ namespace RoadRule.Systems.UI
 
                             if (
                                 !EntityManager.TryGetComponent<Curve>(kvp.Value.m_MasterLaneEntities[0], out var masterCurve)
-                                || !EntityManager.TryGetComponent<CarLane>(kvp.Value.m_MasterLaneEntities[0], out var masterCarLane)
+                                || !EntityManager.TryGetComponent<Game.Net.CarLane>(kvp.Value.m_MasterLaneEntities[0], out var masterCarLane)
                             )
                             {
                                 return JsonConvert.SerializeObject(new Dictionary<int, object>());
@@ -242,6 +240,21 @@ namespace RoadRule.Systems.UI
                     }
                 )
             );
+            AddBinding(
+                m_GetCompositionBinding = new GetterValueBinding<string>(
+                    "RoadRule",
+                    "GetComposition",
+                    () =>
+                    {
+                        float speedLimit = 60f;
+                        if (EntityManager.TryGetComponent<RoadComposition>(m_CompositionEdgePrefabEntity, out var composition))
+                        {
+                            speedLimit = composition.m_SpeedLimit * 1.8f;
+                        }
+                        return JsonConvert.SerializeObject(new { speedLimit = speedLimit });
+                    }
+                )
+            );
 
             AddBinding(
                 new CallBinding<int, string>(
@@ -306,12 +319,13 @@ namespace RoadRule.Systems.UI
                             var value = JsonConvert.DeserializeAnonymousType(inputValue.value, new CarLaneValue());
                             foreach (var e in laneIndexDictionary[inputValue.laneIndex])
                             {
-                                if (!EntityManager.TryGetComponent<CarLane>(e, out var carLane))
+                                if (!EntityManager.TryGetComponent<Game.Net.CarLane>(e, out var carLane))
                                 {
                                     return "";
                                 }
                                 carLane = CarLaneValue.ApplyLanePropertyValue(carLane, value);
                                 EntityManager.SetComponentData(e, carLane);
+                                EntityManager.AddComponentData(e, new Updated());
                             }
                         }
                         else

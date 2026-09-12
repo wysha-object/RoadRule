@@ -33,21 +33,6 @@ export interface FieldValue<T> {
   value: T
 }
 
-export interface CarFlagsRulesValue {
-  emergency: FieldValue<RuleOptionsValue>
-}
-
-export interface SizeClassRulesValue {
-  small: FieldValue<RuleOptionsValue>
-  medium: FieldValue<RuleOptionsValue>
-  large: FieldValue<RuleOptionsValue>
-}
-
-export interface EnergyTypesRulesValue {
-  fuel: FieldValue<RuleOptionsValue>
-  electricity: FieldValue<RuleOptionsValue>
-}
-
 /// emergency vehicles: ambulance fireEngine policeCar
 /// service vehicles: garbageTruck hearse maintenanceVehicle postVan
 /// public vehicles: publicTransport taxi
@@ -67,15 +52,11 @@ export interface VehicleTypeRulesValue {
 }
 
 export interface LaneRulesValue {
-  carFlagsRules: CarFlagsRulesValue
-  sizeClassRules: SizeClassRulesValue
-  energyTypesRules: EnergyTypesRulesValue
   vehicleTypeRules: VehicleTypeRulesValue
 }
 
 export interface CarLaneValue {
   speedLimit: FieldValue<number>
-  defaultSpeedLimit: FieldValue<number>
 }
 
 export interface Lane {
@@ -101,4 +82,8 @@ export interface Position {
 export interface ScreenPoint {
   top: number
   left: number
+}
+
+export interface Composition {
+  speedLimit: number
 }

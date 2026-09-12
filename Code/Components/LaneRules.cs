@@ -74,7 +74,7 @@ namespace RoadRule.Components
             HasFlagDisallow = 3,
         }
 
-        public struct CarFlagsRules : ISerializable
+        private struct CarFlagsRules : ISerializable
         {
             public RuleOptions m_Emergency;
 
@@ -99,14 +99,11 @@ namespace RoadRule.Components
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 2;
-                writer.Write(schemaVersion);
-
-                writer.Write((byte)m_Emergency);
+                throw new System.NotImplementedException();
             }
         }
 
-        public struct SizeClassRules : ISerializable
+        private struct SizeClassRules : ISerializable
         {
             public RuleOptions m_Small;
             public RuleOptions m_Medium;
@@ -152,16 +149,11 @@ namespace RoadRule.Components
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 3;
-                writer.Write(schemaVersion);
-
-                writer.Write((byte)m_Small);
-                writer.Write((byte)m_Medium);
-                writer.Write((byte)m_Large);
+                throw new System.NotImplementedException();
             }
         }
 
-        public struct EnergyTypesRules : ISerializable
+        private struct EnergyTypesRules : ISerializable
         {
             public RuleOptions m_Fuel;
             public RuleOptions m_Electricity;
@@ -203,11 +195,7 @@ namespace RoadRule.Components
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 3;
-                writer.Write(schemaVersion);
-
-                writer.Write((byte)m_Fuel);
-                writer.Write((byte)m_Electricity);
+                throw new System.NotImplementedException();
             }
         }
 
@@ -307,9 +295,6 @@ namespace RoadRule.Components
             }
         }
 
-        public CarFlagsRules m_CarFlagsRules;
-        public SizeClassRules m_SizeClassRules;
-        public EnergyTypesRules m_EnergyTypesRules;
         public VehicleTypeRules m_VehicleType;
 
         public void Deserialize<TReader>(TReader reader)
@@ -317,9 +302,12 @@ namespace RoadRule.Components
         {
             reader.Read(out ushort schemaVersion);
 
-            reader.Read(out m_CarFlagsRules);
-            reader.Read(out m_SizeClassRules);
-            reader.Read(out m_EnergyTypesRules);
+            if (schemaVersion <= 2)
+            {
+                reader.Read(out CarFlagsRules _);
+                reader.Read(out SizeClassRules _);
+                reader.Read(out EnergyTypesRules _);
+            }
 
             if (schemaVersion >= 2)
             {
@@ -330,12 +318,9 @@ namespace RoadRule.Components
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            ushort schemaVersion = 2;
+            ushort schemaVersion = 3;
             writer.Write(schemaVersion);
 
-            writer.Write(m_CarFlagsRules);
-            writer.Write(m_SizeClassRules);
-            writer.Write(m_EnergyTypesRules);
             writer.Write(m_VehicleType);
         }
     }

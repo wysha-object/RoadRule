@@ -1,0 +1,3 @@
+- Remove "Car Flags", "Energy Types", and "Size Class"
+- Ensure that speed limits can be applied
+- Disable "Lane" panel when is unavailable

@@ -6,11 +6,12 @@ import { Button, Tooltip } from 'cs2/ui'
 import {
   clearSelectedLaneIndex,
   setToolStateCmd,
+  useGetLanesCmd,
   useGetToolStateCmd,
 } from 'hooks/cmd'
 import { useTranslate } from 'hooks/translate'
 import MainPanel from 'pages/main-panel'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { LaneRulesValue, ToolState, UIToolMode } from 'types'
 
 const register: ModRegistrar = (moduleRegistry) => {
@@ -21,8 +22,18 @@ function App() {
   const { t } = useTranslate()
 
   const toolState = useGetToolStateCmd()
-  const [mode, setMode] = useState<UIToolMode>(UIToolMode.Lane)
+  const masterMap = useGetLanesCmd()
+  const [mode, setMode] = useState<UIToolMode>(UIToolMode.MasterLane)
   const [laneRulesValue, setLaneRulesValue] = useState<LaneRulesValue | null>(null)
+
+  const prevModeRef = useRef<UIToolMode>(mode)
+  if (prevModeRef.current !== mode) {
+    prevModeRef.current = mode
+
+    if (mode === UIToolMode.Lane && Object.values(masterMap).map(item => item.lanes).flat().length === 0) {
+      setMode(UIToolMode.MasterLane)
+    }
+  }
 
   const floatingButtonClickHandler = useCallback(() => {
     if (toolState !== ToolState.Disabled) {

@@ -8,7 +8,7 @@ import LaneList from './mods/lane-list'
 import { useTranslate } from 'hooks/translate'
 import { mergeCarLaneValues, mergeLaneRules } from 'utils'
 import { CarLaneValue, LaneRulesValue, UIToolMode } from 'types'
-import RulesEditor from './mods/lane-rules-editor'
+import RulesEditor from './mods/rules-editor'
 import BasePage from 'components/base/base-page'
 import { Button, Scrollable } from 'cs2/ui'
 import { RulesClipboardContext, UIToolModeContext } from 'context'
@@ -22,8 +22,8 @@ export default function RightPage() {
 
   const masterMap = useGetLanesCmd()
   const selectedLaneIndex = useGetSelectedLaneIndexCmd()
-  let laneRulesValue: LaneRulesValue | undefined = undefined
   let carLaneValue: CarLaneValue | undefined = undefined
+  let laneRulesValue: LaneRulesValue | undefined = undefined
   if (mode === UIToolMode.Lane) {
     for (const lane of Object.values(masterMap)
       .map((item) => item.lanes)
@@ -32,23 +32,12 @@ export default function RightPage() {
         continue
       }
 
-      if (laneRulesValue === undefined) {
+      if (carLaneValue === undefined || laneRulesValue === undefined) {
+        carLaneValue = lane.carLane
         laneRulesValue = lane.laneRules
       } else {
-        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
-      }
-    }
-    for (const lane of Object.values(masterMap)
-      .map((item) => [...item.lanes, item.masterLane])
-      .flat()) {
-      if (!selectedLaneIndex.includes(lane.laneIndex)) {
-        continue
-      }
-
-      if (carLaneValue === undefined) {
-        carLaneValue = lane.carLane
-      } else {
         carLaneValue = mergeCarLaneValues(carLaneValue, lane.carLane)
+        laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
       }
     }
   } else {
@@ -59,9 +48,11 @@ export default function RightPage() {
         continue
       }
 
-      if (laneRulesValue === undefined) {
+      if (carLaneValue === undefined || laneRulesValue === undefined) {
+        carLaneValue = lane.carLane
         laneRulesValue = lane.laneRules
       } else {
+        carLaneValue = mergeCarLaneValues(carLaneValue, lane.carLane)
         laneRulesValue = mergeLaneRules(laneRulesValue, lane.laneRules)
       }
     }
@@ -149,6 +140,7 @@ export default function RightPage() {
 
 function Header() {
   const { t } = useTranslate()
+  const masterMap = useGetLanesCmd()
   const [mode, setMode] = useContext(UIToolModeContext)
   return (
     <div
@@ -185,6 +177,7 @@ function Header() {
         variant='flat'
         className='top-option-button'
         onClick={() => setMode(UIToolMode.Lane)}
+        disabled={Object.values(masterMap).map(item => item.lanes).flat().length === 0}
       >
         {t('MainPanel.Lane')}
       </Button>

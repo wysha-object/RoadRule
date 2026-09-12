@@ -1,6 +1,5 @@
 import { useValue, bindValue, call } from 'cs2/api'
-import { Entity } from 'cs2/utils'
-import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue } from 'types'
+import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition } from 'types'
 
 export function useGetToolStateCmd(): ToolState {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetToolState')))
@@ -26,6 +25,9 @@ export function useGetSelectedLaneIndexCmd(): number[] {
 }
 export function useGetSelectedEdgeEntityCmd(): Edge[] {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetSelectedEdge')))
+}
+export function useGetCompositionCmd(): Composition {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetComposition')))
 }
 
 export async function setToolStateCmd(inputValue: ToolState): Promise<void> {

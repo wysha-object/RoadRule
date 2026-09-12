@@ -49,88 +49,6 @@ namespace RoadRule.Systems.UI
             public T value;
         }
 
-        private struct CarFlagsRulesValue
-        {
-            public FieldValue<RuleOptionsValue> emergency;
-
-            public static CarFlagsRulesValue FromCarFlagsRules(LaneRules.CarFlagsRules carFlagsRules)
-            {
-                return new CarFlagsRulesValue { emergency = FromRule(carFlagsRules.m_Emergency) };
-            }
-
-            public static LaneRules.CarFlagsRules ApplyCarFlagsRulesValue(LaneRules.CarFlagsRules carFlagsRules, CarFlagsRulesValue carFlagsRulesValue)
-            {
-                return new LaneRules.CarFlagsRules { m_Emergency = ApplyRuleOptionsValue(carFlagsRules.m_Emergency, carFlagsRulesValue.emergency) };
-            }
-
-            public static CarFlagsRulesValue MergeCarFlagsRules(CarFlagsRulesValue a, CarFlagsRulesValue b)
-            {
-                return new CarFlagsRulesValue { emergency = MergeRuleValues(a.emergency, b.emergency) };
-            }
-        }
-
-        private struct SizeClassRulesValue
-        {
-            public FieldValue<RuleOptionsValue> small;
-            public FieldValue<RuleOptionsValue> medium;
-            public FieldValue<RuleOptionsValue> large;
-
-            public static SizeClassRulesValue FromSizeClassRules(LaneRules.SizeClassRules sizeClassRules)
-            {
-                return new SizeClassRulesValue
-                {
-                    small = FromRule(sizeClassRules.m_Small),
-                    medium = FromRule(sizeClassRules.m_Medium),
-                    large = FromRule(sizeClassRules.m_Large),
-                };
-            }
-
-            public static LaneRules.SizeClassRules ApplySizeClassRulesValue(LaneRules.SizeClassRules sizeClassRules, SizeClassRulesValue sizeClassFlagsRulesValue)
-            {
-                return new LaneRules.SizeClassRules
-                {
-                    m_Small = ApplyRuleOptionsValue(sizeClassRules.m_Small, sizeClassFlagsRulesValue.small),
-                    m_Medium = ApplyRuleOptionsValue(sizeClassRules.m_Medium, sizeClassFlagsRulesValue.medium),
-                    m_Large = ApplyRuleOptionsValue(sizeClassRules.m_Large, sizeClassFlagsRulesValue.large),
-                };
-            }
-
-            public static SizeClassRulesValue MergeSizeClassRules(SizeClassRulesValue a, SizeClassRulesValue b)
-            {
-                return new SizeClassRulesValue
-                {
-                    small = MergeRuleValues(a.small, b.small),
-                    medium = MergeRuleValues(a.medium, b.medium),
-                    large = MergeRuleValues(a.large, b.large),
-                };
-            }
-        }
-
-        private struct EnergyTypesRulesValue
-        {
-            public FieldValue<RuleOptionsValue> fuel;
-            public FieldValue<RuleOptionsValue> electricity;
-
-            public static EnergyTypesRulesValue FromEnergyTypesRules(LaneRules.EnergyTypesRules energyTypesRules)
-            {
-                return new EnergyTypesRulesValue { fuel = FromRule(energyTypesRules.m_Fuel), electricity = FromRule(energyTypesRules.m_Electricity) };
-            }
-
-            public static LaneRules.EnergyTypesRules ApplyEnergyTypesRulesValue(LaneRules.EnergyTypesRules energyTypesRules, EnergyTypesRulesValue energyTypesFlagsRulesValue)
-            {
-                return new LaneRules.EnergyTypesRules
-                {
-                    m_Fuel = ApplyRuleOptionsValue(energyTypesRules.m_Fuel, energyTypesFlagsRulesValue.fuel),
-                    m_Electricity = ApplyRuleOptionsValue(energyTypesRules.m_Electricity, energyTypesFlagsRulesValue.electricity),
-                };
-            }
-
-            public static EnergyTypesRulesValue MergeEnergyTypesRules(EnergyTypesRulesValue a, EnergyTypesRulesValue b)
-            {
-                return new EnergyTypesRulesValue { fuel = MergeRuleValues(a.fuel, b.fuel), electricity = MergeRuleValues(a.electricity, b.electricity) };
-            }
-        }
-
         private struct VehicleTypeRulesValue
         {
             public FieldValue<RuleOptionsValue> ambulance;
@@ -202,42 +120,21 @@ namespace RoadRule.Systems.UI
 
         private struct LaneRulesValue
         {
-            public CarFlagsRulesValue carFlagsRules;
-            public SizeClassRulesValue sizeClassRules;
-            public EnergyTypesRulesValue energyTypesRules;
             public VehicleTypeRulesValue vehicleTypeRules;
 
             public static LaneRulesValue FromRules(LaneRules rules)
             {
-                return new LaneRulesValue
-                {
-                    carFlagsRules = CarFlagsRulesValue.FromCarFlagsRules(rules.m_CarFlagsRules),
-                    sizeClassRules = SizeClassRulesValue.FromSizeClassRules(rules.m_SizeClassRules),
-                    energyTypesRules = EnergyTypesRulesValue.FromEnergyTypesRules(rules.m_EnergyTypesRules),
-                    vehicleTypeRules = VehicleTypeRulesValue.FromVehicleTypeRules(rules.m_VehicleType),
-                };
+                return new LaneRulesValue { vehicleTypeRules = VehicleTypeRulesValue.FromVehicleTypeRules(rules.m_VehicleType) };
             }
 
             public static LaneRules ApplyRulesValue(LaneRules laneRules, LaneRulesValue rulesValue)
             {
-                return new LaneRules
-                {
-                    m_CarFlagsRules = CarFlagsRulesValue.ApplyCarFlagsRulesValue(laneRules.m_CarFlagsRules, rulesValue.carFlagsRules),
-                    m_SizeClassRules = SizeClassRulesValue.ApplySizeClassRulesValue(laneRules.m_SizeClassRules, rulesValue.sizeClassRules),
-                    m_EnergyTypesRules = EnergyTypesRulesValue.ApplyEnergyTypesRulesValue(laneRules.m_EnergyTypesRules, rulesValue.energyTypesRules),
-                    m_VehicleType = VehicleTypeRulesValue.ApplyVehicleTypeRulesValue(laneRules.m_VehicleType, rulesValue.vehicleTypeRules),
-                };
+                return new LaneRules { m_VehicleType = VehicleTypeRulesValue.ApplyVehicleTypeRulesValue(laneRules.m_VehicleType, rulesValue.vehicleTypeRules) };
             }
 
             public static LaneRulesValue MergeRulesValues(LaneRulesValue a, LaneRulesValue b)
             {
-                return new LaneRulesValue
-                {
-                    carFlagsRules = CarFlagsRulesValue.MergeCarFlagsRules(a.carFlagsRules, b.carFlagsRules),
-                    sizeClassRules = SizeClassRulesValue.MergeSizeClassRules(a.sizeClassRules, b.sizeClassRules),
-                    energyTypesRules = EnergyTypesRulesValue.MergeEnergyTypesRules(a.energyTypesRules, b.energyTypesRules),
-                    vehicleTypeRules = VehicleTypeRulesValue.MergeVehicleTypeRules(a.vehicleTypeRules, b.vehicleTypeRules),
-                };
+                return new LaneRulesValue { vehicleTypeRules = VehicleTypeRulesValue.MergeVehicleTypeRules(a.vehicleTypeRules, b.vehicleTypeRules) };
             }
         }
 
@@ -349,33 +246,29 @@ namespace RoadRule.Systems.UI
 
         private struct CarLaneValue
         {
+            /// Game lane speed uses 2x m/s; km/h converts by / 1.8.
             public FieldValue<float> speedLimit;
-            public FieldValue<float> defaultSpeedLimit;
 
             public static CarLaneValue FromCarLane(CarLane carLane)
             {
-                return new CarLaneValue { speedLimit = FromSpeedLimit(carLane.m_SpeedLimit), defaultSpeedLimit = FromSpeedLimit(carLane.m_DefaultSpeedLimit) };
+                return new CarLaneValue { speedLimit = FromSpeedLimit(carLane.m_SpeedLimit) };
             }
 
             public static CarLane ApplyLanePropertyValue(CarLane carLane, CarLaneValue lanePropertyValue)
             {
-                carLane.m_SpeedLimit = lanePropertyValue.speedLimit.state == FieldState.Applied ? lanePropertyValue.speedLimit.value : carLane.m_SpeedLimit;
+                carLane.m_DefaultSpeedLimit = lanePropertyValue.speedLimit.state == FieldState.Applied ? lanePropertyValue.speedLimit.value / 1.8f : carLane.m_DefaultSpeedLimit;
                 return carLane;
             }
 
             public static CarLaneValue MergeLanePropertyValues(CarLaneValue a, CarLaneValue b)
             {
-                return new CarLaneValue
-                {
-                    speedLimit = MergeSpeedLimitValues(a.speedLimit, b.speedLimit),
-                    defaultSpeedLimit = MergeSpeedLimitValues(a.defaultSpeedLimit, b.defaultSpeedLimit),
-                };
+                return new CarLaneValue { speedLimit = MergeSpeedLimitValues(a.speedLimit, b.speedLimit) };
             }
         }
 
         private static FieldValue<float> FromSpeedLimit(float speedLimit)
         {
-            return new FieldValue<float> { state = FieldState.Applied, value = speedLimit };
+            return new FieldValue<float> { state = FieldState.Applied, value = speedLimit * 1.8f };
         }
 
         private static FieldValue<float> MergeSpeedLimitValues(FieldValue<float> a, FieldValue<float> b)

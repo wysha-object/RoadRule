@@ -47,6 +47,7 @@ Wherever you report an issue, please make sure to describe it clearly.
 
 ## Credits
 
+* **River-Mochi**: Referenced [River-Mochi/CS2-AllSpeedLimits](https://github.com/River-Mochi/CS2-AllSpeedLimits)'s method for converting Game lane speed units to km/h.
 * **krzychu124**: Provided guidance.
 
     </LongDescription>

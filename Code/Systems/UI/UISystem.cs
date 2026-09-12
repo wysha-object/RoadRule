@@ -121,6 +121,7 @@ namespace RoadRule.Systems.UI
             }
             m_GetLanesBinding.Update();
             m_GetSelectedEdgeBinding.Update();
+            m_GetCompositionBinding.Update();
         }
 
         public void AddSelectedLaneIndex(int selectedLaneIndex)
