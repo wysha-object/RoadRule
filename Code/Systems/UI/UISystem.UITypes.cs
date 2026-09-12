@@ -251,7 +251,7 @@ namespace RoadRule.Systems.UI
 
             public static CarLaneValue FromCarLane(CarLane carLane)
             {
-                return new CarLaneValue { speedLimit = FromSpeedLimit(carLane.m_SpeedLimit) };
+                return new CarLaneValue { speedLimit = FromSpeedLimit(carLane.m_DefaultSpeedLimit) };
             }
 
             public static CarLane ApplyLanePropertyValue(CarLane carLane, CarLaneValue lanePropertyValue)
