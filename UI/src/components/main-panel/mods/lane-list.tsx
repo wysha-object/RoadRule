@@ -19,7 +19,10 @@ export default function LaneList() {
         ? Object.values(masterMap)
           .map((item) => item.lanes.length === 0 ? [item.masterLane] : item.lanes)
           .flat()
-        : Object.values(masterMap).map((item) => item.masterLane),
+          .sort((a, b) => a.laneIndex - b.laneIndex)
+        : Object.values(masterMap)
+          .map((item) => item.masterLane)
+          .sort((a, b) => a.laneIndex - b.laneIndex),
     [mode, JSON.stringify(masterMap)],
   )
 
@@ -30,14 +33,14 @@ export default function LaneList() {
         width: 'var(--right-panel-width)',
       }}
     >
-      {lanes.map((lane) => (
-        <LaneItem lane={lane} />
+      {lanes.map((lane, index) => (
+        <LaneItem lane={lane} index={index} />
       ))}
     </div>
   )
 }
 
-function LaneItem(props: { lane: Lane }) {
+function LaneItem(props: { lane: Lane, index: number }) {
   const selectedLaneIndex = useGetSelectedLaneIndexCmd()
 
   return (
@@ -67,7 +70,7 @@ function LaneItem(props: { lane: Lane }) {
           }
         }}
       >
-        #{props.lane.laneIndex}
+        #{props.index}
       </Button>
     </div>
   )
