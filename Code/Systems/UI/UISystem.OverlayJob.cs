@@ -27,33 +27,18 @@ namespace RoadRule.Systems.UI
             public ComponentLookup<NetCompositionData> m_NetCompositionDataLookup;
 
             [ReadOnly]
-            public BufferLookup<NetCompositionLane> m_NetCompositionLaneBufferLookup;
-
-            [ReadOnly]
             public ComponentLookup<EdgeGeometry> m_EdgeGeometryLookup;
-
-            [ReadOnly]
-            public ComponentLookup<NetLaneData> m_NetLaneDataLookup;
-            public NativeArray<Entity> m_SelectedEdgeEntityArray;
-            public NativeArray<int> m_SelectedLaneIndexArray;
-            public Entity m_CompositionEdgePrefabEntity;
-            public NativeHashMap<int, UnsafeList<int>> m_MasterLaneIndexMap;
+            public NativeArray<EdgeParameters> m_SelectedEdgeEntityArray;
+            public NativeArray<byte> m_SelectedLaneIndexArray;
+            public CompositionParameters m_CompositionParameters;
+            public NativeHashMap<byte, UnsafeList<byte>> m_MasterLaneIndexMap;
             public OverlayRenderSystem.Buffer m_OverlayRenderSystemBuffer;
-
-            public void Execute()
-            {
-                DrawLane();
-            }
 
             private void DrawLane()
             {
-                foreach (var selectedEdgeEntity in m_SelectedEdgeEntityArray)
+                foreach (var selectedEdge in m_SelectedEdgeEntityArray)
                 {
-                    if (
-                        m_NetCompositionDataLookup.TryGetComponent(m_CompositionEdgePrefabEntity, out var netCompositionData)
-                        && m_NetCompositionLaneBufferLookup.TryGetBuffer(m_CompositionEdgePrefabEntity, out var netCompositionLaneBuffer)
-                        && m_EdgeGeometryLookup.TryGetComponent(selectedEdgeEntity, out var edgeGeometry)
-                    )
+                    if (m_EdgeGeometryLookup.TryGetComponent(selectedEdge.m_Entity, out var edgeGeometry))
                     {
                         foreach (var kvp in m_MasterLaneIndexMap)
                         {
@@ -62,9 +47,9 @@ namespace RoadRule.Systems.UI
                             foreach (var index in keyArray)
                             {
                                 var slected = selectedAll || m_SelectedLaneIndexArray.Contains(index);
-                                var netCompositionLane = netCompositionLaneBuffer.ElementAt(index);
-                                var startLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_Start, ref netCompositionLane, netCompositionData.m_Width, m_NetLaneDataLookup);
-                                var endLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_End, ref netCompositionLane, netCompositionData.m_Width, m_NetLaneDataLookup);
+                                var laneParameters = selectedEdge.m_CompositionLaneParameters[index];
+                                var startLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_Start, ref laneParameters, selectedEdge.m_Width);
+                                var endLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_End, ref laneParameters, selectedEdge.m_Width);
                                 var color = slected ? new Color(0f, 0.8f, 1f, 1f) : Color.white;
                                 var lineWdth = slected ? 0.2f : 0.1f;
                                 RenderUtils.DrawEdgeOutline(startLaneSegment, endLaneSegment, ref m_OverlayRenderSystemBuffer, color, lineWdth, false);
@@ -74,11 +59,11 @@ namespace RoadRule.Systems.UI
                 }
             }
 
-            private Segment CalculateLaneSegment(ref Segment edgeSegment, ref NetCompositionLane compositionLane, float edgeWidth, ComponentLookup<NetLaneData> netLaneDataLookup)
+            private Segment CalculateLaneSegment(ref Segment edgeSegment, ref LaneParameters laneParameters, float edgeWidth)
             {
-                float halfLaneWidth = math.max((netLaneDataLookup[compositionLane.m_Lane].m_Width - 0.3f) / 2f, 0.5f);
-                float t = (compositionLane.m_Position.x - halfLaneWidth) / math.max(1f, edgeWidth) + 0.5f;
-                float t2 = (compositionLane.m_Position.x + halfLaneWidth) / math.max(1f, edgeWidth) + 0.5f;
+                float halfLaneWidth = math.max((laneParameters.m_Width - 0.3f) / 2f, 0.5f);
+                float t = (laneParameters.m_Position.x - halfLaneWidth) / math.max(1f, edgeWidth) + 0.5f;
+                float t2 = (laneParameters.m_Position.x + halfLaneWidth) / math.max(1f, edgeWidth) + 0.5f;
                 Segment segment = new Segment()
                 {
                     m_Left = MathUtils.Lerp(edgeSegment.m_Left, edgeSegment.m_Right, t),
@@ -88,56 +73,63 @@ namespace RoadRule.Systems.UI
 
                 return segment;
             }
+
+            public void Execute()
+            {
+                DrawLane();
+            }
         }
 
         private JobHandle ScheduleOverlayJob(in JobHandle dependsOn)
         {
-            var overlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
-            var buffer = overlayRenderSystem.GetBuffer(out var overlayRenderDependencies);
-            var dictionary = GetMasterLaneDictionary();
-
-            var selectedEdgeEntityArray = new NativeArray<Entity>(SelectedEdgeEntityList.ToArray(), Allocator.TempJob);
-            var selectedLaneIndexArray = new NativeArray<int>(SelectedLaneIndexSet.ToArray(), Allocator.TempJob);
-            var masterLaneIndexMap = new NativeHashMap<int, UnsafeList<int>>(dictionary.Count, Allocator.TempJob);
-            foreach (var kvp in dictionary)
+            JobHandle dependency = dependsOn;
+            if (m_CompositionParameters is CompositionParameters compositionParameters)
             {
-                var keys = kvp.Value.m_LaneIndexDictionary.Keys;
-                var list = new UnsafeList<int>(keys.Count, Allocator.TempJob);
-                foreach (var key in keys)
-                {
-                    list.Add(key);
-                }
-                if (list.Length == 0)
-                {
-                    list.Add(kvp.Key);
-                }
-                masterLaneIndexMap.Add(kvp.Key, list);
-            }
+                var overlayRenderSystem = World.GetOrCreateSystemManaged<OverlayRenderSystem>();
+                var buffer = overlayRenderSystem.GetBuffer(out var overlayRenderDependencies);
+                var dictionary = GetMasterLaneDictionary();
 
-            JobHandle dependency = IJobExtensions.Schedule(
-                new OverlayJob
+                var selectedEdgeEntityArray = new NativeArray<EdgeParameters>(SelectedEdgeList.ToArray(), Allocator.TempJob);
+                var selectedLaneIndexArray = new NativeArray<byte>(SelectedLaneIndexSet.ToArray(), Allocator.TempJob);
+                var masterLaneIndexMap = new NativeHashMap<byte, UnsafeList<byte>>(dictionary.Count, Allocator.TempJob);
+                foreach (var kvp in dictionary)
                 {
-                    m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
-                    m_NetCompositionLaneBufferLookup = SystemAPI.GetBufferLookup<NetCompositionLane>(true),
-                    m_EdgeGeometryLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
-                    m_NetLaneDataLookup = SystemAPI.GetComponentLookup<NetLaneData>(true),
-                    m_SelectedEdgeEntityArray = selectedEdgeEntityArray,
-                    m_SelectedLaneIndexArray = selectedLaneIndexArray,
-                    m_CompositionEdgePrefabEntity = m_CompositionEdgePrefabEntity,
-                    m_MasterLaneIndexMap = masterLaneIndexMap,
-                    m_OverlayRenderSystemBuffer = buffer,
-                },
-                JobHandle.CombineDependencies(dependsOn, overlayRenderDependencies)
-            );
+                    var keys = kvp.Value.m_LaneIndexDictionary.Keys;
+                    var list = new UnsafeList<byte>(keys.Count, Allocator.TempJob);
+                    foreach (var key in keys)
+                    {
+                        list.Add(key);
+                    }
+                    if (list.Length == 0)
+                    {
+                        list.Add(kvp.Key);
+                    }
+                    masterLaneIndexMap.Add(kvp.Key, list);
+                }
 
-            foreach (var kvp in masterLaneIndexMap)
-            {
-                var cloned = masterLaneIndexMap[kvp.Key];
-                dependency = cloned.Dispose(dependency);
+                dependency = IJobExtensions.Schedule(
+                    new OverlayJob
+                    {
+                        m_NetCompositionDataLookup = SystemAPI.GetComponentLookup<NetCompositionData>(true),
+                        m_EdgeGeometryLookup = SystemAPI.GetComponentLookup<EdgeGeometry>(true),
+                        m_SelectedEdgeEntityArray = selectedEdgeEntityArray,
+                        m_SelectedLaneIndexArray = selectedLaneIndexArray,
+                        m_CompositionParameters = compositionParameters,
+                        m_MasterLaneIndexMap = masterLaneIndexMap,
+                        m_OverlayRenderSystemBuffer = buffer,
+                    },
+                    JobHandle.CombineDependencies(dependsOn, overlayRenderDependencies)
+                );
+
+                foreach (var kvp in masterLaneIndexMap)
+                {
+                    var cloned = masterLaneIndexMap[kvp.Key];
+                    dependency = cloned.Dispose(dependency);
+                }
+                dependency = masterLaneIndexMap.Dispose(dependency);
+                dependency = selectedLaneIndexArray.Dispose(dependency);
+                dependency = selectedEdgeEntityArray.Dispose(dependency);
             }
-            dependency = masterLaneIndexMap.Dispose(dependency);
-            dependency = selectedLaneIndexArray.Dispose(dependency);
-            dependency = selectedEdgeEntityArray.Dispose(dependency);
             return dependency;
         }
     }

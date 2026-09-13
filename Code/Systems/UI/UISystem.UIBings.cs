@@ -214,9 +214,9 @@ namespace RoadRule.Systems.UI
                         {
                             return JsonConvert.SerializeObject(selectedEdgeList);
                         }
-                        foreach (var edgeEntity in SelectedEdgeEntityList)
+                        foreach (var edge in SelectedEdgeList)
                         {
-                            if (!EntityManager.TryGetComponent<EdgeGeometry>(edgeEntity, out var edgeGeometry))
+                            if (!EntityManager.TryGetComponent<EdgeGeometry>(edge.m_Entity, out var edgeGeometry))
                             {
                                 continue;
                             }
@@ -225,7 +225,7 @@ namespace RoadRule.Systems.UI
                             selectedEdgeList.Add(
                                 new
                                 {
-                                    edgeEntity = new { index = edgeEntity.Index, version = edgeEntity.Version },
+                                    edgeEntity = new { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
                                     position = new
                                     {
                                         x = worldPosition.x,
@@ -247,7 +247,7 @@ namespace RoadRule.Systems.UI
                     () =>
                     {
                         float speedLimit = 60f;
-                        if (EntityManager.TryGetComponent<RoadComposition>(m_CompositionEdgePrefabEntity, out var composition))
+                        if (m_CompositionParameters is CompositionParameters composition)
                         {
                             speedLimit = composition.m_SpeedLimit * 1.8f;
                         }
@@ -371,7 +371,7 @@ namespace RoadRule.Systems.UI
                     "AddSelectedLaneIndex",
                     (inputValue) =>
                     {
-                        AddSelectedLaneIndex(inputValue);
+                        AddSelectedLaneIndex((byte)inputValue);
                         return "";
                     }
                 )
@@ -382,7 +382,7 @@ namespace RoadRule.Systems.UI
                     "RemoveSelectedLaneIndex",
                     (inputValue) =>
                     {
-                        RemoveSelectedLaneIndex(inputValue);
+                        RemoveSelectedLaneIndex((byte)inputValue);
                         return "";
                     }
                 )

@@ -1,1 +1,2 @@
 - display processed lane index
+- improve same-type check precision

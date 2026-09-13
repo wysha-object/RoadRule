@@ -26,14 +26,14 @@ namespace RoadRule.Systems.UI
             public RuleValue noFlag;
             public RuleValue hasFlag;
 
-            public static bool operator ==(RuleOptionsValue a, RuleOptionsValue b)
+            public override bool Equals(object obj)
             {
-                return a.noFlag == b.noFlag && a.hasFlag == b.hasFlag;
+                return obj is RuleOptionsValue value && noFlag == value.noFlag && hasFlag == value.hasFlag;
             }
 
-            public static bool operator !=(RuleOptionsValue a, RuleOptionsValue b)
+            public override int GetHashCode()
             {
-                return a.noFlag != b.noFlag || a.hasFlag != b.hasFlag;
+                return HashCode.Combine(noFlag, hasFlag);
             }
         }
 
@@ -231,7 +231,7 @@ namespace RoadRule.Systems.UI
 
         private static FieldValue<RuleOptionsValue> MergeRuleValues(FieldValue<RuleOptionsValue> a, FieldValue<RuleOptionsValue> b)
         {
-            if (a.value == b.value && a.state == b.state && a.state == FieldState.Applied)
+            if (a.value.Equals(b.value) && a.state == b.state && a.state == FieldState.Applied)
             {
                 return new FieldValue<RuleOptionsValue> { state = FieldState.Applied, value = a.value };
             }
