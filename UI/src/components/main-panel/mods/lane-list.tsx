@@ -34,7 +34,7 @@ export default function LaneList() {
       }}
     >
       {lanes.map((lane, index) => (
-        <LaneItem lane={lane} index={index} />
+        <LaneItem lane={lane} index={index + 1} />
       ))}
     </div>
   )
