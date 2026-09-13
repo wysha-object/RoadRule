@@ -1,3 +1,0 @@
-- display processed lane index
-- improve same-type check precision
-- impl toggle main panel keyboard binding
