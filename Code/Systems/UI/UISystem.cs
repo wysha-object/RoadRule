@@ -612,6 +612,7 @@ namespace RoadRule.Systems.UI
             m_ObsoleteCheckSystem = World.GetOrCreateSystemManaged<ObsoleteCheckSystem>();
 
             AddUIBindings();
+            SetupKeyBindings();
         }
 
         private float3 m_PrevCameraPosition;
