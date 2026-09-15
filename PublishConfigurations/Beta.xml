@@ -11,6 +11,8 @@
 
 Beta version of Road Rule (https://mods.paradoxplaza.com/mods/157334/Windows)
 
+# **IMPORTANT: DO NOT SWITCH BACK TO THE STABLE CHANNEL WHEN THE BETA VERSION IS AHEAD OF STABLE (THAT IS, THEY HAVE DIFFERENT COMMIT HASHES), AS THIS MAY CAUSE ISSUES.**
+
     </LongDescription>
     
     <Thumbnail Value="Properties/BetaThumbnail.png" />
