@@ -1,6 +1,7 @@
 using System;
 using Colossal.Entities;
 using Game.Prefabs;
+using Game.Routes;
 using Game.Simulation;
 using Game.Vehicles;
 using RoadRule.Components;
@@ -197,6 +198,7 @@ namespace RoadRule.Utils
             ComponentLookup<RandomTrafficRequest> randomTrafficRequestLookup,
             ComponentLookup<TaxiRequest> taxiRequestLookup,
             ComponentLookup<TransportVehicleRequest> transportVehicleRequestLookup,
+            ComponentLookup<RouteInfo> routeInfoLookup,
             out CarParameters carParameters
         )
         {
@@ -303,6 +305,10 @@ namespace RoadRule.Utils
                 vehicleTypeFlags = VehicleType.Taxi;
             }
             else if (transportVehicleRequestLookup.HasComponent(requestOwner))
+            {
+                vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (routeInfoLookup.TryGetComponent(requestOwner, out var routeInfo))
             {
                 vehicleTypeFlags = VehicleType.PublicTransport;
             }

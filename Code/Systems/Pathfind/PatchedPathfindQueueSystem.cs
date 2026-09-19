@@ -7,6 +7,7 @@ using Colossal.Mathematics;
 using Game.Common;
 using Game.Pathfind;
 using Game.Prefabs;
+using Game.Routes;
 using Game.Simulation;
 using Game.Vehicles;
 using HarmonyLib;
@@ -78,6 +79,7 @@ namespace RoadRule.Systems.Pathfind
                 m_RandomTrafficRequestLookup = __instance.GetComponentLookup<RandomTrafficRequest>(true),
                 m_TaxiRequestLookup = __instance.GetComponentLookup<TaxiRequest>(true),
                 m_TransportVehicleRequestLookup = __instance.GetComponentLookup<TransportVehicleRequest>(true),
+                m_RouteInfoLookup = __instance.GetComponentLookup<RouteInfo>(true),
             };
             instanceT
                 .Field("m_TransportLineSystem")
@@ -328,6 +330,9 @@ namespace RoadRule.Systems.Pathfind
             [ReadOnly]
             public ComponentLookup<TransportVehicleRequest> m_TransportVehicleRequestLookup;
 
+            [ReadOnly]
+            public ComponentLookup<RouteInfo> m_RouteInfoLookup;
+
             public unsafe void Execute()
             {
                 ref int location = ref m_ActionIndex.ValueAsRef();
@@ -393,6 +398,7 @@ namespace RoadRule.Systems.Pathfind
                     m_RandomTrafficRequestLookup,
                     m_TaxiRequestLookup,
                     m_TransportVehicleRequestLookup,
+                    m_RouteInfoLookup,
                     out var carParameters
                 );
                 PatchedPathfindJobs.PatchedPathfindJob.Execute(
