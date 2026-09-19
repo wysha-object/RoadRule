@@ -1,0 +1,1 @@
+- fix compatibility with edges created by Road Builder
