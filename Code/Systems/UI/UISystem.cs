@@ -31,8 +31,8 @@ namespace RoadRule.Systems.UI
 
         public struct MasterLaneValue
         {
-            public List<Entity> m_MasterLaneEntities { get; set; } = new List<Entity>();
-            public Dictionary<byte, List<Entity>> m_LaneIndexDictionary { get; set; } = new Dictionary<byte, List<Entity>>();
+            public List<Entity> m_MasterLaneEntities = new List<Entity>();
+            public Dictionary<byte, List<Entity>> m_LaneIndexDictionary = new Dictionary<byte, List<Entity>>();
 
             public MasterLaneValue() { }
         }
@@ -66,6 +66,8 @@ namespace RoadRule.Systems.UI
                             {
                                 m_IsInvert = (netCompositionLane.m_Flags & LaneFlags.Invert) != 0,
                                 m_IsMaster = (netCompositionLane.m_Flags & LaneFlags.Master) != 0,
+                                m_IsSlave = (netCompositionLane.m_Flags & LaneFlags.Slave) != 0,
+                                m_Group = netCompositionLane.m_Group,
                             }
                         );
                     }
@@ -135,14 +137,22 @@ namespace RoadRule.Systems.UI
 
             public bool m_IsMaster;
 
+            public bool m_IsSlave;
+
+            public ushort m_Group;
+
             public override bool Equals(object obj)
             {
-                return obj is CompositionLaneParameters parameters && Equals(m_IsInvert, parameters.m_IsInvert) && Equals(m_IsMaster, parameters.m_IsMaster);
+                return obj is CompositionLaneParameters parameters
+                    && Equals(m_IsInvert, parameters.m_IsInvert)
+                    && Equals(m_IsMaster, parameters.m_IsMaster)
+                    && Equals(m_IsSlave, parameters.m_IsSlave)
+                    && Equals(m_Group, parameters.m_Group);
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(m_IsInvert, m_IsMaster);
+                return HashCode.Combine(m_IsInvert, m_IsMaster, m_IsSlave, m_Group);
             }
         }
 
@@ -152,11 +162,11 @@ namespace RoadRule.Systems.UI
 
             public float m_Width;
 
-            public NativeHashMap<byte, LaneParameters> m_CompositionLaneParameters;
+            public NativeHashMap<byte, LaneParameters> m_LaneParameters;
 
             public EdgeParameters(AllocatorManager.AllocatorHandle allocator)
             {
-                m_CompositionLaneParameters = new NativeHashMap<byte, LaneParameters>(16, allocator);
+                m_LaneParameters = new NativeHashMap<byte, LaneParameters>(16, allocator);
             }
 
             public static EdgeParameters CreateCompositionParameters(
@@ -180,7 +190,7 @@ namespace RoadRule.Systems.UI
                 {
                     if (((netCompositionLane.m_Flags & LaneFlags.Road) != 0) || ((netCompositionLane.m_Flags & LaneFlags.Master) != 0))
                     {
-                        compositionParameters.m_CompositionLaneParameters.Add(
+                        compositionParameters.m_LaneParameters.Add(
                             netCompositionLane.m_Index,
                             new LaneParameters(allocator) { m_Width = netLaneDataLookup[netCompositionLane.m_Lane].m_Width, m_Position = netCompositionLane.m_Position }
                         );
@@ -197,10 +207,10 @@ namespace RoadRule.Systems.UI
                     {
                         byte laneIndex = (byte)(lane.m_MiddleNode.GetLaneIndex() & 0xff);
 
-                        if (compositionParameters.m_CompositionLaneParameters.TryGetValue(laneIndex, out var laneParameters))
+                        if (compositionParameters.m_LaneParameters.TryGetValue(laneIndex, out var laneParameters))
                         {
                             laneParameters.m_SubLaneEntities.Add(subLane.m_SubLane);
-                            compositionParameters.m_CompositionLaneParameters[laneIndex] = laneParameters;
+                            compositionParameters.m_LaneParameters[laneIndex] = laneParameters;
                         }
                     }
                 }
@@ -210,13 +220,13 @@ namespace RoadRule.Systems.UI
 
             public JobHandle Dispose(JobHandle inputDeps)
             {
-                if (m_CompositionLaneParameters.IsCreated)
+                if (m_LaneParameters.IsCreated)
                 {
-                    foreach (var kvp in m_CompositionLaneParameters)
+                    foreach (var kvp in m_LaneParameters)
                     {
                         inputDeps = kvp.Value.Dispose(inputDeps);
                     }
-                    inputDeps = m_CompositionLaneParameters.Dispose(inputDeps);
+                    inputDeps = m_LaneParameters.Dispose(inputDeps);
                 }
                 return inputDeps;
             }
@@ -238,16 +248,16 @@ namespace RoadRule.Systems.UI
                     return false;
                 }
 
-                foreach (var kvp in m_CompositionLaneParameters)
+                foreach (var kvp in m_LaneParameters)
                 {
-                    if (!parameters.m_CompositionLaneParameters.TryGetValue(kvp.Key, out var value) || !kvp.Value.Equals(value))
+                    if (!parameters.m_LaneParameters.TryGetValue(kvp.Key, out var value) || !kvp.Value.Equals(value))
                     {
                         return false;
                     }
                 }
-                foreach (var kvp in parameters.m_CompositionLaneParameters)
+                foreach (var kvp in parameters.m_LaneParameters)
                 {
-                    if (!m_CompositionLaneParameters.TryGetValue(kvp.Key, out var value) || !kvp.Value.Equals(value))
+                    if (!m_LaneParameters.TryGetValue(kvp.Key, out var value) || !kvp.Value.Equals(value))
                     {
                         return false;
                     }
@@ -258,7 +268,7 @@ namespace RoadRule.Systems.UI
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(m_Width, m_CompositionLaneParameters);
+                return HashCode.Combine(m_Width, m_LaneParameters);
             }
         }
 
@@ -502,98 +512,39 @@ namespace RoadRule.Systems.UI
 
             if (m_CompositionParameters is CompositionParameters compositionParameters)
             {
-                byte? master = null;
-                byte? invertMaster = null;
-
-                bool haveInvert = false;
                 foreach (var kvp in compositionParameters.m_CompositionLaneParameters)
                 {
-                    if (kvp.Value.m_IsInvert)
+                    if (!kvp.Value.m_IsSlave)
                     {
-                        haveInvert = true;
+                        result[kvp.Key] = new MasterLaneValue();
                     }
-                }
-
-                foreach (var kvp in compositionParameters.m_CompositionLaneParameters)
-                {
-                    if (kvp.Value.m_IsMaster)
-                    {
-                        if (haveInvert && kvp.Value.m_IsInvert)
-                        {
-                            invertMaster = kvp.Key;
-                        }
-                        else
-                        {
-                            master = kvp.Key;
-                        }
-                    }
-                }
-
-                if (master == null)
-                {
-                    foreach (var kvp in compositionParameters.m_CompositionLaneParameters)
-                    {
-                        if (kvp.Value.m_IsInvert)
-                        {
-                            invertMaster = kvp.Key;
-                        }
-                        else
-                        {
-                            master = kvp.Key;
-                        }
-                    }
-                }
-
-                if (haveInvert && invertMaster == null)
-                {
-                    foreach (var kvp in compositionParameters.m_CompositionLaneParameters)
-                    {
-                        if (kvp.Value.m_IsInvert)
-                        {
-                            invertMaster = kvp.Key;
-                        }
-                    }
-                }
-
-                if (master != null)
-                {
-                    result[master.Value] = new MasterLaneValue();
-                }
-                if (invertMaster != null)
-                {
-                    result[invertMaster.Value] = new MasterLaneValue();
                 }
 
                 foreach (var selectedEdge in SelectedEdgeList)
                 {
-                    foreach (var kvp in selectedEdge.m_CompositionLaneParameters)
+                    foreach (var kvp in selectedEdge.m_LaneParameters)
                     {
-                        var laneParameters = compositionParameters.m_CompositionLaneParameters[kvp.Key];
-
-                        if (kvp.Key == master)
+                        if (result.Any((itemKVP) => itemKVP.Key == kvp.Key))
                         {
                             foreach (var subLaneEntity in kvp.Value.m_SubLaneEntities)
                             {
-                                result[master.Value].m_MasterLaneEntities.Add(subLaneEntity);
-                            }
-                        }
-                        else if (kvp.Key == invertMaster)
-                        {
-                            foreach (var subLaneEntity in kvp.Value.m_SubLaneEntities)
-                            {
-                                result[invertMaster.Value].m_MasterLaneEntities.Add(subLaneEntity);
+                                result[kvp.Key].m_MasterLaneEntities.Add(subLaneEntity);
                             }
                         }
                         else
                         {
-                            var masterLaneIndex = laneParameters.m_IsInvert ? invertMaster : master;
-                            if (!result[masterLaneIndex.Value].m_LaneIndexDictionary.ContainsKey(kvp.Key))
+                            var masterKVP = result.First(
+                                (itemKVP) =>
+                                    compositionParameters.m_CompositionLaneParameters[itemKVP.Key].m_Group == compositionParameters.m_CompositionLaneParameters[kvp.Key].m_Group
+                            );
+
+                            if (!masterKVP.Value.m_LaneIndexDictionary.ContainsKey(kvp.Key))
                             {
-                                result[masterLaneIndex.Value].m_LaneIndexDictionary[kvp.Key] = new List<Entity>();
+                                masterKVP.Value.m_LaneIndexDictionary[kvp.Key] = new List<Entity>();
                             }
                             foreach (var subLaneEntity in kvp.Value.m_SubLaneEntities)
                             {
-                                result[masterLaneIndex.Value].m_LaneIndexDictionary[kvp.Key].Add(subLaneEntity);
+                                masterKVP.Value.m_LaneIndexDictionary[kvp.Key].Add(subLaneEntity);
                             }
                         }
                     }

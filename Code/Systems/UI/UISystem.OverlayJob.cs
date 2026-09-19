@@ -47,7 +47,7 @@ namespace RoadRule.Systems.UI
                             foreach (var index in keyArray)
                             {
                                 var slected = selectedAll || m_SelectedLaneIndexArray.Contains(index);
-                                var laneParameters = selectedEdge.m_CompositionLaneParameters[index];
+                                var laneParameters = selectedEdge.m_LaneParameters[index];
                                 var startLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_Start, ref laneParameters, selectedEdge.m_Width);
                                 var endLaneSegment = CalculateLaneSegment(ref edgeGeometry.m_End, ref laneParameters, selectedEdge.m_Width);
                                 var color = slected ? new Color(0f, 0.8f, 1f, 1f) : Color.white;
