@@ -194,7 +194,7 @@ namespace RoadRule.Systems.Pathfind
             public Entity m_Owner;
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public struct PatchedPathfindWorkerJob : IJob
         {
             [ReadOnly]
