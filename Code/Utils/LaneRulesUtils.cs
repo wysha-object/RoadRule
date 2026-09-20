@@ -1,5 +1,7 @@
 using System;
 using Colossal.Entities;
+using Game.Citizens;
+using Game.Pathfind;
 using Game.Prefabs;
 using Game.Routes;
 using Game.Simulation;
@@ -46,16 +48,11 @@ namespace RoadRule.Utils
             }
         }
 
-        /// 当处理`Road`边时, 如果之前没拿到`CarParameters`, 就使用这个默认参数.
-        public static readonly CarParameters FALLBACK_CAR_PARAMETERS = new CarParameters(VehicleType.PersonalCar) { m_IsValid = true };
-
         public static readonly CarParameters TAXI_CAR_PARAMETERS = new CarParameters(VehicleType.Taxi) { m_IsValid = true };
 
         public static bool GetCarParameters(
             Entity carEntity,
             ComponentLookup<Car> carLookup,
-            ComponentLookup<PrefabRef> prefabRefLookup,
-            ComponentLookup<CarData> carDataLookup,
             ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
             ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
             ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
@@ -70,11 +67,7 @@ namespace RoadRule.Utils
             out CarParameters carParameters
         )
         {
-            if (
-                carLookup.TryGetComponent(carEntity, out var car)
-                && prefabRefLookup.TryGetComponent(carEntity, out var prefabRef)
-                && carDataLookup.TryGetComponent(prefabRef.m_Prefab, out var carData)
-            )
+            if (carLookup.HasComponent(carEntity))
             {
                 var vehicleType = VehicleType.None;
                 if (ambulanceLookup.HasComponent(carEntity))
@@ -133,45 +126,57 @@ namespace RoadRule.Utils
         public static bool FindCarEntity(
             Entity requestOwner,
             ComponentLookup<Car> carLookup,
-            ComponentLookup<PrefabRef> prefabRefLookup,
-            ComponentLookup<CarData> carDataLookup,
+            ComponentLookup<Citizen> citizenLookup,
+            ComponentLookup<CarKeeper> carKeeperLookup,
             ComponentLookup<Game.Creatures.Resident> residentLookup,
-            ComponentLookup<Game.Citizens.CarKeeper> carKeeperLookup,
+            out bool hasCar,
             out Entity carEntity
         )
         {
-            if (carLookup.HasComponent(requestOwner) && prefabRefLookup.HasComponent(requestOwner) && carDataLookup.HasComponent(prefabRefLookup[requestOwner].m_Prefab))
+            if (carLookup.HasComponent(requestOwner))
             {
-                // owner 是 car
+                hasCar = true;
                 carEntity = requestOwner;
                 return true;
             }
 
-            if (carKeeperLookup.TryGetEnabledComponent(requestOwner, out var carKeeper))
+            if (citizenLookup.HasComponent(requestOwner))
             {
-                // owner 是 citizen
-                carEntity = carKeeper.m_Car;
-                return true;
+                if (carKeeperLookup.TryGetEnabledComponent(requestOwner, out var carKeeper))
+                {
+                    hasCar = true;
+                    carEntity = carKeeper.m_Car;
+                    return true;
+                }
+                else
+                {
+                    hasCar = false;
+                    carEntity = Entity.Null;
+                    return true;
+                }
             }
 
             if (residentLookup.TryGetComponent(requestOwner, out var resident) && carKeeperLookup.TryGetEnabledComponent(resident.m_Citizen, out var residentCitizenCarKeeper))
             {
-                // owner 是 resident
+                hasCar = true;
                 carEntity = residentCitizenCarKeeper.m_Car;
                 return true;
             }
 
+            hasCar = false;
             carEntity = Entity.Null;
             return false;
         }
 
-        public static bool FindCarParameters(
+        public static bool GetCarParameters(
+            PathMethod pathMethod,
+            SetupTargetType originType,
+            SetupTargetType destinationType,
             Entity requestOwner,
             ComponentLookup<Car> carLookup,
-            ComponentLookup<PrefabRef> prefabRefLookup,
-            ComponentLookup<CarData> carDataLookup,
+            ComponentLookup<Citizen> citizenLookup,
+            ComponentLookup<CarKeeper> carKeeperLookup,
             ComponentLookup<Game.Creatures.Resident> residentLookup,
-            ComponentLookup<Game.Citizens.CarKeeper> carKeeperLookup,
             ComponentLookup<Game.Vehicles.Ambulance> ambulanceLookup,
             ComponentLookup<Game.Vehicles.DeliveryTruck> deliveryTruckLookup,
             ComponentLookup<Game.Vehicles.FireEngine> fireEngineLookup,
@@ -183,32 +188,27 @@ namespace RoadRule.Utils
             ComponentLookup<Game.Vehicles.PostVan> postVanLookup,
             ComponentLookup<Game.Vehicles.PublicTransport> publicTransportLookup,
             ComponentLookup<Game.Vehicles.Taxi> taxiLookup,
-            ComponentLookup<EvacuationRequest> evacuationRequestLookup,
-            ComponentLookup<FireRescueRequest> fireRescueRequestLookup,
-            ComponentLookup<GarbageCollectionRequest> garbageCollectionRequestLookup,
-            ComponentLookup<GarbageTransferRequest> garbageTransferRequestLookup,
-            ComponentLookup<GoodsDeliveryRequest> goodsDeliveryRequestLookup,
-            ComponentLookup<HealthcareRequest> healthcareRequestLookup,
-            ComponentLookup<MailTransferRequest> mailTransferRequestLookup,
-            ComponentLookup<MaintenanceRequest> maintenanceRequestLookup,
-            ComponentLookup<PoliceEmergencyRequest> policeEmergencyRequestLookup,
-            ComponentLookup<PolicePatrolRequest> policePatrolRequestLookup,
-            ComponentLookup<PostVanRequest> postVanRequestLookup,
-            ComponentLookup<PrisonerTransportRequest> prisonerTransportRequestLookup,
             ComponentLookup<RandomTrafficRequest> randomTrafficRequestLookup,
-            ComponentLookup<TaxiRequest> taxiRequestLookup,
-            ComponentLookup<TransportVehicleRequest> transportVehicleRequestLookup,
             ComponentLookup<RouteInfo> routeInfoLookup,
             out CarParameters carParameters
         )
         {
-            if (FindCarEntity(requestOwner, carLookup, prefabRefLookup, carDataLookup, residentLookup, carKeeperLookup, out var carEntity))
+            carParameters = new CarParameters();
+            if ((pathMethod & (PathMethod.Road | PathMethod.MediumRoad)) == 0)
             {
+                return false;
+            }
+
+            if (FindCarEntity(requestOwner, carLookup, citizenLookup, carKeeperLookup, residentLookup, out var hasCar, out var carEntity))
+            {
+                if (!hasCar)
+                {
+                    return false;
+                }
+
                 GetCarParameters(
                     carEntity,
                     carLookup,
-                    prefabRefLookup,
-                    carDataLookup,
                     ambulanceLookup,
                     deliveryTruckLookup,
                     fireEngineLookup,
@@ -225,102 +225,206 @@ namespace RoadRule.Utils
                 return carParameters.m_IsValid;
             }
 
-            CarFlags carFlags = 0;
-            var sizeClass = SizeClass.Undefined;
-            var energyTypes = EnergyTypes.None;
             var vehicleTypeFlags = VehicleType.None;
-            if (evacuationRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.PublicTransport;
-            }
-            else if (fireRescueRequestLookup.HasComponent(requestOwner))
-            {
-                carFlags |= CarFlags.Emergency;
-                vehicleTypeFlags = VehicleType.FireEngine;
-            }
-            else if (garbageCollectionRequestLookup.HasComponent(requestOwner) || garbageTransferRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.GarbageTruck;
-            }
-            else if (goodsDeliveryRequestLookup.HasComponent(requestOwner))
+            if (Any(originType, destinationType, SetupTargetType.ResourceSeller))
             {
                 vehicleTypeFlags = VehicleType.DeliveryTruck;
             }
-            else if (healthcareRequestLookup.TryGetComponent(requestOwner, out var healthcareRequest))
-            {
-                if (healthcareRequest.m_Type == HealthcareRequestType.Ambulance)
-                {
-                    carFlags |= CarFlags.Emergency;
-                    vehicleTypeFlags = VehicleType.Ambulance;
-                }
-                else if (healthcareRequest.m_Type == HealthcareRequestType.Hearse)
-                {
-                    vehicleTypeFlags = VehicleType.Hearse;
-                }
-            }
-            else if (mailTransferRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.PostVan;
-            }
-            else if (maintenanceRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.MaintenanceVehicle;
-            }
-            else if (policeEmergencyRequestLookup.HasComponent(requestOwner))
-            {
-                carFlags |= CarFlags.Emergency;
-                vehicleTypeFlags = VehicleType.PoliceCar;
-            }
-            else if (policePatrolRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.PoliceCar;
-            }
-            else if (postVanRequestLookup.HasComponent(requestOwner))
-            {
-                vehicleTypeFlags = VehicleType.PostVan;
-            }
-            else if (prisonerTransportRequestLookup.HasComponent(requestOwner))
+            else if (Any(originType, destinationType, SetupTargetType.TransportVehicle))
             {
                 vehicleTypeFlags = VehicleType.PublicTransport;
             }
-            else if (randomTrafficRequestLookup.TryGetComponent(requestOwner, out var randomTrafficRequest))
+            else if (Any(originType, destinationType, SetupTargetType.GarbageCollector))
             {
-                sizeClass = randomTrafficRequest.m_SizeClass;
-                energyTypes = randomTrafficRequest.m_EnergyTypes;
-                if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.DeliveryTruck) != 0)
+                vehicleTypeFlags = VehicleType.GarbageTruck;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.RandomTraffic))
+            {
+                if (randomTrafficRequestLookup.TryGetComponent(requestOwner, out var randomTrafficRequest))
                 {
-                    vehicleTypeFlags = VehicleType.DeliveryTruck;
-                }
-                else if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.TransportVehicle) != 0)
-                {
-                    vehicleTypeFlags = VehicleType.PublicTransport;
-                }
-                else
-                {
-                    vehicleTypeFlags = VehicleType.PersonalCar;
+                    if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.DeliveryTruck) != 0)
+                    {
+                        vehicleTypeFlags = VehicleType.DeliveryTruck;
+                    }
+                    else if ((randomTrafficRequest.m_Flags & RandomTrafficRequestFlags.TransportVehicle) != 0)
+                    {
+                        vehicleTypeFlags = VehicleType.PublicTransport;
+                    }
+                    else
+                    {
+                        vehicleTypeFlags = VehicleType.PersonalCar;
+                    }
                 }
             }
-            else if (taxiRequestLookup.HasComponent(requestOwner))
+            else if (Any(originType, destinationType, SetupTargetType.JobSeekerTo))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.SchoolSeekerTo))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.FireEngine))
+            {
+                vehicleTypeFlags = VehicleType.FireEngine;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PolicePatrol))
+            {
+                vehicleTypeFlags = VehicleType.PoliceCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Leisure))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Taxi))
             {
                 vehicleTypeFlags = VehicleType.Taxi;
             }
-            else if (transportVehicleRequestLookup.HasComponent(requestOwner))
+            else if (Any(originType, destinationType, SetupTargetType.ResourceExport))
+            {
+                vehicleTypeFlags = VehicleType.DeliveryTruck;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Ambulance))
+            {
+                vehicleTypeFlags = VehicleType.Ambulance;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.StorageTransfer))
+            {
+                vehicleTypeFlags = VehicleType.DeliveryTruck;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Maintenance))
+            {
+                vehicleTypeFlags = VehicleType.MaintenanceVehicle;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PostVan))
+            {
+                vehicleTypeFlags = VehicleType.PostVan;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.MailTransfer))
+            {
+                vehicleTypeFlags = VehicleType.PostVan;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.MailBox))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.OutsideConnection))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.AccidentLocation))
+            {
+                vehicleTypeFlags = VehicleType.PoliceCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Hospital))
+            {
+                vehicleTypeFlags = VehicleType.Ambulance;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Safety))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.EmergencyShelter))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.EvacuationTransport))
             {
                 vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Hearse))
+            {
+                vehicleTypeFlags = VehicleType.Hearse;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.CrimeProducer))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PrisonerTransport))
+            {
+                vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Sightseeing))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.Attraction))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.GarbageTransfer))
+            {
+                vehicleTypeFlags = VehicleType.GarbageTruck;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.FindHome))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.TransportVehicleRequest))
+            {
+                vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.TaxiRequest))
+            {
+                vehicleTypeFlags = VehicleType.Taxi;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PrisonerTransportRequest))
+            {
+                vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.EvacuationRequest))
+            {
+                vehicleTypeFlags = VehicleType.PublicTransport;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.GarbageCollectorRequest))
+            {
+                vehicleTypeFlags = VehicleType.GarbageTruck;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PoliceRequest))
+            {
+                vehicleTypeFlags = VehicleType.PoliceCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.FireRescueRequest))
+            {
+                vehicleTypeFlags = VehicleType.FireEngine;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.PostVanRequest))
+            {
+                vehicleTypeFlags = VehicleType.PostVan;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.MaintenanceRequest))
+            {
+                vehicleTypeFlags = VehicleType.MaintenanceVehicle;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.HealthcareRequest))
+            {
+                vehicleTypeFlags = VehicleType.Ambulance;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.TouristFindTarget))
+            {
+                vehicleTypeFlags = VehicleType.PersonalCar;
+            }
+            else if (Any(originType, destinationType, SetupTargetType.GoodsDelivery))
+            {
+                vehicleTypeFlags = VehicleType.DeliveryTruck;
             }
             else if (routeInfoLookup.TryGetComponent(requestOwner, out var routeInfo))
             {
                 vehicleTypeFlags = VehicleType.PublicTransport;
             }
-            carParameters = new CarParameters();
-            if (vehicleTypeFlags != VehicleType.None)
+            else
             {
-                carParameters.m_VehicleTypeFlags = vehicleTypeFlags;
-                carParameters.m_IsValid = true;
-                return true;
+                vehicleTypeFlags = VehicleType.PersonalCar;
             }
 
-            return false;
+            carParameters.m_VehicleTypeFlags = vehicleTypeFlags;
+            carParameters.m_IsValid = true;
+            return true;
+        }
+
+        private static bool Any(SetupTargetType originType, SetupTargetType destinationType, SetupTargetType type)
+        {
+            return originType == type || destinationType == type;
         }
 
         public static void CheckLaneRules(LaneRules laneRules, CarParameters carParameters, out bool isPrefer, out bool isForbidden, out bool isDisallow)

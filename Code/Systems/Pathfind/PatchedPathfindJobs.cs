@@ -1342,10 +1342,6 @@ namespace RoadRule.Systems.Pathfind
                         {
                             LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out isPrefer, out isForbidden, out isDisallow);
                         }
-                        else
-                        {
-                            LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.FALLBACK_CAR_PARAMETERS, out isPrefer, out isForbidden, out isDisallow);
-                        }
                     }
                 }
             }

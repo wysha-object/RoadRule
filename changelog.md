@@ -1,0 +1,1 @@
+- fix adopts logic to get vehicle info from pathfinding requests

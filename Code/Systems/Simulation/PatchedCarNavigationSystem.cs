@@ -1354,8 +1354,6 @@ namespace RoadRule.Systems.Simulation
                 LaneRulesUtils.GetCarParameters(
                     entity,
                     m_CarLookup,
-                    m_PrefabRefLookup,
-                    m_PrefabCarDataLookup,
                     m_AmbulanceLookup,
                     m_DeliveryTruckLookup,
                     m_FireEngineLookup,
