@@ -129,13 +129,11 @@ namespace RoadRule.Utils
             ComponentLookup<Citizen> citizenLookup,
             ComponentLookup<CarKeeper> carKeeperLookup,
             ComponentLookup<Game.Creatures.Resident> residentLookup,
-            out bool hasCar,
             out Entity carEntity
         )
         {
             if (carLookup.HasComponent(requestOwner))
             {
-                hasCar = true;
                 carEntity = requestOwner;
                 return true;
             }
@@ -144,13 +142,11 @@ namespace RoadRule.Utils
             {
                 if (carKeeperLookup.TryGetEnabledComponent(requestOwner, out var carKeeper))
                 {
-                    hasCar = true;
                     carEntity = carKeeper.m_Car;
                     return true;
                 }
                 else
                 {
-                    hasCar = false;
                     carEntity = Entity.Null;
                     return true;
                 }
@@ -158,12 +154,10 @@ namespace RoadRule.Utils
 
             if (residentLookup.TryGetComponent(requestOwner, out var resident) && carKeeperLookup.TryGetEnabledComponent(resident.m_Citizen, out var residentCitizenCarKeeper))
             {
-                hasCar = true;
                 carEntity = residentCitizenCarKeeper.m_Car;
                 return true;
             }
 
-            hasCar = false;
             carEntity = Entity.Null;
             return false;
         }
@@ -199,9 +193,9 @@ namespace RoadRule.Utils
                 return false;
             }
 
-            if (FindCarEntity(requestOwner, carLookup, citizenLookup, carKeeperLookup, residentLookup, out var hasCar, out var carEntity))
+            if (FindCarEntity(requestOwner, carLookup, citizenLookup, carKeeperLookup, residentLookup, out var carEntity))
             {
-                if (!hasCar)
+                if (carEntity == Entity.Null)
                 {
                     return false;
                 }
