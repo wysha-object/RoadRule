@@ -105,7 +105,9 @@ namespace RoadRule.Systems.Pathfind
                     threadDataT.Field("m_Allocator").GetValue<AllocatorHelper<UnsafeLinearAllocator>>().Allocator.Initialize(1048576u);
                 }
                 jobData.m_Allocator = threadDataT.Field("m_Allocator").GetValue<AllocatorHelper<UnsafeLinearAllocator>>();
-                threadDataT.Field("m_JobHandle").SetValue(IJobExtensions.Schedule(jobData, jobHandle));
+                threadDataT
+                    .Field("m_JobHandle")
+                    .SetValue(IJobExtensions.Schedule(jobData, JobHandle.CombineDependencies(jobHandle, instanceT.Property("Dependency").GetValue<JobHandle>())));
                 currentActions.m_ReadHandle = JobHandle.CombineDependencies(currentActions.m_ReadHandle, threadDataT.Field("m_JobHandle").GetValue<JobHandle>());
                 if (instanceT.Field("m_ThreadData").Property("Count").GetValue<int>() >= num2)
                 {
