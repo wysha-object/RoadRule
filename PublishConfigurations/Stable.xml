@@ -22,8 +22,8 @@ QQ: 760057820
 
 ## Feature
 
-Restrict vehicles based on Car Flags, Size Class, Energy Types, and Vehicle Type.
-You can prevent specific vehicles from using certain roads or lanes.
+Restrict vehicles based on vehicle type.
+You can prevent specific vehicles from using certain sides ( MasterLane ) or lanes ( SlaveLane ).
 
 ## Support
 
