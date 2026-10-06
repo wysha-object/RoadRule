@@ -320,6 +320,14 @@ namespace RoadRule.Patches
                     PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
                 }
 
+                for (int i = 0; i < instanceT.Field("m_ThreadData").Property("Count").GetValue<int>(); i++)
+                {
+                    var valueT = Traverse.Create(instanceT.Field("m_ThreadData").Method("get_Item", i).GetValue());
+                    instanceT
+                        .Property("Dependency")
+                        .SetValue(JobHandle.CombineDependencies(instanceT.Property("Dependency").GetValue<JobHandle>(), valueT.Field("m_JobHandle").GetValue<JobHandle>()));
+                }
+
                 return false;
             }
         }

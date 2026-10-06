@@ -108,7 +108,6 @@ namespace RoadRule.Systems.Pathfind
                 threadDataT
                     .Field("m_JobHandle")
                     .SetValue(IJobExtensions.Schedule(jobData, JobHandle.CombineDependencies(jobHandle, instanceT.Property("Dependency").GetValue<JobHandle>())));
-                instanceT.Property("Dependency").SetValue(threadDataT.Field("m_JobHandle").GetValue());
                 currentActions.m_ReadHandle = JobHandle.CombineDependencies(currentActions.m_ReadHandle, threadDataT.Field("m_JobHandle").GetValue<JobHandle>());
                 if (instanceT.Field("m_ThreadData").Property("Count").GetValue<int>() >= num2)
                 {
