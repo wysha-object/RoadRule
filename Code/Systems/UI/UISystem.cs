@@ -340,7 +340,7 @@ namespace RoadRule.Systems.UI
         private CompositionParameters? m_CompositionParameters;
         private Tool.ToolSystem m_ToolSystem;
         private CameraUpdateSystem m_CameraUpdateSystem;
-        private ObsoleteCheckSystem m_ObsoleteCheckSystem;
+        private LaneRulesModifiedSystem m_ObsoleteCheckSystem;
 
         public void ModificationUpdate()
         {
@@ -560,7 +560,7 @@ namespace RoadRule.Systems.UI
 
             m_ToolSystem = World.GetOrCreateSystemManaged<Tool.ToolSystem>();
             m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
-            m_ObsoleteCheckSystem = World.GetOrCreateSystemManaged<ObsoleteCheckSystem>();
+            m_ObsoleteCheckSystem = World.GetOrCreateSystemManaged<LaneRulesModifiedSystem>();
 
             AddUIBindings();
             SetupKeyBindings();

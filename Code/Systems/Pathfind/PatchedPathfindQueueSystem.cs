@@ -31,7 +31,11 @@ namespace RoadRule.Systems.Pathfind
         public static Queue<PatchedWorkerActions> m_WorkerActions = new Queue<PatchedWorkerActions>();
         public static Queue<PatchedWorkerActions> m_WorkerActionPool = new Queue<PatchedWorkerActions>();
 
-        public static void PatchedScheduleWorkerJobs(ref PatchedPathfindQueueSystem.PatchedWorkerActions currentActions, ref PathfindQueueSystem __instance)
+        public static void PatchedScheduleWorkerJobs(
+            ref PatchedPathfindQueueSystem.PatchedWorkerActions currentActions,
+            ref PathfindQueueSystem __instance,
+            NativeParallelHashMap<Entity, LaneRules>.ReadOnly laneRulesMap
+        )
         {
             var instanceT = Traverse.Create(__instance);
             if (currentActions == null)
@@ -49,24 +53,7 @@ namespace RoadRule.Systems.Pathfind
                 m_PathfindHeuristicData = instanceT.Field("m_NetInitializeSystem").GetValue<NetInitializeSystem>().GetHeuristicData(),
                 m_Actions = currentActions.m_Actions.AsArray(),
                 m_ActionIndex = currentActions.m_ActionIndex,
-                m_LaneRulesLookup = __instance.GetComponentLookup<LaneRules>(true),
-                m_CarLookup = __instance.GetComponentLookup<Car>(true),
-                m_CitizenLookup = __instance.GetComponentLookup<Citizen>(true),
-                m_CarKeeperLookup = __instance.GetComponentLookup<Game.Citizens.CarKeeper>(true),
-                m_ResidentLookup = __instance.GetComponentLookup<Game.Creatures.Resident>(true),
-                m_AmbulanceLookup = __instance.GetComponentLookup<Game.Vehicles.Ambulance>(true),
-                m_DeliveryTruckLookup = __instance.GetComponentLookup<Game.Vehicles.DeliveryTruck>(true),
-                m_FireEngineLookup = __instance.GetComponentLookup<Game.Vehicles.FireEngine>(true),
-                m_GarbageTruckLookup = __instance.GetComponentLookup<Game.Vehicles.GarbageTruck>(true),
-                m_HearseLookup = __instance.GetComponentLookup<Game.Vehicles.Hearse>(true),
-                m_MaintenanceVehicleLookup = __instance.GetComponentLookup<Game.Vehicles.MaintenanceVehicle>(true),
-                m_PersonalCarLookup = __instance.GetComponentLookup<Game.Vehicles.PersonalCar>(true),
-                m_PoliceCarLookup = __instance.GetComponentLookup<Game.Vehicles.PoliceCar>(true),
-                m_PostVanLookup = __instance.GetComponentLookup<Game.Vehicles.PostVan>(true),
-                m_PublicTransportLookup = __instance.GetComponentLookup<Game.Vehicles.PublicTransport>(true),
-                m_TaxiLookup = __instance.GetComponentLookup<Game.Vehicles.Taxi>(true),
-                m_RandomTrafficRequestLookup = __instance.GetComponentLookup<RandomTrafficRequest>(true),
-                m_RouteInfoLookup = __instance.GetComponentLookup<RouteInfo>(true),
+                m_LaneRulesMap = laneRulesMap,
             };
             instanceT
                 .Field("m_TransportLineSystem")
@@ -105,9 +92,11 @@ namespace RoadRule.Systems.Pathfind
                     threadDataT.Field("m_Allocator").GetValue<AllocatorHelper<UnsafeLinearAllocator>>().Allocator.Initialize(1048576u);
                 }
                 jobData.m_Allocator = threadDataT.Field("m_Allocator").GetValue<AllocatorHelper<UnsafeLinearAllocator>>();
-                threadDataT
-                    .Field("m_JobHandle")
-                    .SetValue(IJobExtensions.Schedule(jobData, JobHandle.CombineDependencies(jobHandle, instanceT.Property("Dependency").GetValue<JobHandle>())));
+                threadDataT.Field("m_JobHandle").SetValue(IJobExtensions.Schedule(jobData, jobHandle));
+
+                LaneRulesModifiedSystem laneRulesModifiedSystem = __instance.World.GetOrCreateSystemManaged<LaneRulesModifiedSystem>();
+                laneRulesModifiedSystem.AddDependency(threadDataT.Field("m_JobHandle").GetValue<JobHandle>());
+
                 currentActions.m_ReadHandle = JobHandle.CombineDependencies(currentActions.m_ReadHandle, threadDataT.Field("m_JobHandle").GetValue<JobHandle>());
                 if (instanceT.Field("m_ThreadData").Property("Count").GetValue<int>() >= num2)
                 {
@@ -154,7 +143,7 @@ namespace RoadRule.Systems.Pathfind
                 m_HighPriorityCount = 0;
             }
 
-            public unsafe void Add<T>(PathfindQueueSystem.ActionType type, bool isHighPriority, ref T data, Entity owner)
+            public unsafe void Add<T>(PathfindQueueSystem.ActionType type, bool isHighPriority, ref T data, LaneRulesUtils.CarParameters carParameters)
                 where T : struct
             {
                 ref NativeList<PatchedWorkerAction> reference = ref m_Actions;
@@ -162,7 +151,7 @@ namespace RoadRule.Systems.Pathfind
                 {
                     m_Type = type,
                     m_ActionData = UnsafeUtility.AddressOf(ref data),
-                    m_Owner = owner,
+                    m_CarParameters = carParameters,
                 };
                 reference.Add(in value);
                 if (isHighPriority)
@@ -193,7 +182,7 @@ namespace RoadRule.Systems.Pathfind
 
             public unsafe void* m_ActionData;
 
-            public Entity m_Owner;
+            public LaneRulesUtils.CarParameters m_CarParameters;
         }
 
         [BurstCompile]
@@ -223,59 +212,7 @@ namespace RoadRule.Systems.Pathfind
             [NativeDisableUnsafePtrRestriction]
             public AllocatorHelper<UnsafeLinearAllocator> m_Allocator;
 
-            [ReadOnly]
-            public ComponentLookup<LaneRules> m_LaneRulesLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Car> m_CarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Citizen> m_CitizenLookup;
-
-            [ReadOnly]
-            public ComponentLookup<CarKeeper> m_CarKeeperLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Creatures.Resident> m_ResidentLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Ambulance> m_AmbulanceLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.DeliveryTruck> m_DeliveryTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.FireEngine> m_FireEngineLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.GarbageTruck> m_GarbageTruckLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Hearse> m_HearseLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.MaintenanceVehicle> m_MaintenanceVehicleLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PersonalCar> m_PersonalCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PoliceCar> m_PoliceCarLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PostVan> m_PostVanLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.PublicTransport> m_PublicTransportLookup;
-
-            [ReadOnly]
-            public ComponentLookup<Game.Vehicles.Taxi> m_TaxiLookup;
-
-            [ReadOnly]
-            public ComponentLookup<RandomTrafficRequest> m_RandomTrafficRequestLookup;
-
-            [ReadOnly]
-            public ComponentLookup<RouteInfo> m_RouteInfoLookup;
+            public NativeParallelHashMap<Entity, LaneRules>.ReadOnly m_LaneRulesMap;
 
             public unsafe void Execute()
             {
@@ -293,7 +230,7 @@ namespace RoadRule.Systems.Pathfind
                     switch (workerAction.m_Type)
                     {
                         case PathfindQueueSystem.ActionType.Pathfind:
-                            Execute(ref UnsafeUtility.AsRef<PathfindActionData>(workerAction.m_ActionData), num, toAllocator, workerAction.m_Owner);
+                            Execute(ref UnsafeUtility.AsRef<PathfindActionData>(workerAction.m_ActionData), num, toAllocator, workerAction.m_CarParameters);
                             break;
                         case PathfindQueueSystem.ActionType.Coverage:
                             Execute(ref UnsafeUtility.AsRef<CoverageActionData>(workerAction.m_ActionData), toAllocator);
@@ -307,32 +244,8 @@ namespace RoadRule.Systems.Pathfind
                 allocator.Rewind(updateSize: true);
             }
 
-            private void Execute(ref PathfindActionData actionData, int index, Allocator allocator, Entity owner)
+            private void Execute(ref PathfindActionData actionData, int index, Allocator allocator, LaneRulesUtils.CarParameters carParameters)
             {
-                LaneRulesUtils.GetCarParameters(
-                    actionData.m_Parameters.m_Methods,
-                    actionData.m_OriginType,
-                    actionData.m_DestinationType,
-                    owner,
-                    m_CarLookup,
-                    m_CitizenLookup,
-                    m_CarKeeperLookup,
-                    m_ResidentLookup,
-                    m_AmbulanceLookup,
-                    m_DeliveryTruckLookup,
-                    m_FireEngineLookup,
-                    m_GarbageTruckLookup,
-                    m_HearseLookup,
-                    m_MaintenanceVehicleLookup,
-                    m_PersonalCarLookup,
-                    m_PoliceCarLookup,
-                    m_PostVanLookup,
-                    m_PublicTransportLookup,
-                    m_TaxiLookup,
-                    m_RandomTrafficRequestLookup,
-                    m_RouteInfoLookup,
-                    out var carParameters
-                );
                 PatchedPathfindJobs.PatchedPathfindJob.Execute(
                     m_PathfindData,
                     allocator,
@@ -341,8 +254,8 @@ namespace RoadRule.Systems.Pathfind
                     m_MaxPassengerTransportSpeed,
                     m_MaxCargoTransportSpeed,
                     ref actionData,
-                    m_LaneRulesLookup,
-                    carParameters
+                    carParameters,
+                    m_LaneRulesMap
                 );
                 Interlocked.MemoryBarrier();
                 actionData.m_State = PathfindActionState.Completed;

@@ -7,13 +7,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Colossal.Collections;
 using Colossal.Serialization.Entities;
+using Game.Citizens;
 using Game.Common;
 using Game.Pathfind;
 using Game.Prefabs;
+using Game.Routes;
 using Game.Simulation;
+using Game.Vehicles;
 using HarmonyLib;
+using RoadRule.Components;
 using RoadRule.Systems.Pathfind;
+using RoadRule.Utils;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using static Game.Buildings.LocalEffectSystem;
@@ -89,6 +95,29 @@ namespace RoadRule.Patches
                 }
                 instanceT.Field("m_PathfindSetupSystem").GetValue<PathfindSetupSystem>().CompleteSetup();
                 PatchedPathfindQueueSystem.PatchedWorkerActions currentActions = null;
+
+                LaneRulesModifiedSystem laneRulesModifiedSystem = __instance.World.GetOrCreateSystemManaged<LaneRulesModifiedSystem>();
+                NativeParallelHashMap<Entity, LaneRules>.ReadOnly laneRulesMap = laneRulesModifiedSystem.GetLaneRulesMap();
+
+                var carLookup = __instance.GetComponentLookup<Car>(true);
+                var citizenLookup = __instance.GetComponentLookup<Citizen>(true);
+                var carKeeperLookup = __instance.GetComponentLookup<Game.Citizens.CarKeeper>(true);
+                var residentLookup = __instance.GetComponentLookup<Game.Creatures.Resident>(true);
+                var ambulanceLookup = __instance.GetComponentLookup<Game.Vehicles.Ambulance>(true);
+                var deliveryTruckLookup = __instance.GetComponentLookup<Game.Vehicles.DeliveryTruck>(true);
+                var fireEngineLookup = __instance.GetComponentLookup<Game.Vehicles.FireEngine>(true);
+                var garbageTruckLookup = __instance.GetComponentLookup<Game.Vehicles.GarbageTruck>(true);
+                var hearseLookup = __instance.GetComponentLookup<Game.Vehicles.Hearse>(true);
+                var maintenanceVehicleLookup = __instance.GetComponentLookup<Game.Vehicles.MaintenanceVehicle>(true);
+                var personalCarLookup = __instance.GetComponentLookup<Game.Vehicles.PersonalCar>(true);
+                var policeCarLookup = __instance.GetComponentLookup<Game.Vehicles.PoliceCar>(true);
+                var postVanLookup = __instance.GetComponentLookup<Game.Vehicles.PostVan>(true);
+                var publicTransportLookup = __instance.GetComponentLookup<Game.Vehicles.PublicTransport>(true);
+                var taxiLookup = __instance.GetComponentLookup<Game.Vehicles.Taxi>(true);
+                var randomTrafficRequestLookup = __instance.GetComponentLookup<RandomTrafficRequest>(true);
+                var routeInfoLookup = __instance.GetComponentLookup<RouteInfo>(true);
+                instanceT.Method("CompleteDependency").GetValue();
+
                 try
                 {
                     while (true)
@@ -131,7 +160,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value5.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value5.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.CreateEdgesJob { m_Action = value5.m_Action }]);
                                 value5.m_Flags = (value5.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_CreateActions").GetValue<ActionList<CreateAction>>().m_Items[
@@ -150,7 +179,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value10.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value10.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.UpdateEdgesJob { m_Action = value10.m_Action }]);
                                 value10.m_Flags = (value10.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_UpdateActions").GetValue<ActionList<UpdateAction>>().m_Items[
@@ -169,7 +198,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value7.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value7.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.DeleteEdgesJob { m_Action = value7.m_Action }]);
                                 value7.m_Flags = (value7.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_DeleteActions").GetValue<ActionList<DeleteAction>>().m_Items[
@@ -188,7 +217,31 @@ namespace RoadRule.Patches
                                 }
                                 value9.m_Dependencies.Complete();
                                 PatchedPathfindQueueSystem.RequireWorkerActions(ref currentActions);
-                                currentActions.Add(actionType, flag2, ref value9.m_Action.data, value9.m_Owner);
+                                LaneRulesUtils.GetCarParameters(
+                                    value9.m_Action.data.m_Parameters.m_Methods,
+                                    value9.m_Action.data.m_OriginType,
+                                    value9.m_Action.data.m_DestinationType,
+                                    value9.m_Owner,
+                                    carLookup,
+                                    citizenLookup,
+                                    carKeeperLookup,
+                                    residentLookup,
+                                    ambulanceLookup,
+                                    deliveryTruckLookup,
+                                    fireEngineLookup,
+                                    garbageTruckLookup,
+                                    hearseLookup,
+                                    maintenanceVehicleLookup,
+                                    personalCarLookup,
+                                    policeCarLookup,
+                                    postVanLookup,
+                                    publicTransportLookup,
+                                    taxiLookup,
+                                    randomTrafficRequestLookup,
+                                    routeInfoLookup,
+                                    out var carParameters
+                                );
+                                currentActions.Add(actionType, flag2, ref value9.m_Action.data, carParameters);
                                 value9.m_Flags = (value9.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_PathfindActions").GetValue<ActionList<PathfindAction>>().m_Items[
                                     instanceT.Field("m_PathfindActions").GetValue<ActionList<PathfindAction>>().m_NextIndex++
@@ -210,7 +263,7 @@ namespace RoadRule.Patches
                                 }
                                 value3.m_Dependencies.Complete();
                                 PatchedPathfindQueueSystem.RequireWorkerActions(ref currentActions);
-                                currentActions.Add(actionType, flag2, ref value3.m_Action.data, value3.m_Owner);
+                                currentActions.Add(actionType, flag2, ref value3.m_Action.data, new LaneRulesUtils.CarParameters());
                                 value3.m_Flags = (value3.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_CoverageActions").GetValue<ActionList<CoverageAction>>().m_Items[
                                     instanceT.Field("m_CoverageActions").GetValue<ActionList<CoverageAction>>().m_NextIndex++
@@ -232,7 +285,7 @@ namespace RoadRule.Patches
                                 }
                                 value8.m_Dependencies.Complete();
                                 PatchedPathfindQueueSystem.RequireWorkerActions(ref currentActions);
-                                currentActions.Add(actionType, flag2, ref value8.m_Action.data, value8.m_Owner);
+                                currentActions.Add(actionType, flag2, ref value8.m_Action.data, new LaneRulesUtils.CarParameters());
                                 value8.m_Flags = (value8.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_AvailabilityActions").GetValue<ActionList<AvailabilityAction>>().m_Items[
                                     instanceT.Field("m_AvailabilityActions").GetValue<ActionList<AvailabilityAction>>().m_NextIndex++
@@ -254,7 +307,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value6.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value6.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.SetDensityJob { m_Action = value6.m_Action }]);
                                 value6.m_Flags = (value6.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_DensityActions").GetValue<ActionList<DensityAction>>().m_Items[
@@ -273,7 +326,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value4.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value4.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.SetTimeJob { m_Action = value4.m_Action }]);
                                 value4.m_Flags = (value4.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_TimeActions").GetValue<ActionList<TimeAction>>().m_Items[
@@ -292,7 +345,7 @@ namespace RoadRule.Patches
                                     return false;
                                 }
                                 value2.m_Dependencies.Complete();
-                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                                PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                                 value2.m_Dependencies = (JobHandle)method.Invoke(instanceT.GetValue(), [new ModificationJobs.SetFlowJob { m_Action = value2.m_Action }]);
                                 value2.m_Flags = (value2.m_Flags & ~PathFlags.Pending) | PathFlags.Scheduled;
                                 instanceT.Field("m_FlowActions").GetValue<ActionList<FlowAction>>().m_Items[
@@ -317,7 +370,7 @@ namespace RoadRule.Patches
                 }
                 finally
                 {
-                    PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance);
+                    PatchedPathfindQueueSystem.PatchedScheduleWorkerJobs(ref currentActions, ref __instance, laneRulesMap);
                 }
 
                 return false;

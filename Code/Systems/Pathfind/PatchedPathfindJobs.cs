@@ -196,10 +196,9 @@ namespace RoadRule.Systems.Pathfind
 
             private UnsafeList<NodeData> m_NodeData;
 
-            [ReadOnly]
-            public ComponentLookup<LaneRules> m_LaneRulesLookup;
-
             public LaneRulesUtils.CarParameters m_CarParameters;
+
+            public NativeParallelHashMap<Entity, LaneRules>.ReadOnly m_LaneRulesMap;
 
             public void Initialize(
                 NativePathfindData pathfindData,
@@ -209,8 +208,8 @@ namespace RoadRule.Systems.Pathfind
                 PathfindHeuristicData pathfindHeuristicData,
                 float maxPassengerTransportSpeed,
                 float maxCargoTransportSpeed,
-                ComponentLookup<LaneRules> laneRulesLookup,
-                LaneRulesUtils.CarParameters carParameters
+                LaneRulesUtils.CarParameters carParameters,
+                NativeParallelHashMap<Entity, LaneRules>.ReadOnly laneRulesMap
             )
             {
                 m_PathfindData = pathfindData.GetReadOnlyData();
@@ -298,8 +297,8 @@ namespace RoadRule.Systems.Pathfind
                 m_NodeData = new UnsafeList<NodeData>(10000, allocator);
                 m_NodeIndex.Resize(num);
                 m_NodeIndexBits.Resize(num2, NativeArrayOptions.ClearMemory);
-                m_LaneRulesLookup = laneRulesLookup;
                 m_CarParameters = carParameters;
+                m_LaneRulesMap = laneRulesMap;
             }
 
             public void Release()
@@ -1330,7 +1329,7 @@ namespace RoadRule.Systems.Pathfind
                 isPrefer = false;
                 isForbidden = false;
                 isDisallow = false;
-                if (m_LaneRulesLookup.TryGetComponent(edgeEntity, out var laneRules))
+                if (m_LaneRulesMap.TryGetValue(edgeEntity, out var laneRules))
                 {
                     if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
                     {
@@ -1367,10 +1366,9 @@ namespace RoadRule.Systems.Pathfind
 
             public PathfindAction m_Action;
 
-            [ReadOnly]
-            public ComponentLookup<LaneRules> m_LaneRulesLookup;
-
             public LaneRulesUtils.CarParameters m_CarParameters;
+
+            public NativeParallelHashMap<Entity, LaneRules>.ReadOnly m_LaneRulesMap;
 
             public void Execute()
             {
@@ -1382,8 +1380,8 @@ namespace RoadRule.Systems.Pathfind
                     m_MaxPassengerTransportSpeed,
                     m_MaxCargoTransportSpeed,
                     ref m_Action.data,
-                    m_LaneRulesLookup,
-                    m_CarParameters
+                    m_CarParameters,
+                    m_LaneRulesMap
                 );
             }
 
@@ -1395,8 +1393,8 @@ namespace RoadRule.Systems.Pathfind
                 float maxPassengerTransportSpeed,
                 float maxCargoTransportSpeed,
                 ref PathfindActionData actionData,
-                ComponentLookup<LaneRules> laneRulesLookup,
-                LaneRulesUtils.CarParameters carParameters
+                LaneRulesUtils.CarParameters carParameters,
+                NativeParallelHashMap<Entity, LaneRules>.ReadOnly laneRulesMap
             )
             {
                 PathfindResult value = new PathfindResult
@@ -1436,8 +1434,8 @@ namespace RoadRule.Systems.Pathfind
                         pathfindHeuristicData,
                         maxPassengerTransportSpeed,
                         maxCargoTransportSpeed,
-                        laneRulesLookup,
-                        carParameters
+                        carParameters,
+                        laneRulesMap
                     );
                     pathfindExecutor.AddTargets(actionData.m_StartTargets, actionData.m_EndTargets, ref value.m_ErrorCode);
                     int endNode;

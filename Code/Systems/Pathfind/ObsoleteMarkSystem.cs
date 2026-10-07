@@ -20,10 +20,10 @@ using Unity.Jobs;
 
 namespace RoadRule.Systems.Pathfind
 {
-    public partial class ObsoleteMarkerSystem : GameSystemBase
+    public partial class ObsoleteMarkSystem : GameSystemBase
     {
         [BurstCompile]
-        private struct ObsoleteMarkerJob : IJobChunk
+        private struct ObsoleteMarkJob : IJobChunk
         {
             [ReadOnly]
             public EntityTypeHandle m_EntityType;
@@ -90,7 +90,7 @@ namespace RoadRule.Systems.Pathfind
         protected override void OnUpdate()
         {
             Dependency = JobChunkExtensions.ScheduleParallel(
-                new ObsoleteMarkerJob
+                new ObsoleteMarkJob
                 {
                     m_EntityType = SystemAPI.GetEntityTypeHandle(),
                     m_PathfindReprocessRequestType = SystemAPI.GetComponentTypeHandle<PathfindReprocessRequest>(true),

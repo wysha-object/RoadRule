@@ -312,6 +312,7 @@ namespace RoadRule.Systems.UI
 
                                 laneRules = LaneRulesValue.ApplyRulesValue(laneRules, value);
                                 EntityManager.SetComponentData(e, laneRules);
+                                EntityManager.AddComponentData(e, new Updated());
                             }
                         }
                         else if (inputValue.key == "car-lane")
@@ -334,7 +335,6 @@ namespace RoadRule.Systems.UI
                         }
 
                         m_GetLanesBinding.Update();
-                        m_ObsoleteCheckSystem.UpdateAll();
                         return "";
                     }
                 )
