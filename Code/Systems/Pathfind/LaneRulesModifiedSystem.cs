@@ -93,7 +93,7 @@ namespace RoadRule.Systems.Pathfind
             }
         }
 
-        public EndFrameBarrier m_EndFrameBarrier;
+        public ModificationEndBarrier m_ModificationEndBarrier;
 
         public SimulationSystem m_SimulationSystem;
 
@@ -142,7 +142,7 @@ namespace RoadRule.Systems.Pathfind
         {
             base.OnCreate();
 
-            m_EndFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            m_ModificationEndBarrier = World.GetOrCreateSystemManaged<ModificationEndBarrier>();
             m_SimulationSystem = World.GetOrCreateSystemManaged<SimulationSystem>();
             m_UpdatedLaneRulesEntityQuery = GetEntityQuery(
                 new EntityQueryDesc
@@ -203,14 +203,14 @@ namespace RoadRule.Systems.Pathfind
                     {
                         m_EntityType = SystemAPI.GetEntityTypeHandle(),
                         m_TargetType = SystemAPI.GetComponentTypeHandle<Target>(true),
-                        m_EntityCommandBuffer = m_EndFrameBarrier.CreateCommandBuffer().AsParallelWriter(),
+                        m_EntityCommandBuffer = m_ModificationEndBarrier.CreateCommandBuffer().AsParallelWriter(),
                         m_Frame = m_SimulationSystem.frameIndex,
                         m_RequestCount = requestCount,
                     },
                     m_NeedMarkEntityQuery,
                     Dependency
                 );
-                m_EndFrameBarrier.AddJobHandleForProducer(Dependency);
+                m_ModificationEndBarrier.AddJobHandleForProducer(Dependency);
                 requestCount.Dispose(Dependency);
 
                 Dependency = JobHandle.CombineDependencies(Dependency, m_LaneRulesMapGenerateDependency);
