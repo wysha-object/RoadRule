@@ -1,16 +1,20 @@
 import { useValue, bindValue, call } from 'cs2/api'
-import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition } from 'types'
+import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition, Position, ScreenPoint } from 'types'
 
 export function useGetToolStateCmd(): ToolState {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetToolState')))
 }
-
-export function useGetCameraCmd(): {
-  position: { x: number; y: number; z: number }
-  rotation: { x: number; y: number; z: number }
-} {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetCamera')))
+export function useGetAllLaneGroupCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLaneGroup')))
 }
+export function useGetAllLaneCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLane')))
+}
+
+export function useGetScreenPointCmd(): Record<string, {position: Position, screenPoint: ScreenPoint}[]> {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetScreenPoint')))
+}
+
 export function useGetLanesCmd(): Record<
   number,
   {
@@ -28,12 +32,6 @@ export function useGetSelectedEdgeEntityCmd(): Edge[] {
 }
 export function useGetCompositionCmd(): Composition {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetComposition')))
-}
-export function useGetAllLaneGroupCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLaneGroup')))
-}
-export function useGetAllLaneCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLane')))
 }
 
 export async function setToolStateCmd(inputValue: ToolState): Promise<void> {
@@ -75,4 +73,7 @@ export async function removeSelectedLaneIndex(
 }
 export async function clearSelectedLaneIndex(): Promise<void> {
   return await call('RoadRule', 'ClearSelectedLaneIndex', '')
+}
+export async function requestScreenPoint(key: string, positions: Position[]): Promise<void> {
+  return await call('RoadRule', 'RequestScreenPoint', JSON.stringify({ key, positions }))
 }

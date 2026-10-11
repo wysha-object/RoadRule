@@ -18,7 +18,8 @@ namespace RoadRule.Systems.UI
     public partial class UISystem
     {
         private ValueBinding<int> m_GetToolStateBinding;
-        private GetterValueBinding<string> m_GetCameraBinding;
+        private ValueBinding<string> m_GetAllLaneGroupBinding;
+        private ValueBinding<string> m_GetAllLaneBinding;
         private GetterValueBinding<string> m_GetLanesBinding;
         private GetterValueBinding<string> m_GetSelectedLaneIndexBinding;
         private GetterValueBinding<string> m_GetSelectedEdgeBinding;
@@ -27,56 +28,50 @@ namespace RoadRule.Systems.UI
         private void AddUIBindings()
         {
             AddBinding(m_GetToolStateBinding = new ValueBinding<int>("RoadRule", "GetToolState", (int)ToolState.Disabled));
+            AddBinding(m_GetAllLaneGroupBinding = new ValueBinding<string>("RoadRule", "GetAllLaneGroup", "[]"));
+            AddBinding(m_GetAllLaneBinding = new ValueBinding<string>("RoadRule", "GetAllLane", "[]"));
 
-            AddBinding(
-                m_GetCameraBinding = new GetterValueBinding<string>(
+            AddUpdateBinding(
+                new GetterValueBinding<string>(
                     "RoadRule",
-                    "GetCamera",
+                    "GetScreenPoint",
                     () =>
                     {
+                        var rs = new Dictionary<string, List<object>>();
                         var camera = m_CameraUpdateSystem.activeCamera;
                         if (camera == null)
                         {
-                            return JsonConvert.SerializeObject(
-                                new
-                                {
-                                    position = new
-                                    {
-                                        x = 0f,
-                                        y = 0f,
-                                        z = 0f,
-                                    },
-                                    rotation = new
-                                    {
-                                        x = 0f,
-                                        y = 0f,
-                                        z = 0f,
-                                    },
-                                }
-                            );
+                            return JsonConvert.SerializeObject(new Dictionary<int, object>());
                         }
-                        var position = camera.transform.position;
-                        var rotation = camera.transform.rotation;
-                        return JsonConvert.SerializeObject(
-                            new
+                        foreach (var kvp in m_ScreenPointRequest)
+                        {
+                            rs[kvp.Key] = new List<object>();
+                            if (kvp.Value == null)
                             {
-                                position = new
-                                {
-                                    x = position.x,
-                                    y = position.y,
-                                    z = position.z,
-                                },
-                                rotation = new
-                                {
-                                    x = rotation.eulerAngles.x,
-                                    y = rotation.eulerAngles.y,
-                                    z = rotation.eulerAngles.z,
-                                },
+                                continue;
                             }
-                        );
+                            foreach (var position in kvp.Value)
+                            {
+                                var screenPoint = camera.WorldToScreenPoint(new Vector3(position.x, position.y, position.z));
+                                if (
+                                    screenPoint.x < 0
+                                    || screenPoint.x > Screen.width
+                                    || screenPoint.y < 0
+                                    || screenPoint.y > Screen.height
+                                    || screenPoint.z < camera.nearClipPlane
+                                    || screenPoint.z > MAX_DISPLAY_DISTANCE
+                                )
+                                {
+                                    continue;
+                                }
+                                rs[kvp.Key].Add(new { position = position, screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint) });
+                            }
+                        }
+                        return JsonConvert.SerializeObject(rs);
                     }
                 )
             );
+
             AddBinding(
                 m_GetLanesBinding = new GetterValueBinding<string>(
                     "RoadRule",
@@ -134,7 +129,6 @@ namespace RoadRule.Systems.UI
                                             y = worldPosition.y,
                                             z = worldPosition.z,
                                         },
-                                        screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
                                         laneRules = laneRulesValue.Value,
                                         carLane = CarLaneValue.Value,
                                     }
@@ -181,7 +175,6 @@ namespace RoadRule.Systems.UI
                                             y = masterWorldPosition.y,
                                             z = masterWorldPosition.z,
                                         },
-                                        screenPoint = ScreenPointValue.FromScreenPoint(camera, masterScreenPoint),
                                         laneRules = masterLaneRulesValue.Value,
                                         carLane = masterCarLaneValue.Value,
                                     },
@@ -233,7 +226,6 @@ namespace RoadRule.Systems.UI
                                         y = worldPosition.y,
                                         z = worldPosition.z,
                                     },
-                                    screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
                                 }
                             );
                         }
@@ -256,8 +248,6 @@ namespace RoadRule.Systems.UI
                     }
                 )
             );
-            AddUpdateBinding(new GetterValueBinding<string>("RoadRule", "GetAllLaneGroup", () => JsonConvert.SerializeObject(m_AllLaneGroupList)));
-            AddUpdateBinding(new GetterValueBinding<string>("RoadRule", "GetAllLane", () => JsonConvert.SerializeObject(m_AllLaneList)));
 
             AddBinding(
                 new CallBinding<int, string>(
@@ -397,6 +387,18 @@ namespace RoadRule.Systems.UI
                     (inputValue) =>
                     {
                         ClearSelectedLaneIndex();
+                        return "";
+                    }
+                )
+            );
+            AddBinding(
+                new CallBinding<string, string>(
+                    "RoadRule",
+                    "RequestScreenPoint",
+                    (inputJsonString) =>
+                    {
+                        var inputValue = JsonConvert.DeserializeAnonymousType(inputJsonString, new { key = "", positions = new PositionValue[0] });
+                        m_ScreenPointRequest[inputValue.key] = inputValue.positions;
                         return "";
                     }
                 )

@@ -19,7 +19,7 @@ import InfosignSpeedLimit from 'assets/images/infosign-speed-limit.svg'
 export default function LanePage(props: {
     lane: Lane,
     defaultSpeedLimit: number,
-    zIndex: number
+    style?: CSSProperties
 }) {
     const emergencyVehiclesRules = useMemo(() => {
         const { ambulance, fireEngine, policeCar } = props.lane.laneRules.vehicleTypeRules
@@ -102,14 +102,7 @@ export default function LanePage(props: {
 
     return (
         <BasePage
-            style={{
-                top: props.lane.screenPoint.top,
-                left: props.lane.screenPoint.left,
-                opacity: props.lane.screenPoint.distance > 500 ? 1 - ((props.lane.screenPoint.distance - 500) / (MAX_DISPLAY_DISTANCE - 500)) : 1,
-                transformOrigin: 'top left',
-                transform: `translate(-20%, -10%) scale(${props.lane.screenPoint.scale}) translate(-50%, -50%)`,
-                zIndex: props.zIndex
-            }}
+            style={props.style}
         >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {props.lane.carLane.speedLimit.value !== props.defaultSpeedLimit &&

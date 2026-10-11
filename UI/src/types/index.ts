@@ -62,7 +62,6 @@ export interface CarLaneValue {
 export interface Lane {
   laneIndex: number
   position: Position
-  screenPoint: ScreenPoint
   laneRules: LaneRulesValue
   carLane: CarLaneValue
 }
@@ -70,7 +69,6 @@ export interface Lane {
 export interface Edge {
   edgeEntity: Entity
   position: Position
-  screenPoint: ScreenPoint
 }
 
 export interface Position {

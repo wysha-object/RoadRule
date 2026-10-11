@@ -290,7 +290,6 @@ namespace RoadRule.Systems.UI
         {
             public int laneIndex;
             public PositionValue position;
-            public ScreenPointValue screenPoint;
             public LaneRulesValue laneRules;
             public CarLaneValue carLane;
         }
@@ -324,6 +323,12 @@ namespace RoadRule.Systems.UI
                     scale = referenceW / pointW,
                 };
             }
+        }
+
+        private struct GetLaneResultItem
+        {
+            public LaneValue lane;
+            public float defaultSpeedLimit;
         }
     }
 }

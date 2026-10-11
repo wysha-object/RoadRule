@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +11,7 @@ using Game.Prefabs;
 using Game.Rendering;
 using Game.Tools;
 using Game.UI;
+using Newtonsoft.Json;
 using RoadRule.Components;
 using RoadRule.Systems.Pathfind;
 using RoadRule.Utils;
@@ -347,10 +348,9 @@ namespace RoadRule.Systems.UI
         private EntityQuery m_UpdatedLaneRulesEntityQuery;
         private EntityQuery m_AllLaneGroupEntityQuery;
         private EntityQuery m_AllLaneEntityQuery;
-        private NativeList<GetLaneResult> m_AllLaneGroupResultList;
-        private NativeList<GetLaneResult> m_AllLaneResultList;
-        private List<object> m_AllLaneGroupList;
-        private List<object> m_AllLaneList;
+        private NativeList<GetLaneJobResultItem> m_AllLaneGroupResultList;
+        private NativeList<GetLaneJobResultItem> m_AllLaneResultList;
+        private Dictionary<string, PositionValue[]> m_ScreenPointRequest;
 
         public void AddSelectedEdgeEntity(Entity selectedEdgeEntity)
         {
@@ -559,42 +559,25 @@ namespace RoadRule.Systems.UI
             return result;
         }
 
-        private void UpdateList(NativeList<GetLaneResult> nativeList, List<object> list)
+        private void UpdateList(NativeList<GetLaneJobResultItem> input, List<GetLaneResultItem> output)
         {
-            list.Clear();
-            var camera = m_CameraUpdateSystem.activeCamera;
-            if (camera != null)
+            output.Clear();
+            foreach (var item in input)
             {
-                foreach (var item in nativeList)
-                {
-                    var lane = item.lane;
-                    var screenPoint = camera.WorldToScreenPoint(new Vector3(lane.position.x, lane.position.y, lane.position.z));
-                    if (
-                        screenPoint.x < 0
-                        || screenPoint.x > Screen.width
-                        || screenPoint.y < 0
-                        || screenPoint.y > Screen.height
-                        || screenPoint.z < camera.nearClipPlane
-                        || screenPoint.z > MAX_DISPLAY_DISTANCE
-                    )
+                var lane = item.m_Lane;
+                output.Add(
+                    new GetLaneResultItem()
                     {
-                        continue;
-                    }
-                    list.Add(
-                        new
+                        lane = new LaneValue()
                         {
-                            lane = new LaneValue()
-                            {
-                                laneIndex = lane.laneIndex,
-                                position = lane.position,
-                                screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
-                                laneRules = lane.laneRules,
-                                carLane = lane.carLane,
-                            },
-                            defaultSpeedLimit = item.defaultSpeedLimit,
-                        }
-                    );
-                }
+                            laneIndex = lane.laneIndex,
+                            position = lane.position,
+                            laneRules = lane.laneRules,
+                            carLane = lane.carLane,
+                        },
+                        defaultSpeedLimit = item.m_DefaultSpeedLimit,
+                    }
+                );
             }
         }
 
@@ -643,32 +626,25 @@ namespace RoadRule.Systems.UI
                 }
             );
 
-            m_AllLaneGroupResultList = new NativeList<GetLaneResult>(Allocator.Persistent);
-            m_AllLaneResultList = new NativeList<GetLaneResult>(Allocator.Persistent);
+            m_AllLaneGroupResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
+            m_AllLaneResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
 
-            m_AllLaneGroupList = new List<object>();
-            m_AllLaneList = new List<object>();
+            m_AllLaneGroupList = new List<GetLaneResultItem>();
+            m_AllLaneList = new List<GetLaneResultItem>();
+
+            m_ScreenPointRequest = new Dictionary<string, PositionValue[]>();
 
             AddUIBindings();
             SetupKeyBindings();
         }
 
-        private float3 m_PrevCameraPosition;
-        private Vector3 m_PrevCameraRotation;
+        private List<GetLaneResultItem> m_AllLaneGroupList;
+        private List<GetLaneResultItem> m_AllLaneList;
 
         protected override void OnUpdate()
         {
             base.OnUpdate();
             JobHandle jobHandle = Dependency;
-            var camera = m_CameraUpdateSystem.activeCamera;
-            if (camera != null && (!Equals(m_PrevCameraPosition, camera.transform.position) || !Equals(m_PrevCameraRotation, camera.transform.rotation.eulerAngles)))
-            {
-                m_PrevCameraPosition = camera.transform.position;
-                m_PrevCameraRotation = camera.transform.rotation.eulerAngles;
-                m_GetLanesBinding.Update();
-                m_GetSelectedEdgeBinding.Update();
-                m_GetCameraBinding.Update();
-            }
             jobHandle = ScheduleOverlayJob(jobHandle);
             if (m_UpdatedLaneRulesEntityQuery.CalculateEntityCount() > 0)
             {
@@ -678,9 +654,11 @@ namespace RoadRule.Systems.UI
                 m_AllLaneResultList.Clear();
                 m_AllLaneResultList.Capacity = m_AllLaneEntityQuery.CalculateEntityCount();
                 ScheduleGetLaneJob(m_AllLaneEntityQuery, m_AllLaneResultList);
+                UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
+                UpdateList(m_AllLaneResultList, m_AllLaneList);
+                m_GetAllLaneGroupBinding.Update(JsonConvert.SerializeObject(m_AllLaneGroupList));
+                m_GetAllLaneBinding.Update(JsonConvert.SerializeObject(m_AllLaneList));
             }
-            UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
-            UpdateList(m_AllLaneResultList, m_AllLaneList);
             Dependency = jobHandle;
         }
 

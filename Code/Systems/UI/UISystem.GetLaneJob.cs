@@ -24,10 +24,10 @@ namespace RoadRule.Systems.UI
     {
         private static readonly int MAX_DISPLAY_DISTANCE = 2000;
 
-        private struct GetLaneResult
+        private struct GetLaneJobResultItem
         {
-            public LaneValue lane;
-            public float defaultSpeedLimit;
+            public LaneValue m_Lane;
+            public float m_DefaultSpeedLimit;
         }
 
         [BurstCompile]
@@ -57,7 +57,7 @@ namespace RoadRule.Systems.UI
             [ReadOnly]
             public ComponentLookup<RoadComposition> m_RoadCompositionLookup;
 
-            public NativeList<GetLaneResult>.ParallelWriter m_ResultList;
+            public NativeList<GetLaneJobResultItem>.ParallelWriter m_ResultList;
 
             public void Execute(in ArchetypeChunk chunk, int unfilteredChunkIndex, bool useEnabledMask, in v128 chunkEnabledMask)
             {
@@ -111,11 +111,18 @@ namespace RoadRule.Systems.UI
                             continue;
                         }
 
-                        var worldPosition = delta.x == 0 ? (curve.m_Bezier.c + curve.m_Bezier.d) * 0.5f : (curve.m_Bezier.a + curve.m_Bezier.b) * 0.5f;
+                        var worldPosition =
+                            delta.x == 0
+                                ? delta.y == 1
+                                    ? (curve.m_Bezier.a + curve.m_Bezier.b + curve.m_Bezier.c + curve.m_Bezier.d) * 0.25f
+                                    : (curve.m_Bezier.c + curve.m_Bezier.d) * 0.5f
+                                : delta.x == 1
+                                    ? (curve.m_Bezier.a + curve.m_Bezier.b + curve.m_Bezier.c + curve.m_Bezier.d) * 0.25f
+                                    : (curve.m_Bezier.a + curve.m_Bezier.b) * 0.5f;
                         m_ResultList.AddNoResize(
-                            new GetLaneResult
+                            new GetLaneJobResultItem
                             {
-                                lane = new LaneValue()
+                                m_Lane = new LaneValue()
                                 {
                                     laneIndex = lane.m_MiddleNode.GetLaneIndex() & 0xff,
                                     position = new PositionValue()
@@ -127,7 +134,7 @@ namespace RoadRule.Systems.UI
                                     laneRules = LaneRulesValue.FromRules(laneRules),
                                     carLane = CarLaneValue.FromCarLane(carLane),
                                 },
-                                defaultSpeedLimit = defaultSpeedLimit,
+                                m_DefaultSpeedLimit = defaultSpeedLimit,
                             }
                         );
                     }
@@ -135,7 +142,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private void ScheduleGetLaneJob(EntityQuery entityQuery, NativeList<GetLaneResult> laneValueList)
+        private void ScheduleGetLaneJob(EntityQuery entityQuery, NativeList<GetLaneJobResultItem> laneValueList)
         {
             JobChunkExtensions
                 .ScheduleParallel(
