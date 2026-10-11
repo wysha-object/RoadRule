@@ -347,6 +347,8 @@ namespace RoadRule.Systems.UI
         private EntityQuery m_UpdatedLaneRulesEntityQuery;
         private EntityQuery m_AllLaneGroupEntityQuery;
         private EntityQuery m_AllLaneEntityQuery;
+        private NativeList<GetLaneResult> m_AllLaneGroupResultList;
+        private NativeList<GetLaneResult> m_AllLaneResultList;
         private List<object> m_AllLaneGroupList;
         private List<object> m_AllLaneList;
 
@@ -557,6 +559,45 @@ namespace RoadRule.Systems.UI
             return result;
         }
 
+        private void UpdateList(NativeList<GetLaneResult> nativeList, List<object> list)
+        {
+            list.Clear();
+            var camera = m_CameraUpdateSystem.activeCamera;
+            if (camera != null)
+            {
+                foreach (var item in nativeList)
+                {
+                    var lane = item.lane;
+                    var screenPoint = camera.WorldToScreenPoint(new Vector3(lane.position.x, lane.position.y, lane.position.z));
+                    if (
+                        screenPoint.x < 0
+                        || screenPoint.x > Screen.width
+                        || screenPoint.y < 0
+                        || screenPoint.y > Screen.height
+                        || screenPoint.z < camera.nearClipPlane
+                        || screenPoint.z > MAX_DISPLAY_DISTANCE
+                    )
+                    {
+                        continue;
+                    }
+                    list.Add(
+                        new
+                        {
+                            lane = new LaneValue()
+                            {
+                                laneIndex = lane.laneIndex,
+                                position = lane.position,
+                                screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
+                                laneRules = lane.laneRules,
+                                carLane = lane.carLane,
+                            },
+                            defaultSpeedLimit = item.defaultSpeedLimit,
+                        }
+                    );
+                }
+            }
+        }
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -576,16 +617,37 @@ namespace RoadRule.Systems.UI
             m_AllLaneGroupEntityQuery = GetEntityQuery(
                 new EntityQueryDesc
                 {
-                    All = [ComponentType.ReadOnly<Curve>(), ComponentType.ReadOnly<Lane>(), ComponentType.ReadOnly<Game.Net.CarLane>()],
+                    All =
+                    [
+                        ComponentType.ReadOnly<Owner>(),
+                        ComponentType.ReadOnly<Curve>(),
+                        ComponentType.ReadOnly<Lane>(),
+                        ComponentType.ReadOnly<EdgeLane>(),
+                        ComponentType.ReadOnly<Game.Net.CarLane>(),
+                    ],
                     None = [ComponentType.ReadOnly<SlaveLane>()],
                 }
             );
             m_AllLaneEntityQuery = GetEntityQuery(
                 new EntityQueryDesc
                 {
-                    All = [ComponentType.ReadOnly<Curve>(), ComponentType.ReadOnly<Lane>(), ComponentType.ReadOnly<Game.Net.CarLane>(), ComponentType.ReadOnly<SlaveLane>()],
+                    All =
+                    [
+                        ComponentType.ReadOnly<Owner>(),
+                        ComponentType.ReadOnly<Curve>(),
+                        ComponentType.ReadOnly<Lane>(),
+                        ComponentType.ReadOnly<EdgeLane>(),
+                        ComponentType.ReadOnly<Game.Net.CarLane>(),
+                        ComponentType.ReadOnly<SlaveLane>(),
+                    ],
                 }
             );
+
+            m_AllLaneGroupResultList = new NativeList<GetLaneResult>(Allocator.Persistent);
+            m_AllLaneResultList = new NativeList<GetLaneResult>(Allocator.Persistent);
+
+            m_AllLaneGroupList = new List<object>();
+            m_AllLaneList = new List<object>();
 
             AddUIBindings();
             SetupKeyBindings();
@@ -610,10 +672,24 @@ namespace RoadRule.Systems.UI
             jobHandle = ScheduleOverlayJob(jobHandle);
             if (m_UpdatedLaneRulesEntityQuery.CalculateEntityCount() > 0)
             {
-                ScheduleGetLaneJob(m_AllLaneGroupEntityQuery, out m_AllLaneGroupList);
-                ScheduleGetLaneJob(m_AllLaneEntityQuery, out m_AllLaneList);
+                m_AllLaneGroupResultList.Clear();
+                m_AllLaneGroupResultList.Capacity = m_AllLaneGroupEntityQuery.CalculateEntityCount();
+                ScheduleGetLaneJob(m_AllLaneGroupEntityQuery, m_AllLaneGroupResultList);
+                m_AllLaneResultList.Clear();
+                m_AllLaneResultList.Capacity = m_AllLaneEntityQuery.CalculateEntityCount();
+                ScheduleGetLaneJob(m_AllLaneEntityQuery, m_AllLaneResultList);
             }
+            UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
+            UpdateList(m_AllLaneResultList, m_AllLaneList);
             Dependency = jobHandle;
+        }
+
+        protected override void OnDestroy()
+        {
+            ClearSelectedEdgeEntity();
+            base.OnDestroy();
+            m_AllLaneGroupResultList.Dispose();
+            m_AllLaneResultList.Dispose();
         }
     }
 }

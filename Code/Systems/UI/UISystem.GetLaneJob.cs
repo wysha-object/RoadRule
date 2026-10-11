@@ -135,67 +135,26 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private void ScheduleGetLaneJob(EntityQuery entityQuery, out List<object> laneValueList)
+        private void ScheduleGetLaneJob(EntityQuery entityQuery, NativeList<GetLaneResult> laneValueList)
         {
-            laneValueList = new List<object>();
-
-            var camera = m_CameraUpdateSystem.activeCamera;
-            if (camera != null)
-            {
-                var nativeList = new NativeList<GetLaneResult>(entityQuery.CalculateEntityCount(), Allocator.TempJob);
-                JobChunkExtensions
-                    .ScheduleParallel(
-                        new GetLaneJob()
-                        {
-                            m_CurveType = SystemAPI.GetComponentTypeHandle<Curve>(true),
-                            m_LaneType = SystemAPI.GetComponentTypeHandle<Lane>(true),
-                            m_EdgeLaneType = SystemAPI.GetComponentTypeHandle<EdgeLane>(true),
-                            m_CarLaneType = SystemAPI.GetComponentTypeHandle<Game.Net.CarLane>(true),
-                            m_LaneRulesType = SystemAPI.GetComponentTypeHandle<LaneRules>(true),
-                            m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>(true),
-                            m_CompositionLookup = SystemAPI.GetComponentLookup<Composition>(true),
-                            m_RoadCompositionLookup = SystemAPI.GetComponentLookup<RoadComposition>(true),
-                            m_ResultList = nativeList.AsParallelWriter(),
-                        },
-                        entityQuery,
-                        new JobHandle()
-                    )
-                    .Complete();
-
-                foreach (var item in nativeList)
-                {
-                    var lane = item.lane;
-                    var screenPoint = camera.WorldToScreenPoint(new Vector3(lane.position.x, lane.position.y, lane.position.z));
-                    if (
-                        screenPoint.x < 0
-                        || screenPoint.x > Screen.width
-                        || screenPoint.y < 0
-                        || screenPoint.y > Screen.height
-                        || screenPoint.z < camera.nearClipPlane
-                        || screenPoint.z > MAX_DISPLAY_DISTANCE
-                    )
+            JobChunkExtensions
+                .ScheduleParallel(
+                    new GetLaneJob()
                     {
-                        continue;
-                    }
-                    laneValueList.Add(
-                        new
-                        {
-                            lane = new LaneValue()
-                            {
-                                laneIndex = lane.laneIndex,
-                                position = lane.position,
-                                screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
-                                laneRules = lane.laneRules,
-                                carLane = lane.carLane,
-                            },
-                            defaultSpeedLimit = item.defaultSpeedLimit,
-                        }
-                    );
-                }
-
-                nativeList.Dispose();
-            }
-
+                        m_CurveType = SystemAPI.GetComponentTypeHandle<Curve>(true),
+                        m_LaneType = SystemAPI.GetComponentTypeHandle<Lane>(true),
+                        m_EdgeLaneType = SystemAPI.GetComponentTypeHandle<EdgeLane>(true),
+                        m_CarLaneType = SystemAPI.GetComponentTypeHandle<Game.Net.CarLane>(true),
+                        m_LaneRulesType = SystemAPI.GetComponentTypeHandle<LaneRules>(true),
+                        m_OwnerType = SystemAPI.GetComponentTypeHandle<Owner>(true),
+                        m_CompositionLookup = SystemAPI.GetComponentLookup<Composition>(true),
+                        m_RoadCompositionLookup = SystemAPI.GetComponentLookup<RoadComposition>(true),
+                        m_ResultList = laneValueList.AsParallelWriter(),
+                    },
+                    entityQuery,
+                    new JobHandle()
+                )
+                .Complete();
             return;
         }
     }
