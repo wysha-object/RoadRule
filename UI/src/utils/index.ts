@@ -8,8 +8,6 @@ import {
   RuleValue,
 } from 'types'
 
-export const MAX_DISPLAY_DISTANCE = 2000;
-
 export function mergeRuleValues(
   a: RuleValue,
   b: RuleValue,

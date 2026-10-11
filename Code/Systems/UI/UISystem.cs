@@ -350,7 +350,6 @@ namespace RoadRule.Systems.UI
         private EntityQuery m_AllLaneEntityQuery;
         private NativeList<GetLaneJobResultItem> m_AllLaneGroupResultList;
         private NativeList<GetLaneJobResultItem> m_AllLaneResultList;
-        private Dictionary<string, PositionValue[]> m_ScreenPointRequest;
 
         public void AddSelectedEdgeEntity(Entity selectedEdgeEntity)
         {
@@ -631,8 +630,6 @@ namespace RoadRule.Systems.UI
 
             m_AllLaneGroupList = new List<GetLaneResultItem>();
             m_AllLaneList = new List<GetLaneResultItem>();
-
-            m_ScreenPointRequest = new Dictionary<string, PositionValue[]>();
 
             AddUIBindings();
             SetupKeyBindings();

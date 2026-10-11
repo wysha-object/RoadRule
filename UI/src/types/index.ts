@@ -84,6 +84,22 @@ export interface ScreenPoint {
   scale: number
 }
 
+export type Matrix4x4 = [
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+  number, number, number, number,
+]
+
+export interface Camera {
+  worldToCameraMatrix: Matrix4x4
+  projectionMatrix: Matrix4x4
+  nearClipPlane: number
+  screenWidth: number
+  screenHeight: number
+  pixelRect: { x: number; y: number; width: number; height: number }
+}
+
 export interface Composition {
   speedLimit: number
 }

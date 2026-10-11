@@ -1,5 +1,5 @@
 import { useValue, bindValue, call } from 'cs2/api'
-import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition, Position, ScreenPoint } from 'types'
+import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition, Camera } from 'types'
 
 export function useGetToolStateCmd(): ToolState {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetToolState')))
@@ -11,8 +11,8 @@ export function useGetAllLaneCmd(): { lane: Lane; defaultSpeedLimit: number }[] 
   return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLane')))
 }
 
-export function useGetScreenPointCmd(): Record<string, {position: Position, screenPoint: ScreenPoint}[]> {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetScreenPoint')))
+export function useGetCameraCmd(): Camera | null {
+  return JSON.parse(useValue(bindValue<string>('RoadRule', 'GetCamera')))
 }
 
 export function useGetLanesCmd(): Record<
@@ -73,7 +73,4 @@ export async function removeSelectedLaneIndex(
 }
 export async function clearSelectedLaneIndex(): Promise<void> {
   return await call('RoadRule', 'ClearSelectedLaneIndex', '')
-}
-export async function requestScreenPoint(key: string, positions: Position[]): Promise<void> {
-  return await call('RoadRule', 'RequestScreenPoint', JSON.stringify({ key, positions }))
 }

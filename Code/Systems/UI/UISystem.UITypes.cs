@@ -301,26 +301,50 @@ namespace RoadRule.Systems.UI
             public float z;
         }
 
-        private struct ScreenPointValue
+        private struct PixelRectValue
         {
-            private const float SCALE_REFERENCE_DISTANCE = 100f;
+            public float x;
+            public float y;
+            public float width;
+            public float height;
+        }
 
-            public float top;
-            public float left;
-            public float distance;
-            public float scale;
+        private struct CameraValue
+        {
+            public float[] worldToCameraMatrix;
+            public float[] projectionMatrix;
+            public float nearClipPlane;
+            public int screenWidth;
+            public int screenHeight;
+            public PixelRectValue pixelRect;
 
-            public static ScreenPointValue FromScreenPoint(Camera camera, Vector3 screenPoint)
+            public static CameraValue FromCamera(Camera camera)
             {
-                var projection = camera.projectionMatrix;
-                var referenceW = projection.m32 * -SCALE_REFERENCE_DISTANCE + projection.m33;
-                var pointW = projection.m32 * -Mathf.Max(screenPoint.z, camera.nearClipPlane) + projection.m33;
-                return new ScreenPointValue
+                return new CameraValue
                 {
-                    top = Screen.height - screenPoint.y,
-                    left = screenPoint.x,
-                    distance = screenPoint.z,
-                    scale = referenceW / pointW,
+                    worldToCameraMatrix = ToRowMajorArray(camera.worldToCameraMatrix),
+                    projectionMatrix = ToRowMajorArray(camera.projectionMatrix),
+                    nearClipPlane = camera.nearClipPlane,
+                    screenWidth = Screen.width,
+                    screenHeight = Screen.height,
+                    pixelRect = new PixelRectValue
+                    {
+                        x = camera.pixelRect.x,
+                        y = camera.pixelRect.y,
+                        width = camera.pixelRect.width,
+                        height = camera.pixelRect.height,
+                    },
+                };
+            }
+
+            private static float[] ToRowMajorArray(Matrix4x4 matrix)
+            {
+                return new[]
+                {
+                    matrix.m00, matrix.m01, matrix.m02, matrix.m03,
+                    matrix.m10, matrix.m11, matrix.m12, matrix.m13,
+                    matrix.m20, matrix.m21, matrix.m22, matrix.m23,
+                    matrix.m30, matrix.m31, matrix.m32, matrix.m33,
                 };
             }
         }

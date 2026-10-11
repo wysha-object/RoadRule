@@ -34,40 +34,11 @@ namespace RoadRule.Systems.UI
             AddUpdateBinding(
                 new GetterValueBinding<string>(
                     "RoadRule",
-                    "GetScreenPoint",
+                    "GetCamera",
                     () =>
                     {
-                        var rs = new Dictionary<string, List<object>>();
                         var camera = m_CameraUpdateSystem.activeCamera;
-                        if (camera == null)
-                        {
-                            return JsonConvert.SerializeObject(new Dictionary<int, object>());
-                        }
-                        foreach (var kvp in m_ScreenPointRequest)
-                        {
-                            rs[kvp.Key] = new List<object>();
-                            if (kvp.Value == null)
-                            {
-                                continue;
-                            }
-                            foreach (var position in kvp.Value)
-                            {
-                                var screenPoint = camera.WorldToScreenPoint(new Vector3(position.x, position.y, position.z));
-                                if (
-                                    screenPoint.x < 0
-                                    || screenPoint.x > Screen.width
-                                    || screenPoint.y < 0
-                                    || screenPoint.y > Screen.height
-                                    || screenPoint.z < camera.nearClipPlane
-                                    || screenPoint.z > MAX_DISPLAY_DISTANCE
-                                )
-                                {
-                                    continue;
-                                }
-                                rs[kvp.Key].Add(new { position = position, screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint) });
-                            }
-                        }
-                        return JsonConvert.SerializeObject(rs);
+                        return JsonConvert.SerializeObject(camera == null ? (CameraValue?)null : CameraValue.FromCamera(camera));
                     }
                 )
             );
@@ -387,18 +358,6 @@ namespace RoadRule.Systems.UI
                     (inputValue) =>
                     {
                         ClearSelectedLaneIndex();
-                        return "";
-                    }
-                )
-            );
-            AddBinding(
-                new CallBinding<string, string>(
-                    "RoadRule",
-                    "RequestScreenPoint",
-                    (inputJsonString) =>
-                    {
-                        var inputValue = JsonConvert.DeserializeAnonymousType(inputJsonString, new { key = "", positions = new PositionValue[0] });
-                        m_ScreenPointRequest[inputValue.key] = inputValue.positions;
                         return "";
                     }
                 )

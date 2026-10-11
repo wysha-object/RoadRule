@@ -1,7 +1,7 @@
 import BasePage from "components/base/base-page";
 import { CSSProperties, HTMLAttributes, useMemo } from "react";
 import { FieldState, FieldValue, Lane, RuleOptionsValue, RuleValue } from "types";
-import { MAX_DISPLAY_DISTANCE, mergeLaneRules, mergeRuleOptionsFieldValues, mergeRuleValues } from "utils";
+import { mergeLaneRules, mergeRuleOptionsFieldValues, mergeRuleValues } from "utils";
 import InfosignEmergencyPrefer from 'assets/images/infosign-emergency-prefer.svg'
 import InfosignEmergencyForbidden from 'assets/images/infosign-emergency-forbidden.svg'
 import InfosignEmergencyDisallow from 'assets/images/infosign-emergency-disallow.svg'

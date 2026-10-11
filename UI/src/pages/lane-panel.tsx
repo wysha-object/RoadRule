@@ -1,28 +1,20 @@
-import BasePage from "components/base/base-page";
 import LanePage from "components/lane-panel/lane-page";
 import { UIToolModeContext } from "context";
-import { requestScreenPoint, useGetAllLaneCmd, useGetAllLaneGroupCmd, useGetScreenPointCmd, useGetToolStateCmd } from "hooks/cmd";
-import { useContext, useEffect, useMemo } from "react";
-import { Lane, ToolState, UIToolMode } from "types";
-import { MAX_DISPLAY_DISTANCE } from "utils";
+import { useGetAllLaneCmd, useGetAllLaneGroupCmd, useGetCameraCmd, useGetToolStateCmd } from "hooks/cmd";
+import { useContext } from "react";
+import { Lane, ScreenPoint, ToolState, UIToolMode } from "types";
+import { getScreenPoint, MAX_DISPLAY_DISTANCE } from "utils/screen-point";
 
 export default function LanePanel() {
   const allLaneGroup = useGetAllLaneGroupCmd()
   const allLane = useGetAllLaneCmd()
   const toolState = useGetToolStateCmd()
 
-  const screenPoints = useGetScreenPointCmd()
+  const camera = useGetCameraCmd()
 
   const [mode] = useContext(UIToolModeContext)
 
   const lanes = toolState !== ToolState.Disabled ? (mode === UIToolMode.MasterLane ? allLaneGroup : allLane) : []
-
-  useEffect(
-    () => {
-      requestScreenPoint("lane-page", lanes.map(item => item.lane.position));
-    },
-    [JSON.stringify(lanes)]
-  )
 
   const usedZIndex = new Set<number>()
 
@@ -31,11 +23,8 @@ export default function LanePanel() {
       {
         toolState !== ToolState.Disabled
         && lanes
-          .reduce<{ lane: Lane, defaultSpeedLimit: number, screenPoint: any }[]>((prev, item) => {
-            const screenPoint = screenPoints["lane-page"]
-              .find(
-                kvp => kvp.position.x === item.lane.position.x && kvp.position.y === item.lane.position.y && kvp.position.z === item.lane.position.z
-              )?.screenPoint
+          .reduce<{ lane: Lane, defaultSpeedLimit: number, screenPoint: ScreenPoint }[]>((prev, item) => {
+            const screenPoint = getScreenPoint(item.lane.position, camera)
             if (!screenPoint) {
               return prev;
             }
