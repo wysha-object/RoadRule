@@ -29,6 +29,12 @@ export function useGetSelectedEdgeEntityCmd(): Edge[] {
 export function useGetCompositionCmd(): Composition {
   return JSON.parse(useValue(bindValue('RoadRule', 'GetComposition')))
 }
+export function useGetAllLaneGroupCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLaneGroup')))
+}
+export function useGetAllLaneCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
+  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLane')))
+}
 
 export async function setToolStateCmd(inputValue: ToolState): Promise<void> {
   return await call('RoadRule', 'SetToolState', inputValue)

@@ -8,6 +8,7 @@ using Game.Prefabs;
 using Game.Rendering;
 using Newtonsoft.Json;
 using RoadRule.Components;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -133,7 +134,7 @@ namespace RoadRule.Systems.UI
                                             y = worldPosition.y,
                                             z = worldPosition.z,
                                         },
-                                        screenPoint = new ScreenPointValue { top = Screen.height - screenPoint.y, left = screenPoint.x },
+                                        screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
                                         laneRules = laneRulesValue.Value,
                                         carLane = CarLaneValue.Value,
                                     }
@@ -180,7 +181,7 @@ namespace RoadRule.Systems.UI
                                             y = masterWorldPosition.y,
                                             z = masterWorldPosition.z,
                                         },
-                                        screenPoint = new ScreenPointValue { top = Screen.height - masterScreenPoint.y, left = masterScreenPoint.x },
+                                        screenPoint = ScreenPointValue.FromScreenPoint(camera, masterScreenPoint),
                                         laneRules = masterLaneRulesValue.Value,
                                         carLane = masterCarLaneValue.Value,
                                     },
@@ -232,7 +233,7 @@ namespace RoadRule.Systems.UI
                                         y = worldPosition.y,
                                         z = worldPosition.z,
                                     },
-                                    screenPoint = new { top = Screen.height - screenPoint.y, left = screenPoint.x },
+                                    screenPoint = ScreenPointValue.FromScreenPoint(camera, screenPoint),
                                 }
                             );
                         }
@@ -255,6 +256,8 @@ namespace RoadRule.Systems.UI
                     }
                 )
             );
+            AddUpdateBinding(new GetterValueBinding<string>("RoadRule", "GetAllLaneGroup", () => JsonConvert.SerializeObject(m_AllLaneGroupList)));
+            AddUpdateBinding(new GetterValueBinding<string>("RoadRule", "GetAllLane", () => JsonConvert.SerializeObject(m_AllLaneList)));
 
             AddBinding(
                 new CallBinding<int, string>(

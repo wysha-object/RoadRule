@@ -5,9 +5,19 @@ import {
   VehicleTypeRulesValue,
   CarLaneValue,
   RuleOptionsValue,
+  RuleValue,
 } from 'types'
 
+export const MAX_DISPLAY_DISTANCE = 2000;
+
 export function mergeRuleValues(
+  a: RuleValue,
+  b: RuleValue,
+): RuleValue {
+  return Math.max(a, b)
+}
+
+export function mergeRuleOptionsFieldValues(
   a: FieldValue<RuleOptionsValue>,
   b: FieldValue<RuleOptionsValue>,
 ): FieldValue<RuleOptionsValue> {
@@ -20,8 +30,8 @@ export function mergeRuleValues(
     return Object.assign({}, a)
   } else {
     const mergedRule = {
-      noFlag: Math.max(a.value.noFlag, b.value.noFlag),
-      hasFlag: Math.max(a.value.hasFlag, b.value.hasFlag),
+      noFlag: mergeRuleValues(a.value.noFlag, b.value.noFlag),
+      hasFlag: mergeRuleValues(a.value.hasFlag, b.value.hasFlag),
     }
     return { state: FieldState.PartiallyApplied, value: mergedRule }
   }
@@ -32,20 +42,20 @@ export function mergeVehicleRules(
   b: VehicleTypeRulesValue,
 ): VehicleTypeRulesValue {
   return {
-    ambulance: mergeRuleValues(a.ambulance, b.ambulance),
-    deliveryTruck: mergeRuleValues(a.deliveryTruck, b.deliveryTruck),
-    fireEngine: mergeRuleValues(a.fireEngine, b.fireEngine),
-    garbageTruck: mergeRuleValues(a.garbageTruck, b.garbageTruck),
-    hearse: mergeRuleValues(a.hearse, b.hearse),
-    maintenanceVehicle: mergeRuleValues(
+    ambulance: mergeRuleOptionsFieldValues(a.ambulance, b.ambulance),
+    deliveryTruck: mergeRuleOptionsFieldValues(a.deliveryTruck, b.deliveryTruck),
+    fireEngine: mergeRuleOptionsFieldValues(a.fireEngine, b.fireEngine),
+    garbageTruck: mergeRuleOptionsFieldValues(a.garbageTruck, b.garbageTruck),
+    hearse: mergeRuleOptionsFieldValues(a.hearse, b.hearse),
+    maintenanceVehicle: mergeRuleOptionsFieldValues(
       a.maintenanceVehicle,
       b.maintenanceVehicle,
     ),
-    personalCar: mergeRuleValues(a.personalCar, b.personalCar),
-    policeCar: mergeRuleValues(a.policeCar, b.policeCar),
-    postVan: mergeRuleValues(a.postVan, b.postVan),
-    publicTransport: mergeRuleValues(a.publicTransport, b.publicTransport),
-    taxi: mergeRuleValues(a.taxi, b.taxi),
+    personalCar: mergeRuleOptionsFieldValues(a.personalCar, b.personalCar),
+    policeCar: mergeRuleOptionsFieldValues(a.policeCar, b.policeCar),
+    postVan: mergeRuleOptionsFieldValues(a.postVan, b.postVan),
+    publicTransport: mergeRuleOptionsFieldValues(a.publicTransport, b.publicTransport),
+    taxi: mergeRuleOptionsFieldValues(a.taxi, b.taxi),
   }
 }
 

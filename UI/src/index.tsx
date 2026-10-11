@@ -10,6 +10,7 @@ import {
   useGetToolStateCmd,
 } from 'hooks/cmd'
 import { useTranslate } from 'hooks/translate'
+import LanePanel from 'pages/lane-panel'
 import MainPanel from 'pages/main-panel'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { LaneRulesValue, ToolState, UIToolMode } from 'types'
@@ -22,18 +23,8 @@ function App() {
   const { t } = useTranslate()
 
   const toolState = useGetToolStateCmd()
-  const masterMap = useGetLanesCmd()
   const [mode, setMode] = useState<UIToolMode>(UIToolMode.MasterLane)
   const [laneRulesValue, setLaneRulesValue] = useState<LaneRulesValue | null>(null)
-
-  const prevModeRef = useRef<UIToolMode>(mode)
-  if (prevModeRef.current !== mode) {
-    prevModeRef.current = mode
-
-    if (mode === UIToolMode.Lane && Object.values(masterMap).map(item => item.lanes).flat().length === 0) {
-      setMode(UIToolMode.MasterLane)
-    }
-  }
 
   const floatingButtonClickHandler = useCallback(() => {
     if (toolState !== ToolState.Disabled) {
@@ -57,6 +48,7 @@ function App() {
             </Button>
           </Tooltip>
           <MainPanel />
+          <LanePanel />
         </RulesClipboardContext.Provider>
       </UIToolModeContext.Provider>
     </div>

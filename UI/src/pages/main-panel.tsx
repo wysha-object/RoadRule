@@ -4,7 +4,6 @@ import { ToolState } from 'types'
 import { useGetToolStateCmd } from 'hooks/cmd'
 import RightPage from 'components/main-panel/right-page'
 import LeftPage from 'components/main-panel/left-page'
-import TooltipPage from 'components/main-panel/tooltip-page'
 
 export default function MainPanel() {
   const { t } = useTranslate()
@@ -13,8 +12,7 @@ export default function MainPanel() {
 
   return (
     <>
-      {toolState === ToolState.Choosing && <TooltipPage />}
-      {[ToolState.Choosed].includes(toolState) && (
+      {[ToolState.Choosing, ToolState.Choosed].includes(toolState) && (
         <>
           <LeftPage />
           <RightPage />

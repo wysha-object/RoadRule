@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Game.Net;
 using Game.Vehicles;
 using RoadRule.Components;
+using UnityEngine;
 using UnityEngine.Playables;
 using static RoadRule.Systems.UI.UISystem;
 
@@ -303,8 +304,26 @@ namespace RoadRule.Systems.UI
 
         private struct ScreenPointValue
         {
+            private const float SCALE_REFERENCE_DISTANCE = 100f;
+
             public float top;
             public float left;
+            public float distance;
+            public float scale;
+
+            public static ScreenPointValue FromScreenPoint(Camera camera, Vector3 screenPoint)
+            {
+                var projection = camera.projectionMatrix;
+                var referenceW = projection.m32 * -SCALE_REFERENCE_DISTANCE + projection.m33;
+                var pointW = projection.m32 * -Mathf.Max(screenPoint.z, camera.nearClipPlane) + projection.m33;
+                return new ScreenPointValue
+                {
+                    top = Screen.height - screenPoint.y,
+                    left = screenPoint.x,
+                    distance = screenPoint.z,
+                    scale = referenceW / pointW,
+                };
+            }
         }
     }
 }

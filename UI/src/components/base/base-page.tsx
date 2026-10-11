@@ -43,7 +43,7 @@ const BasePage = forwardRef<HTMLDivElement, BasePageProps>(
           </div>
         )}
         {props.children && (
-          <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 0' }}>
+          <div style={{ flex: '1 1 0' }}>
             {props.children}
           </div>
         )}

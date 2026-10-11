@@ -4,7 +4,7 @@ import { Dropdown, DropdownItem, DropdownToggle, PanelFoldout, Scrollable, Scrol
 import { useTranslate } from 'hooks/translate'
 import { CSSProperties, HTMLAttributes, RefAttributes, useCallback, useMemo, useState } from 'react'
 import { LaneRulesValue, FieldState, FieldValue, RuleOptionsValue, RuleValue } from 'types'
-import { mergeRuleValues } from 'utils'
+import { mergeRuleOptionsFieldValues } from 'utils'
 
 export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   laneRulesValue: LaneRulesValue
@@ -15,30 +15,30 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   const emergencyVehiclesRules = useMemo(() => {
     const { ambulance, fireEngine, policeCar } = props.laneRulesValue.vehicleTypeRules
     let rs;
-    rs = mergeRuleValues(
+    rs = mergeRuleOptionsFieldValues(
       ambulance,
       fireEngine,
     )
-    rs = mergeRuleValues(rs, policeCar)
+    rs = mergeRuleOptionsFieldValues(rs, policeCar)
     return rs
   }, [JSON.stringify(props.laneRulesValue.vehicleTypeRules)])
 
   const serviceVehiclesRules = useMemo(() => {
     const { garbageTruck, hearse, maintenanceVehicle, postVan } = props.laneRulesValue.vehicleTypeRules
     let rs;
-    rs = mergeRuleValues(
+    rs = mergeRuleOptionsFieldValues(
       garbageTruck,
       hearse,
     )
-    rs = mergeRuleValues(rs, maintenanceVehicle)
-    rs = mergeRuleValues(rs, postVan)
+    rs = mergeRuleOptionsFieldValues(rs, maintenanceVehicle)
+    rs = mergeRuleOptionsFieldValues(rs, postVan)
     return rs
   }, [JSON.stringify(props.laneRulesValue.vehicleTypeRules)])
 
   const publicVehiclesRules = useMemo(() => {
     const { publicTransport, taxi } = props.laneRulesValue.vehicleTypeRules
     let rs;
-    rs = mergeRuleValues(
+    rs = mergeRuleOptionsFieldValues(
       publicTransport,
       taxi,
     )
@@ -48,7 +48,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   const privateVehiclesRules = useMemo(() => {
     const { personalCar, deliveryTruck } = props.laneRulesValue.vehicleTypeRules
     let rs;
-    rs = mergeRuleValues(
+    rs = mergeRuleOptionsFieldValues(
       personalCar,
       deliveryTruck,
     )

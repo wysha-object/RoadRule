@@ -26,6 +26,8 @@ export default function LeftPage() {
     >
       <div
         style={{
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: 'rgba(19, 28, 48, 0.75)',
         }}
       >

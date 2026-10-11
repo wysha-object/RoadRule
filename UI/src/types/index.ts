@@ -82,6 +82,8 @@ export interface Position {
 export interface ScreenPoint {
   top: number
   left: number
+  distance: number
+  scale: number
 }
 
 export interface Composition {

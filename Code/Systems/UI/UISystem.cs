@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Colossal.Entities;
+using Game.Common;
 using Game.Net;
 using Game.Pathfind;
 using Game.Prefabs;
 using Game.Rendering;
+using Game.Tools;
 using Game.UI;
+using RoadRule.Components;
 using RoadRule.Systems.Pathfind;
 using RoadRule.Utils;
 using Unity.Collections;
@@ -341,11 +344,11 @@ namespace RoadRule.Systems.UI
         private Tool.ToolSystem m_ToolSystem;
         private CameraUpdateSystem m_CameraUpdateSystem;
         private LaneRulesModifiedSystem m_ObsoleteCheckSystem;
-
-        public void ModificationUpdate()
-        {
-            Dependency = ScheduleOverlayJob(Dependency);
-        }
+        private EntityQuery m_UpdatedLaneRulesEntityQuery;
+        private EntityQuery m_AllLaneGroupEntityQuery;
+        private EntityQuery m_AllLaneEntityQuery;
+        private List<object> m_AllLaneGroupList;
+        private List<object> m_AllLaneList;
 
         public void AddSelectedEdgeEntity(Entity selectedEdgeEntity)
         {
@@ -562,6 +565,28 @@ namespace RoadRule.Systems.UI
             m_CameraUpdateSystem = World.GetOrCreateSystemManaged<CameraUpdateSystem>();
             m_ObsoleteCheckSystem = World.GetOrCreateSystemManaged<LaneRulesModifiedSystem>();
 
+            m_UpdatedLaneRulesEntityQuery = GetEntityQuery(
+                new EntityQueryDesc
+                {
+                    All = [ComponentType.ReadOnly<Game.Net.CarLane>()],
+                    Any = [ComponentType.ReadOnly<Created>(), ComponentType.ReadOnly<Updated>(), ComponentType.ReadOnly<Deleted>()],
+                    None = [ComponentType.ReadOnly<Temp>()],
+                }
+            );
+            m_AllLaneGroupEntityQuery = GetEntityQuery(
+                new EntityQueryDesc
+                {
+                    All = [ComponentType.ReadOnly<Curve>(), ComponentType.ReadOnly<Lane>(), ComponentType.ReadOnly<Game.Net.CarLane>()],
+                    None = [ComponentType.ReadOnly<SlaveLane>()],
+                }
+            );
+            m_AllLaneEntityQuery = GetEntityQuery(
+                new EntityQueryDesc
+                {
+                    All = [ComponentType.ReadOnly<Curve>(), ComponentType.ReadOnly<Lane>(), ComponentType.ReadOnly<Game.Net.CarLane>(), ComponentType.ReadOnly<SlaveLane>()],
+                }
+            );
+
             AddUIBindings();
             SetupKeyBindings();
         }
@@ -571,6 +596,8 @@ namespace RoadRule.Systems.UI
 
         protected override void OnUpdate()
         {
+            base.OnUpdate();
+            JobHandle jobHandle = Dependency;
             var camera = m_CameraUpdateSystem.activeCamera;
             if (camera != null && (!Equals(m_PrevCameraPosition, camera.transform.position) || !Equals(m_PrevCameraRotation, camera.transform.rotation.eulerAngles)))
             {
@@ -580,6 +607,13 @@ namespace RoadRule.Systems.UI
                 m_GetSelectedEdgeBinding.Update();
                 m_GetCameraBinding.Update();
             }
+            jobHandle = ScheduleOverlayJob(jobHandle);
+            if (m_UpdatedLaneRulesEntityQuery.CalculateEntityCount() > 0)
+            {
+                ScheduleGetLaneJob(m_AllLaneGroupEntityQuery, out m_AllLaneGroupList);
+                ScheduleGetLaneJob(m_AllLaneEntityQuery, out m_AllLaneList);
+            }
+            Dependency = jobHandle;
         }
     }
 }

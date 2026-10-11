@@ -2,12 +2,13 @@ import {
   updateLane,
   useGetLanesCmd,
   useGetSelectedLaneIndexCmd,
+  useGetToolStateCmd,
 } from 'hooks/cmd'
 import { useContext } from 'react'
 import LaneList from './mods/lane-list'
 import { useTranslate } from 'hooks/translate'
 import { mergeCarLaneValues, mergeLaneRules } from 'utils'
-import { CarLaneValue, LaneRulesValue, UIToolMode } from 'types'
+import { CarLaneValue, LaneRulesValue, ToolState, UIToolMode } from 'types'
 import RulesEditor from './mods/rules-editor'
 import BasePage from 'components/base/base-page'
 import { Button, Scrollable } from 'cs2/ui'
@@ -19,6 +20,7 @@ import PasteSvg from 'assets/images/paste.svg'
 export default function RightPage() {
   const { t } = useTranslate()
   const [mode] = useContext(UIToolModeContext)
+  const toolState = useGetToolStateCmd()
 
   const masterMap = useGetLanesCmd()
   const selectedLaneIndex = useGetSelectedLaneIndexCmd()
@@ -79,60 +81,77 @@ export default function RightPage() {
         />
       }
     >
-      <LaneList />
-      <div style={{ flex: '1 1 0' }}>
-        <Scrollable>
-          <div
-            style={{
-              width: 'var(--right-panel-width)',
-            }}
-          >
-            {selectedLaneIndex.length == 0 ? (
-              <div
-                style={{
-                  padding: '2em',
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
-                {mode === UIToolMode.Lane
-                  ? t('MainPanel.ChooseLane')
-                  : t('MainPanel.ChooseMasterLane')}
-              </div>
-            ) : (
-              <>
-                {carLaneValue !== undefined &&
-                  <CarLaneEditor
-                    lanePropertiesValue={carLaneValue}
-                    onValueChange={function (oldValue: CarLaneValue, newValue: CarLaneValue): void {
-                      for (const laneIndex of selectedLaneIndex) {
-                        updateLane({
-                          laneIndex: laneIndex,
-                          key: 'car-lane',
-                          value: newValue,
-                        })
-                      }
-                    }}
-                  />
-                }
-                {laneRulesValue !== undefined &&
-                  <RulesEditor
-                    laneRulesValue={laneRulesValue}
-                    onValueChange={(_, newValue) => {
-                      for (const laneIndex of selectedLaneIndex) {
-                        updateLane({
-                          laneIndex: laneIndex,
-                          key: 'lane-rules',
-                          value: newValue,
-                        })
-                      }
-                    }}
-                  />
-                }
-              </>
-            )}
-          </div>
-        </Scrollable>
+      {toolState === ToolState.Choosing && (
+        <div
+          className='row'
+          style={{ height: '100%', justifyContent: 'center', alignItems: 'center' }}
+        >
+          {t('MainPanel.ChooseEdge')}
+        </div>
+      )}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <LaneList />
+        <div style={{ flex: '1 1' }}>
+          <Scrollable>
+            <div
+              style={{
+                width: 'var(--right-panel-width)',
+              }}
+            >
+              {selectedLaneIndex.length == 0 ? (
+                <div
+                  style={{
+                    padding: '2em',
+                    display: 'flex',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {mode === UIToolMode.Lane
+                    ? t('MainPanel.ChooseLane')
+                    : t('MainPanel.ChooseMasterLane')}
+                </div>
+              ) : (
+                <>
+                  {carLaneValue !== undefined &&
+                    <CarLaneEditor
+                      lanePropertiesValue={carLaneValue}
+                      onValueChange={function (oldValue: CarLaneValue, newValue: CarLaneValue): void {
+                        for (const laneIndex of selectedLaneIndex) {
+                          updateLane({
+                            laneIndex: laneIndex,
+                            key: 'car-lane',
+                            value: newValue,
+                          })
+                        }
+                      }}
+                    />
+                  }
+                  {laneRulesValue !== undefined &&
+                    <RulesEditor
+                      laneRulesValue={laneRulesValue}
+                      onValueChange={(_, newValue) => {
+                        for (const laneIndex of selectedLaneIndex) {
+                          updateLane({
+                            laneIndex: laneIndex,
+                            key: 'lane-rules',
+                            value: newValue,
+                          })
+                        }
+                      }}
+                    />
+                  }
+                </>
+              )}
+            </div>
+          </Scrollable>
+        </div>
       </div>
     </BasePage>
   )
@@ -177,7 +196,6 @@ function Header() {
         variant='flat'
         className='top-option-button'
         onClick={() => setMode(UIToolMode.Lane)}
-        disabled={Object.values(masterMap).map(item => item.lanes).flat().length === 0}
       >
         {t('MainPanel.Lane')}
       </Button>
