@@ -91,7 +91,7 @@ namespace RoadRule.Systems.UI
                         && m_RoadCompositionLookup.TryGetComponent(composition.m_Edge, out var roadComposition)
                     )
                     {
-                        float defaultSpeedLimit = roadComposition.m_SpeedLimit * 1.8f;
+                        float defaultSpeedLimit = roadComposition.m_SpeedLimit;
 
                         if (
                             laneRules.m_VehicleType.m_Ambulance == LaneRules.RuleOptions.None

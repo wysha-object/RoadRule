@@ -1,1 +1,2 @@
 - optimize performance
+- fix lane speed limits not being displayed in some cases.
