@@ -631,31 +631,46 @@ namespace RoadRule.Systems.UI
             m_AllLaneGroupList = new List<GetLaneResultItem>();
             m_AllLaneList = new List<GetLaneResultItem>();
 
+            Mod.m_Settings.onSettingsApplied += (_) =>
+            {
+                m_SettingsUpdated = true;
+            };
+
             AddUIBindings();
             SetupKeyBindings();
         }
 
         private List<GetLaneResultItem> m_AllLaneGroupList;
         private List<GetLaneResultItem> m_AllLaneList;
+        private bool m_SettingsUpdated = false;
 
         protected override void OnUpdate()
         {
             base.OnUpdate();
             JobHandle jobHandle = Dependency;
             jobHandle = ScheduleOverlayJob(jobHandle);
-            if (m_UpdatedLaneRulesEntityQuery.CalculateEntityCount() > 0)
+            if (m_SettingsUpdated || m_UpdatedLaneRulesEntityQuery.CalculateEntityCount() > 0)
             {
-                m_AllLaneGroupResultList.Clear();
-                m_AllLaneGroupResultList.Capacity = m_AllLaneGroupEntityQuery.CalculateEntityCount();
-                ScheduleGetLaneJob(m_AllLaneGroupEntityQuery, m_AllLaneGroupResultList);
-                m_AllLaneResultList.Clear();
-                m_AllLaneResultList.Capacity = m_AllLaneEntityQuery.CalculateEntityCount();
-                ScheduleGetLaneJob(m_AllLaneEntityQuery, m_AllLaneResultList);
-                UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
-                UpdateList(m_AllLaneResultList, m_AllLaneList);
-                m_GetAllLaneGroupBinding.Update(JsonConvert.SerializeObject(m_AllLaneGroupList));
-                m_GetAllLaneBinding.Update(JsonConvert.SerializeObject(m_AllLaneList));
+                if (Mod.m_Settings.DisplayRulesOverview)
+                {
+                    m_AllLaneGroupResultList.Clear();
+                    m_AllLaneGroupResultList.Capacity = m_AllLaneGroupEntityQuery.CalculateEntityCount();
+                    ScheduleGetLaneJob(m_AllLaneGroupEntityQuery, m_AllLaneGroupResultList);
+                    m_AllLaneResultList.Clear();
+                    m_AllLaneResultList.Capacity = m_AllLaneEntityQuery.CalculateEntityCount();
+                    ScheduleGetLaneJob(m_AllLaneEntityQuery, m_AllLaneResultList);
+                    UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
+                    UpdateList(m_AllLaneResultList, m_AllLaneList);
+                    m_GetAllLaneGroupBinding.Update(JsonConvert.SerializeObject(m_AllLaneGroupList));
+                    m_GetAllLaneBinding.Update(JsonConvert.SerializeObject(m_AllLaneList));
+                }
+                else
+                {
+                    m_GetAllLaneGroupBinding.Update("[]");
+                    m_GetAllLaneBinding.Update("[]");
+                }
             }
+            m_SettingsUpdated = false;
             Dependency = jobHandle;
         }
 

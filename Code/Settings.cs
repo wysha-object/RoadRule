@@ -11,13 +11,12 @@ namespace RoadRule
 {
     [FileLocation($"ModsSettings/{nameof(RoadRule)}/{nameof(RoadRule)}")]
     [SettingsUITabOrder(kTabGeneral, kTabKeyBindings)]
-    [SettingsUIGroupOrder(kGroupGeneral, kGroupDefault, kGroupDisplay, kGroupMainPanel, kGroupKeyBindingReset)]
+    [SettingsUIGroupOrder(kGroupGeneral, kGroupDisplay, kGroupMainPanel, kGroupKeyBindingReset)]
     [SettingsUIShowGroupName]
     public class Settings : ModSetting
     {
         public const string kTabGeneral = "TabGeneral";
         public const string kGroupGeneral = "GroupGeneral";
-        public const string kGroupDefault = "GroupDefault";
         public const string kGroupDisplay = "GroupDisplay";
         public const string kGroupVersion = "GroupVersion";
 
@@ -30,6 +29,9 @@ namespace RoadRule
 
         [SettingsUIHidden]
         public Dictionary<string, string> m_Storage;
+
+        [SettingsUISection(kTabGeneral, kGroupDisplay)]
+        public bool DisplayRulesOverview { get; set; }
 
         [SettingsUISection(kTabGeneral, kGroupVersion)]
         public string ReleaseChannel => Mod.ReleaseChannel();
@@ -61,6 +63,7 @@ namespace RoadRule
         public override void SetDefaults()
         {
             m_Storage = new Dictionary<string, string>();
+            DisplayRulesOverview = false;
         }
 
         public override void Apply()
