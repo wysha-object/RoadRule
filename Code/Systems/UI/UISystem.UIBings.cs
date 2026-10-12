@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Colossal.Entities;
 using Colossal.UI.Binding;
 using Game.Common;
@@ -18,52 +19,40 @@ namespace RoadRule.Systems.UI
     public partial class UISystem
     {
         private ValueBinding<int> m_GetToolStateBinding;
-        private ValueBinding<string> m_GetAllLaneGroupBinding;
-        private ValueBinding<string> m_GetAllLaneBinding;
-        private GetterValueBinding<string> m_GetLanesBinding;
-        private GetterValueBinding<string> m_GetSelectedLaneIndexBinding;
-        private GetterValueBinding<string> m_GetSelectedEdgeBinding;
-        private GetterValueBinding<string> m_GetCompositionBinding;
+        private ValueBinding<GetLaneResultItem[]> m_GetAllLaneGroupBinding;
+        private ValueBinding<GetLaneResultItem[]> m_GetAllLaneBinding;
+        private GetterValueBinding<Dictionary<int, LaneGroupValue>> m_GetLanesBinding;
+        private GetterValueBinding<int[]> m_GetSelectedLaneIndexBinding;
+        private GetterValueBinding<EdgeValue[]> m_GetSelectedEdgeBinding;
+        private GetterValueBinding<CompositionValue> m_GetCompositionBinding;
 
         private void AddUIBindings()
         {
             AddBinding(m_GetToolStateBinding = new ValueBinding<int>("RoadRule", "GetToolState", (int)ToolState.Disabled));
-            AddBinding(m_GetAllLaneGroupBinding = new ValueBinding<string>("RoadRule", "GetAllLaneGroup", "[]"));
-            AddBinding(m_GetAllLaneBinding = new ValueBinding<string>("RoadRule", "GetAllLane", "[]"));
-
-            AddUpdateBinding(
-                new GetterValueBinding<string>(
-                    "RoadRule",
-                    "GetCamera",
-                    () =>
-                    {
-                        var camera = m_CameraUpdateSystem.activeCamera;
-                        return JsonConvert.SerializeObject(camera == null ? (CameraValue?)null : CameraValue.FromCamera(camera));
-                    }
-                )
-            );
+            AddBinding(m_GetAllLaneGroupBinding = new ValueBinding<GetLaneResultItem[]>("RoadRule", "GetAllLaneGroup", [], new ListWriter<GetLaneResultItem>()));
+            AddBinding(m_GetAllLaneBinding = new ValueBinding<GetLaneResultItem[]>("RoadRule", "GetAllLane", [], new ListWriter<GetLaneResultItem>()));
 
             AddBinding(
-                m_GetLanesBinding = new GetterValueBinding<string>(
+                m_GetLanesBinding = new GetterValueBinding<Dictionary<int, LaneGroupValue>>(
                     "RoadRule",
                     "GetLanes",
                     () =>
                     {
-                        var masterMap = new Dictionary<int, object>();
+                        var masterMap = new Dictionary<int, LaneGroupValue>();
                         var camera = m_CameraUpdateSystem.activeCamera;
                         if (camera == null)
                         {
-                            return JsonConvert.SerializeObject(new Dictionary<int, object>());
+                            return new Dictionary<int, LaneGroupValue>();
                         }
                         foreach (var kvp in GetMasterLaneDictionary())
                         {
-                            var laneList = new List<object>();
+                            var laneList = new List<LaneValue>();
                             foreach (var laneIndexKVP in kvp.Value.m_LaneIndexDictionary)
                             {
                                 var laneIndex = laneIndexKVP.Key;
                                 if (!EntityManager.TryGetComponent<Curve>(laneIndexKVP.Value[0], out var curve))
                                 {
-                                    return JsonConvert.SerializeObject(new Dictionary<int, object>());
+                                    return new Dictionary<int, LaneGroupValue>();
                                 }
 
                                 LaneRulesValue? laneRulesValue = null;
@@ -76,7 +65,7 @@ namespace RoadRule.Systems.UI
                                     }
                                     if (!EntityManager.TryGetComponent<Game.Net.CarLane>(subLaneEntity, out var carLane))
                                     {
-                                        return JsonConvert.SerializeObject(new Dictionary<int, object>());
+                                        return new Dictionary<int, LaneGroupValue>();
                                     }
                                     laneRulesValue =
                                         laneRulesValue == null
@@ -89,7 +78,6 @@ namespace RoadRule.Systems.UI
                                 }
 
                                 var worldPosition = curve.m_Bezier.d;
-                                var screenPoint = camera.WorldToScreenPoint(new Vector3(worldPosition.x, worldPosition.y, worldPosition.z));
                                 laneList.Add(
                                     new LaneValue
                                     {
@@ -111,7 +99,7 @@ namespace RoadRule.Systems.UI
                                 || !EntityManager.TryGetComponent<Game.Net.CarLane>(kvp.Value.m_MasterLaneEntities[0], out var masterCarLane)
                             )
                             {
-                                return JsonConvert.SerializeObject(new Dictionary<int, object>());
+                                return new Dictionary<int, LaneGroupValue>();
                             }
                             LaneRulesValue? masterLaneRulesValue = null;
                             CarLaneValue? masterCarLaneValue = null;
@@ -135,7 +123,7 @@ namespace RoadRule.Systems.UI
                             var masterScreenPoint = camera.WorldToScreenPoint(new Vector3(masterWorldPosition.x, masterWorldPosition.y, masterWorldPosition.z));
                             masterMap.Add(
                                 kvp.Key,
-                                new
+                                new LaneGroupValue
                                 {
                                     masterLane = new LaneValue
                                     {
@@ -149,35 +137,34 @@ namespace RoadRule.Systems.UI
                                         laneRules = masterLaneRulesValue.Value,
                                         carLane = masterCarLaneValue.Value,
                                     },
-                                    lanes = laneList,
+                                    lanes = laneList.ToArray(),
                                 }
                             );
                         }
-                        return JsonConvert.SerializeObject(masterMap);
-                    }
+                        return masterMap;
+                    },
+                    new DictionaryWriter<int, LaneGroupValue>()
                 )
             );
             AddBinding(
-                m_GetSelectedLaneIndexBinding = new GetterValueBinding<string>(
+                m_GetSelectedLaneIndexBinding = new GetterValueBinding<int[]>(
                     "RoadRule",
                     "GetSelectedLaneIndex",
-                    () =>
-                    {
-                        return JsonConvert.SerializeObject(SelectedLaneIndexSet);
-                    }
+                    () => SelectedLaneIndexSet.Select((item) => (int)item).ToArray(),
+                    new ListWriter<int>()
                 )
             );
             AddBinding(
-                m_GetSelectedEdgeBinding = new GetterValueBinding<string>(
+                m_GetSelectedEdgeBinding = new GetterValueBinding<EdgeValue[]>(
                     "RoadRule",
                     "GetSelectedEdge",
                     () =>
                     {
-                        var selectedEdgeList = new List<object>();
+                        var selectedEdgeList = new List<EdgeValue>();
                         var camera = m_CameraUpdateSystem.activeCamera;
                         if (camera == null)
                         {
-                            return JsonConvert.SerializeObject(selectedEdgeList);
+                            return [];
                         }
                         foreach (var edge in SelectedEdgeList)
                         {
@@ -186,12 +173,11 @@ namespace RoadRule.Systems.UI
                                 continue;
                             }
                             var worldPosition = math.lerp(edgeGeometry.m_Bounds.min, edgeGeometry.m_Bounds.max, 0.5f);
-                            var screenPoint = camera.WorldToScreenPoint(new Vector3(worldPosition.x, worldPosition.y, worldPosition.z));
                             selectedEdgeList.Add(
-                                new
+                                new EdgeValue
                                 {
-                                    edgeEntity = new { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
-                                    position = new
+                                    edgeEntity = new EntityValue { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
+                                    position = new PositionValue
                                     {
                                         x = worldPosition.x,
                                         y = worldPosition.y,
@@ -200,12 +186,13 @@ namespace RoadRule.Systems.UI
                                 }
                             );
                         }
-                        return JsonConvert.SerializeObject(selectedEdgeList);
-                    }
+                        return selectedEdgeList.ToArray();
+                    },
+                    new ListWriter<EdgeValue>()
                 )
             );
             AddBinding(
-                m_GetCompositionBinding = new GetterValueBinding<string>(
+                m_GetCompositionBinding = new GetterValueBinding<CompositionValue>(
                     "RoadRule",
                     "GetComposition",
                     () =>
@@ -215,8 +202,21 @@ namespace RoadRule.Systems.UI
                         {
                             speedLimit = composition.m_SpeedLimit * 1.8f;
                         }
-                        return JsonConvert.SerializeObject(new { speedLimit = speedLimit });
+                        return new CompositionValue { speedLimit = speedLimit };
                     }
+                )
+            );
+
+            AddUpdateBinding(
+                new GetterValueBinding<CameraValue?>(
+                    "RoadRule",
+                    "GetCamera",
+                    () =>
+                    {
+                        var camera = m_CameraUpdateSystem.activeCamera;
+                        return camera == null ? null : CameraValue.FromCamera(camera);
+                    },
+                    new NullableStructWriter<CameraValue>(new ValueWriter<CameraValue>())
                 )
             );
 

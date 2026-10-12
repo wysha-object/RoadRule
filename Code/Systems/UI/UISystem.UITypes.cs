@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Colossal.UI.Binding;
 using Game.Net;
 using Game.Vehicles;
 using RoadRule.Components;
 using UnityEngine;
 using UnityEngine.Playables;
+using static RoadRule.Settings;
 using static RoadRule.Systems.UI.UISystem;
 
 namespace RoadRule.Systems.UI
@@ -22,10 +25,20 @@ namespace RoadRule.Systems.UI
             Disallow = 3,
         }
 
-        private struct RuleOptionsValue
+        private struct RuleOptionsValue : IJsonWritable
         {
             public RuleValue noFlag;
             public RuleValue hasFlag;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(noFlag));
+                writer.Write((int)noFlag);
+                writer.PropertyName(nameof(hasFlag));
+                writer.Write((int)hasFlag);
+                writer.TypeEnd();
+            }
 
             public override bool Equals(object obj)
             {
@@ -44,13 +57,34 @@ namespace RoadRule.Systems.UI
             PartiallyApplied = 1,
         }
 
-        public struct FieldValue<T>
+        public struct FieldValue<T> : IJsonWritable
         {
             public FieldState state;
             public T value;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(state));
+                writer.Write((int)state);
+                writer.PropertyName(nameof(value));
+                if (value is IJsonWritable writableValue)
+                {
+                    writer.Write(writableValue);
+                }
+                else if (value is float floatValue)
+                {
+                    writer.Write(floatValue);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unsupported UI field value type: {typeof(T).FullName}");
+                }
+                writer.TypeEnd();
+            }
         }
 
-        private struct VehicleTypeRulesValue
+        private struct VehicleTypeRulesValue : IJsonWritable
         {
             public FieldValue<RuleOptionsValue> ambulance;
             public FieldValue<RuleOptionsValue> deliveryTruck;
@@ -63,6 +97,34 @@ namespace RoadRule.Systems.UI
             public FieldValue<RuleOptionsValue> postVan;
             public FieldValue<RuleOptionsValue> publicTransport;
             public FieldValue<RuleOptionsValue> taxi;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(ambulance));
+                writer.Write(ambulance);
+                writer.PropertyName(nameof(deliveryTruck));
+                writer.Write(deliveryTruck);
+                writer.PropertyName(nameof(fireEngine));
+                writer.Write(fireEngine);
+                writer.PropertyName(nameof(garbageTruck));
+                writer.Write(garbageTruck);
+                writer.PropertyName(nameof(hearse));
+                writer.Write(hearse);
+                writer.PropertyName(nameof(maintenanceVehicle));
+                writer.Write(maintenanceVehicle);
+                writer.PropertyName(nameof(personalCar));
+                writer.Write(personalCar);
+                writer.PropertyName(nameof(policeCar));
+                writer.Write(policeCar);
+                writer.PropertyName(nameof(postVan));
+                writer.Write(postVan);
+                writer.PropertyName(nameof(publicTransport));
+                writer.Write(publicTransport);
+                writer.PropertyName(nameof(taxi));
+                writer.Write(taxi);
+                writer.TypeEnd();
+            }
 
             public static VehicleTypeRulesValue FromVehicleTypeRules(LaneRules.VehicleTypeRules vehicleTypeRules)
             {
@@ -119,9 +181,17 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct LaneRulesValue
+        private struct LaneRulesValue : IJsonWritable
         {
             public VehicleTypeRulesValue vehicleTypeRules;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(vehicleTypeRules));
+                writer.Write(vehicleTypeRules);
+                writer.TypeEnd();
+            }
 
             public static LaneRulesValue FromRules(LaneRules rules)
             {
@@ -245,10 +315,18 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct CarLaneValue
+        private struct CarLaneValue : IJsonWritable
         {
             /// Game lane speed uses 2x m/s; km/h converts by / 1.8.
             public FieldValue<float> speedLimit;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(speedLimit));
+                writer.Write(speedLimit);
+                writer.TypeEnd();
+            }
 
             public static CarLaneValue FromCarLane(CarLane carLane)
             {
@@ -286,30 +364,136 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct LaneValue
+        private struct LaneValue : IJsonWritable
         {
             public int laneIndex;
             public PositionValue position;
             public LaneRulesValue laneRules;
             public CarLaneValue carLane;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(laneIndex));
+                writer.Write(laneIndex);
+                writer.PropertyName(nameof(position));
+                writer.Write(position);
+                writer.PropertyName(nameof(laneRules));
+                writer.Write(laneRules);
+                writer.PropertyName(nameof(carLane));
+                writer.Write(carLane);
+                writer.TypeEnd();
+            }
         }
 
-        private struct PositionValue
+        private struct LaneGroupValue : IJsonWritable
+        {
+            public LaneValue masterLane;
+            public LaneValue[] lanes;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(masterLane));
+                writer.Write(masterLane);
+                writer.PropertyName(nameof(lanes));
+                writer.ArrayBegin(lanes.Length);
+                foreach (var lane in lanes)
+                {
+                    writer.Write(lane);
+                }
+                writer.ArrayEnd();
+                writer.TypeEnd();
+            }
+        }
+
+        private struct EntityValue : IJsonWritable
+        {
+            public int index;
+            public int version;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(index));
+                writer.Write(index);
+                writer.PropertyName(nameof(version));
+                writer.Write(version);
+                writer.TypeEnd();
+            }
+        }
+
+        private struct EdgeValue : IJsonWritable
+        {
+            public EntityValue edgeEntity;
+            public PositionValue position;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(edgeEntity));
+                writer.Write(edgeEntity);
+                writer.PropertyName(nameof(position));
+                writer.Write(position);
+                writer.TypeEnd();
+            }
+        }
+
+        private struct CompositionValue : IJsonWritable
+        {
+            public float speedLimit;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(speedLimit));
+                writer.Write(speedLimit);
+                writer.TypeEnd();
+            }
+        }
+
+        private struct PositionValue : IJsonWritable
         {
             public float x;
             public float y;
             public float z;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(x));
+                writer.Write(x);
+                writer.PropertyName(nameof(y));
+                writer.Write(y);
+                writer.PropertyName(nameof(z));
+                writer.Write(z);
+                writer.TypeEnd();
+            }
         }
 
-        private struct PixelRectValue
+        private struct PixelRectValue : IJsonWritable
         {
             public float x;
             public float y;
             public float width;
             public float height;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(x));
+                writer.Write(x);
+                writer.PropertyName(nameof(y));
+                writer.Write(y);
+                writer.PropertyName(nameof(width));
+                writer.Write(width);
+                writer.PropertyName(nameof(height));
+                writer.Write(height);
+                writer.TypeEnd();
+            }
         }
 
-        private struct CameraValue
+        private struct CameraValue : IJsonWritable
         {
             public float[] worldToCameraMatrix;
             public float[] projectionMatrix;
@@ -317,6 +501,34 @@ namespace RoadRule.Systems.UI
             public int screenWidth;
             public int screenHeight;
             public PixelRectValue pixelRect;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(worldToCameraMatrix));
+                writer.ArrayBegin(worldToCameraMatrix.Length);
+                foreach (var value in worldToCameraMatrix)
+                {
+                    writer.Write(value);
+                }
+                writer.ArrayEnd();
+                writer.PropertyName(nameof(projectionMatrix));
+                writer.ArrayBegin(projectionMatrix.Length);
+                foreach (var value in projectionMatrix)
+                {
+                    writer.Write(value);
+                }
+                writer.ArrayEnd();
+                writer.PropertyName(nameof(nearClipPlane));
+                writer.Write(nearClipPlane);
+                writer.PropertyName(nameof(screenWidth));
+                writer.Write(screenWidth);
+                writer.PropertyName(nameof(screenHeight));
+                writer.Write(screenHeight);
+                writer.PropertyName(nameof(pixelRect));
+                writer.Write(pixelRect);
+                writer.TypeEnd();
+            }
 
             public static CameraValue FromCamera(Camera camera)
             {
@@ -341,18 +553,40 @@ namespace RoadRule.Systems.UI
             {
                 return new[]
                 {
-                    matrix.m00, matrix.m01, matrix.m02, matrix.m03,
-                    matrix.m10, matrix.m11, matrix.m12, matrix.m13,
-                    matrix.m20, matrix.m21, matrix.m22, matrix.m23,
-                    matrix.m30, matrix.m31, matrix.m32, matrix.m33,
+                    matrix.m00,
+                    matrix.m01,
+                    matrix.m02,
+                    matrix.m03,
+                    matrix.m10,
+                    matrix.m11,
+                    matrix.m12,
+                    matrix.m13,
+                    matrix.m20,
+                    matrix.m21,
+                    matrix.m22,
+                    matrix.m23,
+                    matrix.m30,
+                    matrix.m31,
+                    matrix.m32,
+                    matrix.m33,
                 };
             }
         }
 
-        private struct GetLaneResultItem
+        private struct GetLaneResultItem : IJsonWritable
         {
             public LaneValue lane;
             public float defaultSpeedLimit;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(lane));
+                writer.Write(lane);
+                writer.PropertyName(nameof(defaultSpeedLimit));
+                writer.Write(defaultSpeedLimit);
+                writer.TypeEnd();
+            }
         }
     }
 }

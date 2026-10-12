@@ -1,20 +1,54 @@
 import { useValue, bindValue, call } from 'cs2/api'
-import { Lane, ToolState, Edge, LaneRulesValue, CarLaneValue, Composition, Camera } from 'types'
+import {
+  Lane,
+  ToolState,
+  Edge,
+  LaneRulesValue,
+  CarLaneValue,
+  Composition,
+  Camera,
+} from 'types'
 
+const GetToolState = bindValue<ToolState>('RoadRule', 'GetToolState')
+const GetAllLaneGroup = bindValue<{ lane: Lane; defaultSpeedLimit: number }[]>(
+  'RoadRule',
+  'GetAllLaneGroup',
+)
+const GetAllLane = bindValue<{ lane: Lane; defaultSpeedLimit: number }[]>(
+  'RoadRule',
+  'GetAllLane',
+)
 export function useGetToolStateCmd(): ToolState {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetToolState')))
+  return useValue(GetToolState)
 }
-export function useGetAllLaneGroupCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLaneGroup')))
+export function useGetAllLaneGroupCmd(): {
+  lane: Lane
+  defaultSpeedLimit: number
+}[] {
+  return useValue(GetAllLaneGroup)
 }
-export function useGetAllLaneCmd(): { lane: Lane; defaultSpeedLimit: number }[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetAllLane')))
+export function useGetAllLaneCmd(): {
+  lane: Lane
+  defaultSpeedLimit: number
+}[] {
+  return useValue(GetAllLane)
 }
 
-export function useGetCameraCmd(): Camera | null {
-  return JSON.parse(useValue(bindValue<string>('RoadRule', 'GetCamera')))
-}
-
+const GetLanes = bindValue<
+  Record<
+    number,
+    {
+      masterLane: Lane
+      lanes: Lane[]
+    }
+  >
+>('RoadRule', 'GetLanes')
+const GetSelectedLaneIndex = bindValue<number[]>(
+  'RoadRule',
+  'GetSelectedLaneIndex',
+)
+const GetSelectedEdge = bindValue<Edge[]>('RoadRule', 'GetSelectedEdge')
+const GetComposition = bindValue<Composition>('RoadRule', 'GetComposition')
 export function useGetLanesCmd(): Record<
   number,
   {
@@ -22,29 +56,37 @@ export function useGetLanesCmd(): Record<
     lanes: Lane[]
   }
 > {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetLanes')))
+  return useValue(GetLanes)
 }
 export function useGetSelectedLaneIndexCmd(): number[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetSelectedLaneIndex')))
+  return useValue(GetSelectedLaneIndex)
 }
 export function useGetSelectedEdgeEntityCmd(): Edge[] {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetSelectedEdge')))
+  return useValue(GetSelectedEdge)
 }
 export function useGetCompositionCmd(): Composition {
-  return JSON.parse(useValue(bindValue('RoadRule', 'GetComposition')))
+  return useValue(GetComposition)
+}
+
+const GetCamera = bindValue<Camera | null>('RoadRule', 'GetCamera')
+export function useGetCameraCmd(): Camera | null {
+  return useValue(GetCamera)
 }
 
 export async function setToolStateCmd(inputValue: ToolState): Promise<void> {
   return await call('RoadRule', 'SetToolState', inputValue)
 }
 export async function updateLane(
-  inputValue: { laneIndex: number } & ({
-    key: 'lane-rules'
-    value: LaneRulesValue
-  } | {
-    key: 'car-lane'
-    value: CarLaneValue
-  }),
+  inputValue: { laneIndex: number } & (
+    | {
+        key: 'lane-rules'
+        value: LaneRulesValue
+      }
+    | {
+        key: 'car-lane'
+        value: CarLaneValue
+      }
+  ),
 ): Promise<void> {
   return await call(
     'RoadRule',

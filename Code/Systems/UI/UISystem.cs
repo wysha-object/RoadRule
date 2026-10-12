@@ -661,13 +661,13 @@ namespace RoadRule.Systems.UI
                     ScheduleGetLaneJob(m_AllLaneEntityQuery, m_AllLaneResultList);
                     UpdateList(m_AllLaneGroupResultList, m_AllLaneGroupList);
                     UpdateList(m_AllLaneResultList, m_AllLaneList);
-                    m_GetAllLaneGroupBinding.Update(JsonConvert.SerializeObject(m_AllLaneGroupList));
-                    m_GetAllLaneBinding.Update(JsonConvert.SerializeObject(m_AllLaneList));
+                    m_GetAllLaneGroupBinding.Update(m_AllLaneGroupList.ToArray());
+                    m_GetAllLaneBinding.Update(m_AllLaneList.ToArray());
                 }
                 else
                 {
-                    m_GetAllLaneGroupBinding.Update("[]");
-                    m_GetAllLaneBinding.Update("[]");
+                    m_GetAllLaneGroupBinding.Update([]);
+                    m_GetAllLaneBinding.Update([]);
                 }
             }
             m_SettingsUpdated = false;
