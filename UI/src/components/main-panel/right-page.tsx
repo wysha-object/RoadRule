@@ -1,5 +1,6 @@
 import {
   updateLane,
+  UpdateLaneType,
   useGetLanesCmd,
   useGetSelectedLaneIndexCmd,
   useGetToolStateCmd,
@@ -73,7 +74,7 @@ export default function RightPage() {
             for (const laneIndex of selectedLaneIndex) {
               updateLane({
                 laneIndex: laneIndex,
-                key: 'lane-rules',
+                key: UpdateLaneType.LaneRules,
                 value: value,
               })
             }
@@ -126,7 +127,7 @@ export default function RightPage() {
                         for (const laneIndex of selectedLaneIndex) {
                           updateLane({
                             laneIndex: laneIndex,
-                            key: 'car-lane',
+                            key: UpdateLaneType.CarLane,
                             value: newValue,
                           })
                         }
@@ -140,7 +141,7 @@ export default function RightPage() {
                         for (const laneIndex of selectedLaneIndex) {
                           updateLane({
                             laneIndex: laneIndex,
-                            key: 'lane-rules',
+                            key: UpdateLaneType.LaneRules,
                             value: newValue,
                           })
                         }

@@ -7,7 +7,23 @@ import {
   CarLaneValue,
   Composition,
   Camera,
+  Position,
 } from 'types'
+
+export enum UpdateLaneType {
+  LaneRules = 0,
+  CarLane = 1,
+}
+export type UpdateLaneInput = { laneIndex: number } & (
+  | {
+      key: UpdateLaneType.LaneRules
+      value: LaneRulesValue
+    }
+  | {
+      key: UpdateLaneType.CarLane
+      value: CarLaneValue
+    }
+)
 
 const GetToolState = bindValue<ToolState>('RoadRule', 'GetToolState')
 const GetAllLaneGroup = bindValue<{ lane: Lane; defaultSpeedLimit: number }[]>(
@@ -76,34 +92,14 @@ export function useGetCameraCmd(): Camera | null {
 export async function setToolStateCmd(inputValue: ToolState): Promise<void> {
   return await call('RoadRule', 'SetToolState', inputValue)
 }
-export async function updateLane(
-  inputValue: { laneIndex: number } & (
-    | {
-        key: 'lane-rules'
-        value: LaneRulesValue
-      }
-    | {
-        key: 'car-lane'
-        value: CarLaneValue
-      }
-  ),
-): Promise<void> {
-  return await call(
-    'RoadRule',
-    'UpdateLane',
-    JSON.stringify({
-      ...inputValue,
-      value: JSON.stringify(inputValue.value),
-    }),
-  )
+export async function updateLane(inputValue: UpdateLaneInput): Promise<void> {
+  return await call('RoadRule', 'UpdateLane', inputValue)
 }
 export async function lookAt(
-  x: number,
-  y: number,
-  z: number,
+  position: Position,
   distance: number,
 ): Promise<void> {
-  return await call('RoadRule', 'LookAt', JSON.stringify({ x, y, z, distance }))
+  return await call('RoadRule', 'LookAt', { position, distance })
 }
 export async function addSelectedLaneIndex(laneIndex: number): Promise<void> {
   return await call('RoadRule', 'AddSelectedLaneIndex', laneIndex)

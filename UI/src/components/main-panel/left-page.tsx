@@ -37,7 +37,7 @@ export default function LeftPage() {
               key={edge.edgeEntity.index}
               className='row-with-hover-effect'
               onClick={() => {
-                lookAt(edge.position.x, edge.position.y, edge.position.z, 200)
+                lookAt({ x: edge.position.x, y: edge.position.y, z: edge.position.z }, 200)
               }}
             >
               {t('MainPanel.EdgeEntity', {

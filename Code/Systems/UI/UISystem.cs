@@ -558,14 +558,14 @@ namespace RoadRule.Systems.UI
             return result;
         }
 
-        private void UpdateList(NativeList<GetLaneJobResultItem> input, List<GetLaneResultItem> output)
+        private void UpdateList(NativeList<GetLaneJobResultItem> input, List<GetLaneResultItemValue> output)
         {
             output.Clear();
             foreach (var item in input)
             {
                 var lane = item.m_Lane;
                 output.Add(
-                    new GetLaneResultItem()
+                    new GetLaneResultItemValue()
                     {
                         lane = new LaneValue()
                         {
@@ -574,7 +574,7 @@ namespace RoadRule.Systems.UI
                             laneRules = lane.laneRules,
                             carLane = lane.carLane,
                         },
-                        defaultSpeedLimit = item.m_DefaultSpeedLimit,
+                        defaultSpeedLimit = item.m_DefaultSpeedLimit * 1.8f,
                     }
                 );
             }
@@ -628,8 +628,8 @@ namespace RoadRule.Systems.UI
             m_AllLaneGroupResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
             m_AllLaneResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
 
-            m_AllLaneGroupList = new List<GetLaneResultItem>();
-            m_AllLaneList = new List<GetLaneResultItem>();
+            m_AllLaneGroupList = new List<GetLaneResultItemValue>();
+            m_AllLaneList = new List<GetLaneResultItemValue>();
 
             Mod.m_Settings.onSettingsApplied += (_) =>
             {
@@ -640,8 +640,8 @@ namespace RoadRule.Systems.UI
             SetupKeyBindings();
         }
 
-        private List<GetLaneResultItem> m_AllLaneGroupList;
-        private List<GetLaneResultItem> m_AllLaneList;
+        private List<GetLaneResultItemValue> m_AllLaneGroupList;
+        private List<GetLaneResultItemValue> m_AllLaneList;
         private bool m_SettingsUpdated = false;
 
         protected override void OnUpdate()
