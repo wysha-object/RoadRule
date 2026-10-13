@@ -558,16 +558,16 @@ namespace RoadRule.Systems.UI
             return result;
         }
 
-        private void UpdateList(NativeList<GetLaneJobResultItem> input, List<GetLaneResultItemValue> output)
+        private void UpdateList(NativeList<GetLaneJobResultItem> input, List<UITypes.GetLaneResultItemValue> output)
         {
             output.Clear();
             foreach (var item in input)
             {
                 var lane = item.m_Lane;
                 output.Add(
-                    new GetLaneResultItemValue()
+                    new UITypes.GetLaneResultItemValue()
                     {
-                        lane = new LaneValue()
+                        lane = new UITypes.LaneValue()
                         {
                             laneIndex = lane.laneIndex,
                             position = lane.position,
@@ -628,8 +628,8 @@ namespace RoadRule.Systems.UI
             m_AllLaneGroupResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
             m_AllLaneResultList = new NativeList<GetLaneJobResultItem>(Allocator.Persistent);
 
-            m_AllLaneGroupList = new List<GetLaneResultItemValue>();
-            m_AllLaneList = new List<GetLaneResultItemValue>();
+            m_AllLaneGroupList = new List<UITypes.GetLaneResultItemValue>();
+            m_AllLaneList = new List<UITypes.GetLaneResultItemValue>();
 
             Mod.m_Settings.onSettingsApplied += (_) =>
             {
@@ -640,8 +640,8 @@ namespace RoadRule.Systems.UI
             SetupKeyBindings();
         }
 
-        private List<GetLaneResultItemValue> m_AllLaneGroupList;
-        private List<GetLaneResultItemValue> m_AllLaneList;
+        private List<UITypes.GetLaneResultItemValue> m_AllLaneGroupList;
+        private List<UITypes.GetLaneResultItemValue> m_AllLaneList;
         private bool m_SettingsUpdated = false;
 
         protected override void OnUpdate()

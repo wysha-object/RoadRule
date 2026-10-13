@@ -26,7 +26,7 @@ namespace RoadRule.Systems.UI
 
         private struct GetLaneJobResultItem
         {
-            public LaneValue m_Lane;
+            public UITypes.LaneValue m_Lane;
             public float m_DefaultSpeedLimit;
         }
 
@@ -122,17 +122,17 @@ namespace RoadRule.Systems.UI
                         m_ResultList.AddNoResize(
                             new GetLaneJobResultItem
                             {
-                                m_Lane = new LaneValue()
+                                m_Lane = new UITypes.LaneValue()
                                 {
                                     laneIndex = lane.m_MiddleNode.GetLaneIndex() & 0xff,
-                                    position = new PositionValue()
+                                    position = new UITypes.PositionValue()
                                     {
                                         x = worldPosition.x,
                                         y = worldPosition.y,
                                         z = worldPosition.z,
                                     },
-                                    laneRules = LaneRulesValue.FromRules(laneRules),
-                                    carLane = CarLaneValue.FromCarLane(carLane),
+                                    laneRules = UITypes.LaneRulesValue.FromRules(laneRules),
+                                    carLane = UITypes.CarLaneValue.FromCarLane(carLane),
                                 },
                                 m_DefaultSpeedLimit = defaultSpeedLimit,
                             }

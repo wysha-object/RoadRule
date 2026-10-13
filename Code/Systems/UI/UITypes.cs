@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -15,9 +15,56 @@ using static RoadRule.Systems.UI.UISystem;
 
 namespace RoadRule.Systems.UI
 {
-    public partial class UISystem
+    public static class UITypes
     {
-        private enum RuleValue
+        public struct EntityValue : IJsonWritable
+        {
+            public int index;
+            public int version;
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(index));
+                writer.Write(index);
+                writer.PropertyName(nameof(version));
+                writer.Write(version);
+                writer.TypeEnd();
+            }
+        }
+
+        public struct PositionValue : IJsonReadable, IJsonWritable
+        {
+            public float x;
+            public float y;
+            public float z;
+
+            public void Read(IJsonReader reader)
+            {
+                reader.ReadMapBegin();
+                reader.ReadProperty(nameof(x));
+                reader.Read(out x);
+                reader.ReadProperty(nameof(y));
+                reader.Read(out y);
+                reader.ReadProperty(nameof(z));
+                reader.Read(out z);
+                reader.ReadMapEnd();
+            }
+
+            public void Write(IJsonWriter writer)
+            {
+                writer.TypeBegin(GetType().FullName);
+                writer.PropertyName(nameof(x));
+                writer.Write(x);
+                writer.PropertyName(nameof(y));
+                writer.Write(y);
+                writer.PropertyName(nameof(z));
+                writer.Write(z);
+                writer.TypeEnd();
+            }
+        }
+
+        public enum RuleValue
         {
             None = 0,
             Prefer = 1,
@@ -25,7 +72,7 @@ namespace RoadRule.Systems.UI
             Disallow = 3,
         }
 
-        private struct RuleOptionsValue : IJsonReadable, IJsonWritable
+        public struct RuleOptionsValue : IJsonReadable, IJsonWritable
         {
             public RuleValue noFlag;
             public RuleValue hasFlag;
@@ -120,7 +167,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct VehicleTypeRulesValue : IJsonReadable, IJsonWritable
+        public struct VehicleTypeRulesValue : IJsonReadable, IJsonWritable
         {
             public FieldValue<RuleOptionsValue> ambulance;
             public FieldValue<RuleOptionsValue> deliveryTruck;
@@ -245,7 +292,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct LaneRulesValue : IJsonReadable, IJsonWritable
+        public struct LaneRulesValue : IJsonReadable, IJsonWritable
         {
             public VehicleTypeRulesValue vehicleTypeRules;
 
@@ -281,7 +328,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private static FieldValue<RuleOptionsValue> FromRule(LaneRules.RuleOptions rule)
+        public static FieldValue<RuleOptionsValue> FromRule(LaneRules.RuleOptions rule)
         {
             var noFlag = RuleValue.None;
             switch (rule & LaneRules.RuleOptions.NoFlagRuleMask)
@@ -330,7 +377,7 @@ namespace RoadRule.Systems.UI
             };
         }
 
-        private static LaneRules.RuleOptions ToRuleOptions(RuleOptionsValue ruleOptionsValue)
+        public static LaneRules.RuleOptions ToRuleOptions(RuleOptionsValue ruleOptionsValue)
         {
             LaneRules.RuleOptions rule = LaneRules.RuleOptions.None;
             switch (ruleOptionsValue.noFlag)
@@ -360,7 +407,7 @@ namespace RoadRule.Systems.UI
             return rule;
         }
 
-        private static LaneRules.RuleOptions ApplyRuleOptionsValue(LaneRules.RuleOptions ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
+        public static LaneRules.RuleOptions ApplyRuleOptionsValue(LaneRules.RuleOptions ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
         {
             if (ruleOptionsValue.state == FieldState.Applied)
             {
@@ -372,7 +419,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private static FieldValue<RuleOptionsValue> MergeRuleValues(FieldValue<RuleOptionsValue> a, FieldValue<RuleOptionsValue> b)
+        public static FieldValue<RuleOptionsValue> MergeRuleValues(FieldValue<RuleOptionsValue> a, FieldValue<RuleOptionsValue> b)
         {
             if (a.value.Equals(b.value) && a.state == b.state && a.state == FieldState.Applied)
             {
@@ -387,7 +434,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct CarLaneValue : IJsonReadable, IJsonWritable
+        public struct CarLaneValue : IJsonReadable, IJsonWritable
         {
             /// Game lane speed uses 2x m/s; km/h converts by / 1.8.
             public FieldValue<float> speedLimit;
@@ -426,12 +473,12 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private static FieldValue<float> FromSpeedLimit(float speedLimit)
+        public static FieldValue<float> FromSpeedLimit(float speedLimit)
         {
             return new FieldValue<float> { state = FieldState.Applied, value = speedLimit * 1.8f };
         }
 
-        private static FieldValue<float> MergeSpeedLimitValues(FieldValue<float> a, FieldValue<float> b)
+        public static FieldValue<float> MergeSpeedLimitValues(FieldValue<float> a, FieldValue<float> b)
         {
             if (a.value == b.value && a.state == b.state && a.state == FieldState.Applied)
             {
@@ -444,7 +491,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct LaneValue : IJsonWritable
+        public struct LaneValue : IJsonWritable
         {
             public int laneIndex;
             public PositionValue position;
@@ -466,7 +513,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct LaneGroupValue : IJsonWritable
+        public struct LaneGroupValue : IJsonWritable
         {
             public LaneValue masterLane;
             public LaneValue[] lanes;
@@ -487,23 +534,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct EntityValue : IJsonWritable
-        {
-            public int index;
-            public int version;
-
-            public void Write(IJsonWriter writer)
-            {
-                writer.TypeBegin(GetType().FullName);
-                writer.PropertyName(nameof(index));
-                writer.Write(index);
-                writer.PropertyName(nameof(version));
-                writer.Write(version);
-                writer.TypeEnd();
-            }
-        }
-
-        private struct EdgeValue : IJsonWritable
+        public struct EdgeValue : IJsonWritable
         {
             public EntityValue edgeEntity;
             public PositionValue position;
@@ -519,7 +550,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct CompositionValue : IJsonWritable
+        public struct CompositionValue : IJsonWritable
         {
             public float speedLimit;
 
@@ -532,38 +563,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct PositionValue : IJsonReadable, IJsonWritable
-        {
-            public float x;
-            public float y;
-            public float z;
-
-            public void Read(IJsonReader reader)
-            {
-                reader.ReadMapBegin();
-                reader.ReadProperty(nameof(x));
-                reader.Read(out x);
-                reader.ReadProperty(nameof(y));
-                reader.Read(out y);
-                reader.ReadProperty(nameof(z));
-                reader.Read(out z);
-                reader.ReadMapEnd();
-            }
-
-            public void Write(IJsonWriter writer)
-            {
-                writer.TypeBegin(GetType().FullName);
-                writer.PropertyName(nameof(x));
-                writer.Write(x);
-                writer.PropertyName(nameof(y));
-                writer.Write(y);
-                writer.PropertyName(nameof(z));
-                writer.Write(z);
-                writer.TypeEnd();
-            }
-        }
-
-        private struct PixelRectValue : IJsonWritable
+        public struct PixelRectValue : IJsonWritable
         {
             public float x;
             public float y;
@@ -585,7 +585,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct CameraValue : IJsonWritable
+        public struct CameraValue : IJsonWritable
         {
             public float[] worldToCameraMatrix;
             public float[] projectionMatrix;
@@ -641,7 +641,7 @@ namespace RoadRule.Systems.UI
                 };
             }
 
-            private static float[] ToRowMajorArray(Matrix4x4 matrix)
+            public static float[] ToRowMajorArray(Matrix4x4 matrix)
             {
                 return new[]
                 {
@@ -665,7 +665,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        private struct GetLaneResultItemValue : IJsonWritable
+        public struct GetLaneResultItemValue : IJsonWritable
         {
             public LaneValue lane;
             public float defaultSpeedLimit;
@@ -678,6 +678,62 @@ namespace RoadRule.Systems.UI
                 writer.PropertyName(nameof(defaultSpeedLimit));
                 writer.Write(defaultSpeedLimit);
                 writer.TypeEnd();
+            }
+        }
+
+        public enum UpdateLaneType : int
+        {
+            LaneRules = 0,
+            CarLane = 1,
+        }
+
+        public struct UpdateLaneInputValue : IJsonReadable
+        {
+            public int laneIndex;
+            public UpdateLaneType key;
+            public object value;
+
+            public void Read(IJsonReader reader)
+            {
+                reader.ReadMapBegin();
+                reader.ReadProperty(nameof(laneIndex));
+                reader.Read(out laneIndex);
+                reader.ReadProperty(nameof(this.key));
+                reader.Read(out int key);
+                this.key = (UpdateLaneType)key;
+                reader.ReadProperty(nameof(value));
+                switch (this.key)
+                {
+                    case UpdateLaneType.LaneRules:
+                        var laneRulesValue = new LaneRulesValue();
+                        laneRulesValue.Read(reader);
+                        value = laneRulesValue;
+                        break;
+                    case UpdateLaneType.CarLane:
+                        var carLaneValue = new CarLaneValue();
+                        carLaneValue.Read(reader);
+                        value = carLaneValue;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported UpdateLaneType: {this.key}");
+                }
+                reader.ReadMapEnd();
+            }
+        }
+
+        public struct LookAtInputValue : IJsonReadable
+        {
+            public PositionValue position;
+            public float distance;
+
+            public void Read(IJsonReader reader)
+            {
+                reader.ReadMapBegin();
+                reader.ReadProperty(nameof(position));
+                position.Read(reader);
+                reader.ReadProperty(nameof(distance));
+                reader.Read(out distance);
+                reader.ReadMapEnd();
             }
         }
     }

@@ -16,116 +16,74 @@ namespace RoadRule.Systems.UI
 {
     public partial class UISystem
     {
-        private struct UpdateLaneInputValue : IJsonReadable
-        {
-            public enum UpdateLaneType : int
-            {
-                LaneRules = 0,
-                CarLane = 1,
-            }
-
-            public int laneIndex;
-            public UpdateLaneType key;
-            public object value;
-
-            public void Read(IJsonReader reader)
-            {
-                reader.ReadMapBegin();
-                reader.ReadProperty(nameof(laneIndex));
-                reader.Read(out laneIndex);
-                reader.ReadProperty(nameof(this.key));
-                reader.Read(out int key);
-                this.key = (UpdateLaneType)key;
-                reader.ReadProperty(nameof(value));
-                switch (this.key)
-                {
-                    case UpdateLaneType.LaneRules:
-                        var laneRulesValue = new LaneRulesValue();
-                        laneRulesValue.Read(reader);
-                        value = laneRulesValue;
-                        break;
-                    case UpdateLaneType.CarLane:
-                        var carLaneValue = new CarLaneValue();
-                        carLaneValue.Read(reader);
-                        value = carLaneValue;
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unsupported UpdateLaneType: {this.key}");
-                }
-                reader.ReadMapEnd();
-            }
-        }
-
-        private struct LookAtInputValue : IJsonReadable
-        {
-            public PositionValue position;
-            public float distance;
-
-            public void Read(IJsonReader reader)
-            {
-                reader.ReadMapBegin();
-                reader.ReadProperty(nameof(position));
-                position.Read(reader);
-                reader.ReadProperty(nameof(distance));
-                reader.Read(out distance);
-                reader.ReadMapEnd();
-            }
-        }
-
         private ValueBinding<int> m_GetToolStateBinding;
-        private ValueBinding<GetLaneResultItemValue[]> m_GetAllLaneGroupBinding;
-        private ValueBinding<GetLaneResultItemValue[]> m_GetAllLaneBinding;
-        private GetterValueBinding<Dictionary<int, LaneGroupValue>> m_GetLanesBinding;
+        private ValueBinding<UITypes.GetLaneResultItemValue[]> m_GetAllLaneGroupBinding;
+        private ValueBinding<UITypes.GetLaneResultItemValue[]> m_GetAllLaneBinding;
+        private GetterValueBinding<Dictionary<int, UITypes.LaneGroupValue>> m_GetLanesBinding;
         private GetterValueBinding<int[]> m_GetSelectedLaneIndexBinding;
-        private GetterValueBinding<EdgeValue[]> m_GetSelectedEdgeBinding;
-        private GetterValueBinding<CompositionValue> m_GetCompositionBinding;
+        private GetterValueBinding<UITypes.EdgeValue[]> m_GetSelectedEdgeBinding;
+        private GetterValueBinding<UITypes.CompositionValue> m_GetCompositionBinding;
 
         private void AddUIBindings()
         {
             AddBinding(m_GetToolStateBinding = new ValueBinding<int>("RoadRule", "GetToolState", (int)ToolState.Disabled));
-            AddBinding(m_GetAllLaneGroupBinding = new ValueBinding<GetLaneResultItemValue[]>("RoadRule", "GetAllLaneGroup", [], new ListWriter<GetLaneResultItemValue>()));
-            AddBinding(m_GetAllLaneBinding = new ValueBinding<GetLaneResultItemValue[]>("RoadRule", "GetAllLane", [], new ListWriter<GetLaneResultItemValue>()));
+            AddBinding(
+                m_GetAllLaneGroupBinding = new ValueBinding<UITypes.GetLaneResultItemValue[]>("RoadRule", "GetAllLaneGroup", [], new ListWriter<UITypes.GetLaneResultItemValue>())
+            );
+            AddBinding(m_GetAllLaneBinding = new ValueBinding<UITypes.GetLaneResultItemValue[]>("RoadRule", "GetAllLane", [], new ListWriter<UITypes.GetLaneResultItemValue>()));
 
             AddBinding(
-                m_GetLanesBinding = new GetterValueBinding<Dictionary<int, LaneGroupValue>>("RoadRule", "GetLanes", RoadRuleGetLanes, new DictionaryWriter<int, LaneGroupValue>())
+                m_GetLanesBinding = new GetterValueBinding<Dictionary<int, UITypes.LaneGroupValue>>(
+                    "RoadRule",
+                    "GetLanes",
+                    RoadRuleGetLanes,
+                    new DictionaryWriter<int, UITypes.LaneGroupValue>()
+                )
             );
             AddBinding(m_GetSelectedLaneIndexBinding = new GetterValueBinding<int[]>("RoadRule", "GetSelectedLaneIndex", RoadRuleGetSelectedLaneIndex, new ListWriter<int>()));
-            AddBinding(m_GetSelectedEdgeBinding = new GetterValueBinding<EdgeValue[]>("RoadRule", "GetSelectedEdge", RoadRuleGetSelectedEdge, new ListWriter<EdgeValue>()));
-            AddBinding(m_GetCompositionBinding = new GetterValueBinding<CompositionValue>("RoadRule", "GetComposition", RoadRuleGetComposition));
+            AddBinding(
+                m_GetSelectedEdgeBinding = new GetterValueBinding<UITypes.EdgeValue[]>("RoadRule", "GetSelectedEdge", RoadRuleGetSelectedEdge, new ListWriter<UITypes.EdgeValue>())
+            );
+            AddBinding(m_GetCompositionBinding = new GetterValueBinding<UITypes.CompositionValue>("RoadRule", "GetComposition", RoadRuleGetComposition));
 
             AddUpdateBinding(
-                new GetterValueBinding<CameraValue?>("RoadRule", "GetCamera", RoadRuleGetCamera, new NullableStructWriter<CameraValue>(new ValueWriter<CameraValue>()))
+                new GetterValueBinding<UITypes.CameraValue?>(
+                    "RoadRule",
+                    "GetCamera",
+                    RoadRuleGetCamera,
+                    new NullableStructWriter<UITypes.CameraValue>(new ValueWriter<UITypes.CameraValue>())
+                )
             );
 
             AddBinding(new CallBinding<int, int>("RoadRule", "SetToolState", RoadRuleSetToolState));
-            AddBinding(new CallBinding<UpdateLaneInputValue, int>("RoadRule", "UpdateLane", RoadRuleUpdateLane));
-            AddBinding(new CallBinding<LookAtInputValue, string>("RoadRule", "LookAt", RoadRuleLookAt));
+            AddBinding(new CallBinding<UITypes.UpdateLaneInputValue, int>("RoadRule", "UpdateLane", RoadRuleUpdateLane));
+            AddBinding(new CallBinding<UITypes.LookAtInputValue, string>("RoadRule", "LookAt", RoadRuleLookAt));
             AddBinding(new CallBinding<int, string>("RoadRule", "AddSelectedLaneIndex", RoadRuleAddSelectedLaneIndex));
             AddBinding(new CallBinding<int, string>("RoadRule", "RemoveSelectedLaneIndex", RoadRuleRemoveSelectedLaneIndex));
             AddBinding(new CallBinding<string, string>("RoadRule", "ClearSelectedLaneIndex", RoadRuleClearSelectedLaneIndex));
         }
 
-        private Dictionary<int, LaneGroupValue> RoadRuleGetLanes()
+        private Dictionary<int, UITypes.LaneGroupValue> RoadRuleGetLanes()
         {
-            var masterMap = new Dictionary<int, LaneGroupValue>();
+            var masterMap = new Dictionary<int, UITypes.LaneGroupValue>();
             var camera = m_CameraUpdateSystem.activeCamera;
             if (camera == null)
             {
-                return new Dictionary<int, LaneGroupValue>();
+                return new Dictionary<int, UITypes.LaneGroupValue>();
             }
             foreach (var kvp in GetMasterLaneDictionary())
             {
-                var laneList = new List<LaneValue>();
+                var laneList = new List<UITypes.LaneValue>();
                 foreach (var laneIndexKVP in kvp.Value.m_LaneIndexDictionary)
                 {
                     var laneIndex = laneIndexKVP.Key;
                     if (!EntityManager.TryGetComponent<Curve>(laneIndexKVP.Value[0], out var curve))
                     {
-                        return new Dictionary<int, LaneGroupValue>();
+                        return new Dictionary<int, UITypes.LaneGroupValue>();
                     }
 
-                    LaneRulesValue? laneRulesValue = null;
-                    CarLaneValue? CarLaneValue = null;
+                    UITypes.LaneRulesValue? laneRulesValue = null;
+                    UITypes.CarLaneValue? carLaneValue = null;
                     foreach (var subLaneEntity in laneIndexKVP.Value)
                     {
                         if (!EntityManager.TryGetComponent<LaneRules>(subLaneEntity, out var laneRules))
@@ -134,31 +92,31 @@ namespace RoadRule.Systems.UI
                         }
                         if (!EntityManager.TryGetComponent<Game.Net.CarLane>(subLaneEntity, out var carLane))
                         {
-                            return new Dictionary<int, LaneGroupValue>();
+                            return new Dictionary<int, UITypes.LaneGroupValue>();
                         }
                         laneRulesValue =
                             laneRulesValue == null
-                                ? LaneRulesValue.FromRules(laneRules)
-                                : LaneRulesValue.MergeRulesValues(laneRulesValue.Value, LaneRulesValue.FromRules(laneRules));
-                        CarLaneValue =
-                            CarLaneValue == null
-                                ? UISystem.CarLaneValue.FromCarLane(carLane)
-                                : UISystem.CarLaneValue.MergeLanePropertyValues(CarLaneValue.Value, UISystem.CarLaneValue.FromCarLane(carLane));
+                                ? UITypes.LaneRulesValue.FromRules(laneRules)
+                                : UITypes.LaneRulesValue.MergeRulesValues(laneRulesValue.Value, UITypes.LaneRulesValue.FromRules(laneRules));
+                        carLaneValue =
+                            carLaneValue == null
+                                ? UITypes.CarLaneValue.FromCarLane(carLane)
+                                : UITypes.CarLaneValue.MergeLanePropertyValues(carLaneValue.Value, UITypes.CarLaneValue.FromCarLane(carLane));
                     }
 
                     var worldPosition = curve.m_Bezier.d;
                     laneList.Add(
-                        new LaneValue
+                        new UITypes.LaneValue
                         {
                             laneIndex = laneIndex,
-                            position = new PositionValue
+                            position = new UITypes.PositionValue
                             {
                                 x = worldPosition.x,
                                 y = worldPosition.y,
                                 z = worldPosition.z,
                             },
                             laneRules = laneRulesValue.Value,
-                            carLane = CarLaneValue.Value,
+                            carLane = carLaneValue.Value,
                         }
                     );
                 }
@@ -168,10 +126,10 @@ namespace RoadRule.Systems.UI
                     || !EntityManager.TryGetComponent<Game.Net.CarLane>(kvp.Value.m_MasterLaneEntities[0], out var masterCarLane)
                 )
                 {
-                    return new Dictionary<int, LaneGroupValue>();
+                    return new Dictionary<int, UITypes.LaneGroupValue>();
                 }
-                LaneRulesValue? masterLaneRulesValue = null;
-                CarLaneValue? masterCarLaneValue = null;
+                UITypes.LaneRulesValue? masterLaneRulesValue = null;
+                UITypes.CarLaneValue? masterCarLaneValue = null;
                 foreach (var masterLaneEntity in kvp.Value.m_MasterLaneEntities)
                 {
                     if (!EntityManager.TryGetComponent<LaneRules>(masterLaneEntity, out var laneRules))
@@ -180,24 +138,24 @@ namespace RoadRule.Systems.UI
                     }
                     masterLaneRulesValue =
                         masterLaneRulesValue == null
-                            ? LaneRulesValue.FromRules(laneRules)
-                            : LaneRulesValue.MergeRulesValues(masterLaneRulesValue.Value, LaneRulesValue.FromRules(laneRules));
+                            ? UITypes.LaneRulesValue.FromRules(laneRules)
+                            : UITypes.LaneRulesValue.MergeRulesValues(masterLaneRulesValue.Value, UITypes.LaneRulesValue.FromRules(laneRules));
                     masterCarLaneValue =
                         masterCarLaneValue == null
-                            ? CarLaneValue.FromCarLane(masterCarLane)
-                            : CarLaneValue.MergeLanePropertyValues(masterCarLaneValue.Value, CarLaneValue.FromCarLane(masterCarLane));
+                            ? UITypes.CarLaneValue.FromCarLane(masterCarLane)
+                            : UITypes.CarLaneValue.MergeLanePropertyValues(masterCarLaneValue.Value, UITypes.CarLaneValue.FromCarLane(masterCarLane));
                 }
 
                 var masterWorldPosition = masterCurve.m_Bezier.d;
                 var masterScreenPoint = camera.WorldToScreenPoint(new Vector3(masterWorldPosition.x, masterWorldPosition.y, masterWorldPosition.z));
                 masterMap.Add(
                     kvp.Key,
-                    new LaneGroupValue
+                    new UITypes.LaneGroupValue
                     {
-                        masterLane = new LaneValue
+                        masterLane = new UITypes.LaneValue
                         {
                             laneIndex = kvp.Key,
-                            position = new PositionValue
+                            position = new UITypes.PositionValue
                             {
                                 x = masterWorldPosition.x,
                                 y = masterWorldPosition.y,
@@ -218,9 +176,9 @@ namespace RoadRule.Systems.UI
             return SelectedLaneIndexSet.Select((item) => (int)item).ToArray();
         }
 
-        private EdgeValue[] RoadRuleGetSelectedEdge()
+        private UITypes.EdgeValue[] RoadRuleGetSelectedEdge()
         {
-            var selectedEdgeList = new List<EdgeValue>();
+            var selectedEdgeList = new List<UITypes.EdgeValue>();
             var camera = m_CameraUpdateSystem.activeCamera;
             if (camera == null)
             {
@@ -234,10 +192,10 @@ namespace RoadRule.Systems.UI
                 }
                 var worldPosition = math.lerp(edgeGeometry.m_Bounds.min, edgeGeometry.m_Bounds.max, 0.5f);
                 selectedEdgeList.Add(
-                    new EdgeValue
+                    new UITypes.EdgeValue
                     {
-                        edgeEntity = new EntityValue { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
-                        position = new PositionValue
+                        edgeEntity = new UITypes.EntityValue { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
+                        position = new UITypes.PositionValue
                         {
                             x = worldPosition.x,
                             y = worldPosition.y,
@@ -249,20 +207,20 @@ namespace RoadRule.Systems.UI
             return selectedEdgeList.ToArray();
         }
 
-        private CompositionValue RoadRuleGetComposition()
+        private UITypes.CompositionValue RoadRuleGetComposition()
         {
             float speedLimit = 60f;
             if (m_CompositionParameters is CompositionParameters composition)
             {
                 speedLimit = composition.m_SpeedLimit * 1.8f;
             }
-            return new CompositionValue { speedLimit = speedLimit };
+            return new UITypes.CompositionValue { speedLimit = speedLimit };
         }
 
-        private CameraValue? RoadRuleGetCamera()
+        private UITypes.CameraValue? RoadRuleGetCamera()
         {
             var camera = m_CameraUpdateSystem.activeCamera;
-            return camera == null ? null : CameraValue.FromCamera(camera);
+            return camera == null ? null : UITypes.CameraValue.FromCamera(camera);
         }
 
         private int RoadRuleSetToolState(int inputValue)
@@ -271,7 +229,7 @@ namespace RoadRule.Systems.UI
             return 0;
         }
 
-        private int RoadRuleUpdateLane(UpdateLaneInputValue inputValue)
+        private int RoadRuleUpdateLane(UITypes.UpdateLaneInputValue inputValue)
         {
             var masterLaneDictionary = GetMasterLaneDictionary();
             var laneIndexDictionary = new Dictionary<int, List<Entity>>();
@@ -289,7 +247,7 @@ namespace RoadRule.Systems.UI
                 throw new InvalidOperationException($"Lane index {inputValue.laneIndex} is not available for updating.");
             }
 
-            if (inputValue.key == UpdateLaneInputValue.UpdateLaneType.LaneRules && inputValue.value is LaneRulesValue laneRulesValue)
+            if (inputValue.key == UITypes.UpdateLaneType.LaneRules && inputValue.value is UITypes.LaneRulesValue laneRulesValue)
             {
                 foreach (var e in laneEntities)
                 {
@@ -299,12 +257,12 @@ namespace RoadRule.Systems.UI
                         EntityManager.AddComponentData(e, laneRules);
                     }
 
-                    laneRules = LaneRulesValue.ApplyRulesValue(laneRules, laneRulesValue);
+                    laneRules = UITypes.LaneRulesValue.ApplyRulesValue(laneRules, laneRulesValue);
                     EntityManager.SetComponentData(e, laneRules);
                     EntityManager.AddComponentData(e, new Updated());
                 }
             }
-            else if (inputValue.key == UpdateLaneInputValue.UpdateLaneType.CarLane && inputValue.value is CarLaneValue carLaneValue)
+            else if (inputValue.key == UITypes.UpdateLaneType.CarLane && inputValue.value is UITypes.CarLaneValue carLaneValue)
             {
                 foreach (var e in laneEntities)
                 {
@@ -316,7 +274,7 @@ namespace RoadRule.Systems.UI
                 foreach (var e in laneEntities)
                 {
                     var carLane = EntityManager.GetComponentData<Game.Net.CarLane>(e);
-                    carLane = CarLaneValue.ApplyLanePropertyValue(carLane, carLaneValue);
+                    carLane = UITypes.CarLaneValue.ApplyLanePropertyValue(carLane, carLaneValue);
                     EntityManager.SetComponentData(e, carLane);
                     EntityManager.AddComponentData(e, new Updated());
                 }
@@ -326,7 +284,7 @@ namespace RoadRule.Systems.UI
             return 0;
         }
 
-        private string RoadRuleLookAt(LookAtInputValue inputValue)
+        private string RoadRuleLookAt(UITypes.LookAtInputValue inputValue)
         {
             var pivot = new float3(inputValue.position.x, inputValue.position.y, inputValue.position.z);
             var zoom = inputValue.distance;

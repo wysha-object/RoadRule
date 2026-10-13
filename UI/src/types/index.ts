@@ -11,6 +11,54 @@ export const enum ToolState {
   Choosed = 2,
 }
 
+export interface Position {
+  x: number
+  y: number
+  z: number
+}
+
+export interface ScreenPoint {
+  top: number
+  left: number
+  distance: number
+  scale: number
+}
+
+export type Matrix4x4 = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+]
+
+export interface PixelRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface Camera {
+  worldToCameraMatrix: Matrix4x4
+  projectionMatrix: Matrix4x4
+  nearClipPlane: number
+  screenWidth: number
+  screenHeight: number
+  pixelRect: PixelRect
+}
+
 export enum RuleValue {
   None = 0,
   Prefer = 1,
@@ -66,52 +114,42 @@ export interface Lane {
   carLane: CarLaneValue
 }
 
+export interface LaneGroup {
+  masterLane: Lane
+  lanes: Lane[]
+}
+
+export interface GetLaneResultItem {
+  lane: Lane
+  defaultSpeedLimit: number
+}
+
 export interface Edge {
   edgeEntity: Entity
   position: Position
 }
 
-export interface Position {
-  x: number
-  y: number
-  z: number
-}
-
-export interface ScreenPoint {
-  top: number
-  left: number
-  distance: number
-  scale: number
-}
-
-export type Matrix4x4 = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-]
-
-export interface Camera {
-  worldToCameraMatrix: Matrix4x4
-  projectionMatrix: Matrix4x4
-  nearClipPlane: number
-  screenWidth: number
-  screenHeight: number
-  pixelRect: { x: number; y: number; width: number; height: number }
-}
-
 export interface Composition {
   speedLimit: number
+}
+
+export enum UpdateLaneType {
+  LaneRules = 0,
+  CarLane = 1,
+}
+
+export type UpdateLaneInput = { laneIndex: number } & (
+  | {
+      key: UpdateLaneType.LaneRules
+      value: LaneRulesValue
+    }
+  | {
+      key: UpdateLaneType.CarLane
+      value: CarLaneValue
+    }
+)
+
+export interface LookAtInput {
+  position: Position
+  distance: number
 }
