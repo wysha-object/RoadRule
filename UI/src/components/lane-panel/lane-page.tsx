@@ -100,8 +100,6 @@ export default function LanePage(props: {
         ]
     )
 
-    console.log(props)
-
     return (
         <BasePage
             style={props.style}
