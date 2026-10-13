@@ -1,1 +1,2 @@
 - optimize performance
+- update l10n
