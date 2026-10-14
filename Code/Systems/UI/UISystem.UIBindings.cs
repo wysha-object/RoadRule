@@ -194,7 +194,7 @@ namespace RoadRule.Systems.UI
                 selectedEdgeList.Add(
                     new UITypes.EdgeValue
                     {
-                        edgeEntity = new UITypes.EntityValue { index = edge.m_Entity.Index, version = edge.m_Entity.Version },
+                        edgeEntity = edge.m_Entity,
                         position = new UITypes.PositionValue
                         {
                             x = worldPosition.x,

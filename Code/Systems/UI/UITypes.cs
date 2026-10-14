@@ -8,6 +8,7 @@ using Colossal.UI.Binding;
 using Game.Net;
 using Game.Vehicles;
 using RoadRule.Components;
+using Unity.Entities;
 using UnityEngine;
 using UnityEngine.Playables;
 using static RoadRule.Settings;
@@ -17,23 +18,7 @@ namespace RoadRule.Systems.UI
 {
     public static class UITypes
     {
-        public struct EntityValue : IJsonWritable
-        {
-            public int index;
-            public int version;
-
-            public void Write(IJsonWriter writer)
-            {
-                writer.TypeBegin(GetType().FullName);
-                writer.PropertyName(nameof(index));
-                writer.Write(index);
-                writer.PropertyName(nameof(version));
-                writer.Write(version);
-                writer.TypeEnd();
-            }
-        }
-
-        public struct PositionValue : IJsonReadable, IJsonWritable
+        public struct PositionValue : IJsonReadable, IJsonWritable, IEquatable<PositionValue>
         {
             public float x;
             public float y;
@@ -62,6 +47,31 @@ namespace RoadRule.Systems.UI
                 writer.Write(z);
                 writer.TypeEnd();
             }
+
+            public bool Equals(PositionValue other)
+            {
+                return x == other.x && y == other.y && z == other.z;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is PositionValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(x, y, z);
+            }
+
+            public static bool operator ==(PositionValue left, PositionValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(PositionValue left, PositionValue right)
+            {
+                return !(left == right);
+            }
         }
 
         public enum RuleValue
@@ -72,20 +82,10 @@ namespace RoadRule.Systems.UI
             Disallow = 3,
         }
 
-        public struct RuleOptionsValue : IJsonReadable, IJsonWritable
+        public struct RuleOptionsValue : IJsonReadable, IJsonWritable, IEquatable<RuleOptionsValue>
         {
             public RuleValue noFlag;
             public RuleValue hasFlag;
-
-            public override bool Equals(object obj)
-            {
-                return obj is RuleOptionsValue value && noFlag == value.noFlag && hasFlag == value.hasFlag;
-            }
-
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(noFlag, hasFlag);
-            }
 
             public void Read(IJsonReader reader)
             {
@@ -108,6 +108,31 @@ namespace RoadRule.Systems.UI
                 writer.Write((int)hasFlag);
                 writer.TypeEnd();
             }
+
+            public bool Equals(RuleOptionsValue other)
+            {
+                return noFlag == other.noFlag && hasFlag == other.hasFlag;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is RuleOptionsValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(noFlag, hasFlag);
+            }
+
+            public static bool operator ==(RuleOptionsValue left, RuleOptionsValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(RuleOptionsValue left, RuleOptionsValue right)
+            {
+                return !(left == right);
+            }
         }
 
         public enum FieldState
@@ -116,7 +141,7 @@ namespace RoadRule.Systems.UI
             PartiallyApplied = 1,
         }
 
-        public struct FieldValue<T> : IJsonReadable, IJsonWritable
+        public struct FieldValue<T> : IJsonReadable, IJsonWritable, IEquatable<FieldValue<T>>
         {
             public FieldState state;
             public T value;
@@ -165,9 +190,34 @@ namespace RoadRule.Systems.UI
                 }
                 writer.TypeEnd();
             }
+
+            public bool Equals(FieldValue<T> other)
+            {
+                return state == other.state && EqualityComparer<T>.Default.Equals(value, other.value);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is FieldValue<T> value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(state, value);
+            }
+
+            public static bool operator ==(FieldValue<T> left, FieldValue<T> right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(FieldValue<T> left, FieldValue<T> right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct VehicleTypeRulesValue : IJsonReadable, IJsonWritable
+        public struct VehicleTypeRulesValue : IJsonReadable, IJsonWritable, IEquatable<VehicleTypeRulesValue>
         {
             public FieldValue<RuleOptionsValue> ambulance;
             public FieldValue<RuleOptionsValue> deliveryTruck;
@@ -290,9 +340,56 @@ namespace RoadRule.Systems.UI
                 writer.Write(taxi);
                 writer.TypeEnd();
             }
+
+            public bool Equals(VehicleTypeRulesValue other)
+            {
+                return ambulance.Equals(other.ambulance)
+                    && deliveryTruck.Equals(other.deliveryTruck)
+                    && fireEngine.Equals(other.fireEngine)
+                    && garbageTruck.Equals(other.garbageTruck)
+                    && hearse.Equals(other.hearse)
+                    && maintenanceVehicle.Equals(other.maintenanceVehicle)
+                    && personalCar.Equals(other.personalCar)
+                    && policeCar.Equals(other.policeCar)
+                    && postVan.Equals(other.postVan)
+                    && publicTransport.Equals(other.publicTransport)
+                    && taxi.Equals(other.taxi);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is VehicleTypeRulesValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                HashCode hash = new HashCode();
+                hash.Add(ambulance);
+                hash.Add(deliveryTruck);
+                hash.Add(fireEngine);
+                hash.Add(garbageTruck);
+                hash.Add(hearse);
+                hash.Add(maintenanceVehicle);
+                hash.Add(personalCar);
+                hash.Add(policeCar);
+                hash.Add(postVan);
+                hash.Add(publicTransport);
+                hash.Add(taxi);
+                return hash.ToHashCode();
+            }
+
+            public static bool operator ==(VehicleTypeRulesValue left, VehicleTypeRulesValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(VehicleTypeRulesValue left, VehicleTypeRulesValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct LaneRulesValue : IJsonReadable, IJsonWritable
+        public struct LaneRulesValue : IJsonReadable, IJsonWritable, IEquatable<LaneRulesValue>
         {
             public VehicleTypeRulesValue vehicleTypeRules;
 
@@ -325,6 +422,31 @@ namespace RoadRule.Systems.UI
                 writer.PropertyName(nameof(vehicleTypeRules));
                 writer.Write(vehicleTypeRules);
                 writer.TypeEnd();
+            }
+
+            public bool Equals(LaneRulesValue other)
+            {
+                return vehicleTypeRules.Equals(other.vehicleTypeRules);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LaneRulesValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(vehicleTypeRules);
+            }
+
+            public static bool operator ==(LaneRulesValue left, LaneRulesValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LaneRulesValue left, LaneRulesValue right)
+            {
+                return !(left == right);
             }
         }
 
@@ -370,7 +492,7 @@ namespace RoadRule.Systems.UI
                     break;
             }
 
-            return new FieldValue<RuleOptionsValue>
+            return new FieldValue<RuleOptionsValue>()
             {
                 state = FieldState.Applied,
                 value = new RuleOptionsValue { noFlag = noFlag, hasFlag = hasFlag },
@@ -434,7 +556,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        public struct CarLaneValue : IJsonReadable, IJsonWritable
+        public struct CarLaneValue : IJsonReadable, IJsonWritable, IEquatable<CarLaneValue>
         {
             /// Game lane speed uses 2x m/s; km/h converts by / 1.8.
             public FieldValue<float> speedLimit;
@@ -471,6 +593,31 @@ namespace RoadRule.Systems.UI
                 writer.Write(speedLimit);
                 writer.TypeEnd();
             }
+
+            public bool Equals(CarLaneValue other)
+            {
+                return speedLimit.Equals(other.speedLimit);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CarLaneValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(speedLimit);
+            }
+
+            public static bool operator ==(CarLaneValue left, CarLaneValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CarLaneValue left, CarLaneValue right)
+            {
+                return !(left == right);
+            }
         }
 
         public static FieldValue<float> FromSpeedLimit(float speedLimit)
@@ -491,7 +638,7 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        public struct LaneValue : IJsonWritable
+        public struct LaneValue : IJsonWritable, IEquatable<LaneValue>
         {
             public int laneIndex;
             public PositionValue position;
@@ -511,9 +658,34 @@ namespace RoadRule.Systems.UI
                 writer.Write(carLane);
                 writer.TypeEnd();
             }
+
+            public bool Equals(LaneValue other)
+            {
+                return laneIndex == other.laneIndex && position.Equals(other.position) && laneRules.Equals(other.laneRules) && carLane.Equals(other.carLane);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LaneValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(laneIndex, position, laneRules, carLane);
+            }
+
+            public static bool operator ==(LaneValue left, LaneValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LaneValue left, LaneValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct LaneGroupValue : IJsonWritable
+        public struct LaneGroupValue : IJsonWritable, IEquatable<LaneGroupValue>
         {
             public LaneValue masterLane;
             public LaneValue[] lanes;
@@ -524,19 +696,44 @@ namespace RoadRule.Systems.UI
                 writer.PropertyName(nameof(masterLane));
                 writer.Write(masterLane);
                 writer.PropertyName(nameof(lanes));
-                writer.ArrayBegin(lanes.Length);
+                writer.Write(lanes);
+                writer.TypeEnd();
+            }
+
+            public bool Equals(LaneGroupValue other)
+            {
+                return masterLane.Equals(other.masterLane) && lanes.SequenceEqual(other.lanes);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LaneGroupValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                int result = masterLane.GetHashCode();
                 foreach (var lane in lanes)
                 {
-                    writer.Write(lane);
+                    result = HashCode.Combine(result, lane);
                 }
-                writer.ArrayEnd();
-                writer.TypeEnd();
+                return result;
+            }
+
+            public static bool operator ==(LaneGroupValue left, LaneGroupValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LaneGroupValue left, LaneGroupValue right)
+            {
+                return !(left == right);
             }
         }
 
-        public struct EdgeValue : IJsonWritable
+        public struct EdgeValue : IJsonWritable, IEquatable<EdgeValue>
         {
-            public EntityValue edgeEntity;
+            public Entity edgeEntity;
             public PositionValue position;
 
             public void Write(IJsonWriter writer)
@@ -548,9 +745,34 @@ namespace RoadRule.Systems.UI
                 writer.Write(position);
                 writer.TypeEnd();
             }
+
+            public bool Equals(EdgeValue other)
+            {
+                return edgeEntity.Equals(other.edgeEntity) && position.Equals(other.position);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is EdgeValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(edgeEntity, position);
+            }
+
+            public static bool operator ==(EdgeValue left, EdgeValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(EdgeValue left, EdgeValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct CompositionValue : IJsonWritable
+        public struct CompositionValue : IJsonWritable, IEquatable<CompositionValue>
         {
             public float speedLimit;
 
@@ -561,9 +783,34 @@ namespace RoadRule.Systems.UI
                 writer.Write(speedLimit);
                 writer.TypeEnd();
             }
+
+            public bool Equals(CompositionValue other)
+            {
+                return speedLimit == other.speedLimit;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CompositionValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(speedLimit);
+            }
+
+            public static bool operator ==(CompositionValue left, CompositionValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CompositionValue left, CompositionValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct PixelRectValue : IJsonWritable
+        public struct PixelRectValue : IJsonWritable, IEquatable<PixelRectValue>
         {
             public float x;
             public float y;
@@ -583,9 +830,34 @@ namespace RoadRule.Systems.UI
                 writer.Write(height);
                 writer.TypeEnd();
             }
+
+            public bool Equals(PixelRectValue other)
+            {
+                return x == other.x && y == other.y && width == other.width && height == other.height;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is PixelRectValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(x, y, width, height);
+            }
+
+            public static bool operator ==(PixelRectValue left, PixelRectValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(PixelRectValue left, PixelRectValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct CameraValue : IJsonWritable
+        public struct CameraValue : IJsonWritable, IEquatable<CameraValue>
         {
             public float[] worldToCameraMatrix;
             public float[] projectionMatrix;
@@ -663,9 +935,48 @@ namespace RoadRule.Systems.UI
                     matrix.m33,
                 };
             }
+
+            public bool Equals(CameraValue other)
+            {
+                return worldToCameraMatrix.SequenceEqual(other.worldToCameraMatrix)
+                    && projectionMatrix.SequenceEqual(other.projectionMatrix)
+                    && nearClipPlane == other.nearClipPlane
+                    && screenWidth == other.screenWidth
+                    && screenHeight == other.screenHeight
+                    && pixelRect.Equals(other.pixelRect);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is CameraValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                int result = HashCode.Combine(nearClipPlane, screenWidth, screenHeight, pixelRect);
+                foreach (var value in worldToCameraMatrix)
+                {
+                    result = HashCode.Combine(result, value);
+                }
+                foreach (var value in projectionMatrix)
+                {
+                    result = HashCode.Combine(result, value);
+                }
+                return result;
+            }
+
+            public static bool operator ==(CameraValue left, CameraValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(CameraValue left, CameraValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct GetLaneResultItemValue : IJsonWritable
+        public struct GetLaneResultItemValue : IJsonWritable, IEquatable<GetLaneResultItemValue>
         {
             public LaneValue lane;
             public float defaultSpeedLimit;
@@ -679,6 +990,31 @@ namespace RoadRule.Systems.UI
                 writer.Write(defaultSpeedLimit);
                 writer.TypeEnd();
             }
+
+            public bool Equals(GetLaneResultItemValue other)
+            {
+                return lane.Equals(other.lane) && defaultSpeedLimit == other.defaultSpeedLimit;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is GetLaneResultItemValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(lane, defaultSpeedLimit);
+            }
+
+            public static bool operator ==(GetLaneResultItemValue left, GetLaneResultItemValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(GetLaneResultItemValue left, GetLaneResultItemValue right)
+            {
+                return !(left == right);
+            }
         }
 
         public enum UpdateLaneType : int
@@ -687,7 +1023,7 @@ namespace RoadRule.Systems.UI
             CarLane = 1,
         }
 
-        public struct UpdateLaneInputValue : IJsonReadable
+        public struct UpdateLaneInputValue : IJsonReadable, IEquatable<UpdateLaneInputValue>
         {
             public int laneIndex;
             public UpdateLaneType key;
@@ -719,9 +1055,34 @@ namespace RoadRule.Systems.UI
                 }
                 reader.ReadMapEnd();
             }
+
+            public bool Equals(UpdateLaneInputValue other)
+            {
+                return laneIndex == other.laneIndex && key == other.key && EqualityComparer<object>.Default.Equals(value, other.value);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is UpdateLaneInputValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(laneIndex, key, value);
+            }
+
+            public static bool operator ==(UpdateLaneInputValue left, UpdateLaneInputValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(UpdateLaneInputValue left, UpdateLaneInputValue right)
+            {
+                return !(left == right);
+            }
         }
 
-        public struct LookAtInputValue : IJsonReadable
+        public struct LookAtInputValue : IJsonReadable, IEquatable<LookAtInputValue>
         {
             public PositionValue position;
             public float distance;
@@ -734,6 +1095,31 @@ namespace RoadRule.Systems.UI
                 reader.ReadProperty(nameof(distance));
                 reader.Read(out distance);
                 reader.ReadMapEnd();
+            }
+
+            public bool Equals(LookAtInputValue other)
+            {
+                return position.Equals(other.position) && distance == other.distance;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LookAtInputValue value && Equals(value);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(position, distance);
+            }
+
+            public static bool operator ==(LookAtInputValue left, LookAtInputValue right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(LookAtInputValue left, LookAtInputValue right)
+            {
+                return !(left == right);
             }
         }
     }
