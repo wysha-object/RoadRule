@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Bitte eine Spur auswählen",
     "MainPanel.ChooseMasterLane": "Bitte wählen Sie eine Spur Gruppe",
     "MainPanel.EdgeEntity": "Rand #{{entity-index}}",
-    "MainPanel.Lane": "Lane",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "spur Gruppe",
     "MainPanel.SelectedEdgeCount": "{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",
