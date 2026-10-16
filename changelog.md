@@ -1,1 +1,2 @@
 - update pathfinding and lane selection cost calculations
+- update UI text
