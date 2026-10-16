@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Por favor escolha uma faixa",
     "MainPanel.ChooseMasterLane": "Por favor, escolha um grupo de trilha",
     "MainPanel.EdgeEntity": "Edge #{{entity-index}}",
-    "MainPanel.Lane": "Trilha",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "grupo de trilha",
     "MainPanel.SelectedEdgeCount": "Contagem:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",
