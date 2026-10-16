@@ -413,11 +413,12 @@ public struct PatchedCarLaneSelectIterator
     {
         LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out var isPrefer, out var isForbidden, out var isDisallow);
 
-        float falseValue = math.select(0.4f, 0f, ((carLane.m_Flags & m_PreferLaneFlags) != 0) || isPrefer);
+        float falseValue = math.select(0.4f, 0f, (carLane.m_Flags & m_PreferLaneFlags) != 0);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
-        float num = math.select(falseValue, trueValue, ((carLane.m_Flags & m_ForbidLaneFlags) != 0));
-        num = math.select(num, num + 10f, isForbidden);
-        num = math.select(num, num + 1000f, isDisallow);
+        float num = math.select(falseValue, trueValue, (carLane.m_Flags & m_ForbidLaneFlags) != 0);
+        num += math.select(1f, 0f, isPrefer);
+        num += math.select(0f, 10f, isForbidden);
+        num += math.select(0f, 1000f, isDisallow);
         num -= carLane.m_SpeedLimit * 0.01f;
         int num2 = math.select(index - minIndex, maxIndex - index, (carLane.m_Flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(
