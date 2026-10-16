@@ -102,7 +102,7 @@ public struct PatchedCarLaneSelectIterator
                 {
                     carLaneRules = new LaneRules();
                 }
-                num2 += GetLaneDriveCost(componentData2.m_Flags, subLane.m_PathMethods, i, slaveLane.m_MinIndex, num, carLaneRules);
+                num2 += GetLaneDriveCost(componentData2, subLane.m_PathMethods, i, slaveLane.m_MinIndex, num, carLaneRules);
             }
             m_Buffer[m_BufferPos++] = num2;
         }
@@ -282,7 +282,7 @@ public struct PatchedCarLaneSelectIterator
                             {
                                 carLaneRules = new LaneRules();
                             }
-                            num6 += GetLaneDriveCost(componentData4.m_Flags, subLane.m_PathMethods, i, componentData.m_MinIndex, num, carLaneRules);
+                            num6 += GetLaneDriveCost(componentData4, subLane.m_PathMethods, i, componentData.m_MinIndex, num, carLaneRules);
                         }
                     }
                     m_Buffer[m_BufferPos++] = num6;
@@ -306,7 +306,7 @@ public struct PatchedCarLaneSelectIterator
                                 {
                                     carLaneRules = new LaneRules();
                                 }
-                                num12 += GetLaneDriveCost(componentData6.m_Flags, subLane2.m_PathMethods, num11, componentData.m_MinIndex, num, carLaneRules);
+                                num12 += GetLaneDriveCost(componentData6, subLane2.m_PathMethods, num11, componentData.m_MinIndex, num, carLaneRules);
                             }
                             m_Buffer[m_BufferPos - num + num11 - 1] = num12;
                         }
@@ -329,7 +329,7 @@ public struct PatchedCarLaneSelectIterator
                         {
                             carLaneRules = new LaneRules();
                         }
-                        num14 += GetLaneDriveCost(componentData8.m_Flags, subLane3.m_PathMethods, num13, componentData.m_MinIndex, num, carLaneRules);
+                        num14 += GetLaneDriveCost(componentData8, subLane3.m_PathMethods, num13, componentData.m_MinIndex, num, carLaneRules);
                     }
                     m_Buffer[m_BufferPos++] = num14;
                 }
@@ -390,7 +390,7 @@ public struct PatchedCarLaneSelectIterator
                         {
                             carLaneRules = new LaneRules();
                         }
-                        num20 += GetLaneDriveCost(componentData10.m_Flags, subLane4.m_PathMethods, num19, componentData.m_MinIndex, num, carLaneRules);
+                        num20 += GetLaneDriveCost(componentData10, subLane4.m_PathMethods, num19, componentData.m_MinIndex, num, carLaneRules);
                     }
                     m_Buffer[m_BufferPos++] = num20;
                 }
@@ -409,16 +409,17 @@ public struct PatchedCarLaneSelectIterator
         return (float)math.max(0, lanePriority - m_Priority) * 1f;
     }
 
-    private float GetLaneDriveCost(Game.Net.CarLaneFlags flags, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
+    private float GetLaneDriveCost(Game.Net.CarLane carLane, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
     {
         LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out var isPrefer, out var isForbidden, out var isDisallow);
 
-        float falseValue = math.select(0.4f, 0f, ((flags & m_PreferLaneFlags) != 0) || isPrefer);
+        float falseValue = math.select(0.4f, 0f, ((carLane.m_Flags & m_PreferLaneFlags) != 0) || isPrefer);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
-        float num = math.select(falseValue, trueValue, ((flags & m_ForbidLaneFlags) != 0));
+        float num = math.select(falseValue, trueValue, ((carLane.m_Flags & m_ForbidLaneFlags) != 0));
         num = math.select(num, num + 10f, isForbidden);
         num = math.select(num, num + 1000f, isDisallow);
-        int num2 = math.select(index - minIndex, maxIndex - index, (flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
+        num -= carLane.m_SpeedLimit * 0.01f;
+        int num2 = math.select(index - minIndex, maxIndex - index, (carLane.m_Flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(
             num + math.select(0f, 1.4f + (float)num2 * 0.4f, (m_PathMethods == PathMethod.Bicycle) & (pathMethods != PathMethod.Bicycle)),
             float.MaxValue,

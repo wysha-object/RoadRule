@@ -22,8 +22,6 @@ namespace RoadRule.Systems.UI
 {
     public partial class UISystem
     {
-        private static readonly int MAX_DISPLAY_DISTANCE = 2000;
-
         private struct GetLaneJobResultItem
         {
             public UITypes.LaneValue m_Lane;
