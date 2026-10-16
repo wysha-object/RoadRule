@@ -736,9 +736,7 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float CalculateCost(in PathSpecification pathSpecification, EdgeFlags flags, RuleFlags rules, float2 delta, Entity edgeEntity)
             {
-                bool isPrefer = false;
-                bool isForbidden = false;
-                CheckPathRules(edgeEntity, pathSpecification, out isPrefer, out isForbidden, out _);
+                CheckPathRules(edgeEntity, pathSpecification, out bool isApplicable, out bool isPrefer, out bool isForbidden, out _);
 
                 float num = PathUtils.CalculateSpeed(in pathSpecification, in m_Parameters);
                 float num2 = delta.y - delta.x;
@@ -759,8 +757,11 @@ namespace RoadRule.Systems.Pathfind
                         (rules & RuleFlags.AvoidBicycles) != 0
                     )
                 );
-                yz.x += math.select(1f, 0f, isPrefer);
-                yz.x += math.select(0f, 10f, isForbidden);
+                if (isApplicable)
+                {
+                    yz.x += math.select(0.1f, 0f, isPrefer);
+                    yz.x += math.select(0f, 10f, isForbidden);
+                }
                 float4 value = pathSpecification.m_Costs.m_Value;
                 value.xyw += pathSpecification.m_Length * new float3(1f / num, yz);
                 value.y += math.select(0f, 100f, (flags & EdgeFlags.RequireAuthorization) != 0 != math.any(pathSpecification.m_AccessRequirement == m_AuthorizationMask));
@@ -1186,8 +1187,7 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool DisallowConnection(PathMethod prevMethod, PathfindItemFlags itemFlags, in PathSpecification newSpec, ref EdgeFlags edgeFlags, Entity newOwner)
             {
-                bool isDisallow = false;
-                CheckPathRules(newOwner, newSpec, out _, out _, out isDisallow);
+                CheckPathRules(newOwner, newSpec, out _, out _, out _, out bool isDisallow);
                 if (isDisallow)
                 {
                     return true;
@@ -1324,11 +1324,19 @@ namespace RoadRule.Systems.Pathfind
                 path.ElementAt(0).m_Flags |= PathElementFlags.PathStart;
             }
 
-            private void CheckPathRules(Entity edgeEntity, PathSpecification pathSpecification, out bool isPrefer, out bool isForbidden, out bool isDisallow)
+            private void CheckPathRules(Entity edgeEntity, PathSpecification pathSpecification, out bool isApplicable, out bool isPrefer, out bool isForbidden, out bool isDisallow)
             {
+                isApplicable = false;
                 isPrefer = false;
                 isForbidden = false;
                 isDisallow = false;
+
+                if ((pathSpecification.m_Methods & (PathMethod.Taxi | PathMethod.Road | PathMethod.MediumRoad)) == 0)
+                {
+                    return;
+                }
+
+                isApplicable = true;
                 if (m_LaneRulesMap.TryGetValue(edgeEntity, out var laneRules))
                 {
                     if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
