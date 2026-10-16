@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "选择一条车道",
     "MainPanel.ChooseMasterLane": "请选择一个车道组",
     "MainPanel.EdgeEntity": "边 #{{entity-index}}",
-    "MainPanel.Lane": "车道",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "车道组",
     "MainPanel.SelectedEdgeCount": "数量:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "显示",
