@@ -1,2 +1,0 @@
-- optimize performance
-- consider lane speed limits when selecting optimal lanes
