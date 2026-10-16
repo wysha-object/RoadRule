@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Пожалуйста, выберите полосу",
     "MainPanel.ChooseMasterLane": "Пожалуйста, выберите группу полос",
     "MainPanel.EdgeEntity": "Эдж #{{entity-index}}",
-    "MainPanel.Lane": "Линия",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "группа полос",
     "MainPanel.SelectedEdgeCount": "Счет:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",
