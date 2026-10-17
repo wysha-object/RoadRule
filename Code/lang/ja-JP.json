@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "レーンを選択してください",
     "MainPanel.ChooseMasterLane": "レーングループを選択してください",
     "MainPanel.EdgeEntity": "エッジ #{{entity-index}}",
-    "MainPanel.Lane": "レーン",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "レーングループ",
     "MainPanel.SelectedEdgeCount": "カウント:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",

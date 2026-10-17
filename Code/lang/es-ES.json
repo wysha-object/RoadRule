@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Por favor, elige un carril",
     "MainPanel.ChooseMasterLane": "Por favor, elige un grupo de senda",
     "MainPanel.EdgeEntity": "Borde #{{entity-index}}",
-    "MainPanel.Lane": "Senda",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "grupo de senda",
     "MainPanel.SelectedEdgeCount": "Conteo:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",

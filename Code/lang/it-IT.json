@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Scegli una corsia",
     "MainPanel.ChooseMasterLane": "Scegli un gruppo di corsie",
     "MainPanel.EdgeEntity": "Bordo #{{entity-index}}",
-    "MainPanel.Lane": "Corsia",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "gruppo di corsia",
     "MainPanel.SelectedEdgeCount": "Conteggio:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",

@@ -5,7 +5,7 @@
     "MainPanel.ChooseLane": "Wybierz pasa ruchu",
     "MainPanel.ChooseMasterLane": "Proszę wybrać grupę pasów ruchu",
     "MainPanel.EdgeEntity": "Krawędź #{{entity-index}}",
-    "MainPanel.Lane": "Linia",
+    "MainPanel.Lane": "lane",
     "MainPanel.MasterLane": "grupa pasów ruchu",
     "MainPanel.SelectedEdgeCount": "Liczba:{{count}}",
     "Options.GROUP[RoadRule.RoadRule.Mod.GroupDisplay]": "Display",
