@@ -1,4 +1,4 @@
-﻿using Colossal.Serialization.Entities;
+using Colossal.Serialization.Entities;
 using Game.Vehicles;
 using Unity.Entities;
 
@@ -10,14 +10,8 @@ namespace RoadRule.Components
         {
             None = 0,
 
-            /// 没 Flag 记作 Prefer
-            PreferOrNone = 16,
-
             /// 有 Flag 记作 Prefer
             NoneOrPrefer = 32,
-
-            /// 没 Flag 记作 Forbidden
-            ForbiddenOrNone = 48,
 
             /// 有 Flag 记作 Forbidden
             NoneOrForbidden = 64,
@@ -36,18 +30,14 @@ namespace RoadRule.Components
             {
                 case Rule.None:
                     return RuleOptions.None;
-                case Rule.PreferOrNone:
-                    return RuleOptions.NoFlagPrefer;
                 case Rule.NoneOrPrefer:
                     return RuleOptions.HasFlagPrefer;
-                case Rule.ForbiddenOrNone:
-                    return RuleOptions.NoFlagForbidden;
                 case Rule.NoneOrForbidden:
                     return RuleOptions.HasFlagForbidden;
                 case Rule.ForbiddenOrPrefer:
-                    return RuleOptions.NoFlagForbidden | RuleOptions.HasFlagPrefer;
+                    return RuleOptions.HasFlagPrefer;
                 case Rule.PreferOrForbidden:
-                    return RuleOptions.NoFlagPrefer | RuleOptions.HasFlagForbidden;
+                    return RuleOptions.HasFlagForbidden;
                 default:
                     return RuleOptions.None;
             }
@@ -56,14 +46,6 @@ namespace RoadRule.Components
         public enum RuleOptions : byte
         {
             None = 0,
-
-            NoFlagRuleMask = 0xf << 4,
-
-            NoFlagPrefer = 1 << 4,
-
-            NoFlagForbidden = 2 << 4,
-
-            NoFlagDisallow = 3 << 4,
 
             HasFlagRuleMask = 0xf,
 
@@ -212,6 +194,7 @@ namespace RoadRule.Components
             public RuleOptions m_PostVan;
             public RuleOptions m_PublicTransport;
             public RuleOptions m_Taxi;
+            public RuleOptions m_Bicycle;
 
             public void Deserialize<TReader>(TReader reader)
                 where TReader : IReader
@@ -272,13 +255,34 @@ namespace RoadRule.Components
                     m_PublicTransport = (RuleOptions)publicTransport;
                     reader.Read(out byte taxi);
                     m_Taxi = (RuleOptions)taxi;
+
+                    if (schemaVersion <= 3)
+                    {
+                        m_Ambulance = (RuleOptions)(byte)m_Ambulance & RuleOptions.HasFlagRuleMask;
+                        m_DeliveryTruck = (RuleOptions)(byte)m_DeliveryTruck & RuleOptions.HasFlagRuleMask;
+                        m_FireEngine = (RuleOptions)(byte)m_FireEngine & RuleOptions.HasFlagRuleMask;
+                        m_GarbageTruck = (RuleOptions)(byte)m_GarbageTruck & RuleOptions.HasFlagRuleMask;
+                        m_Hearse = (RuleOptions)(byte)m_Hearse & RuleOptions.HasFlagRuleMask;
+                        m_MaintenanceVehicle = (RuleOptions)(byte)m_MaintenanceVehicle & RuleOptions.HasFlagRuleMask;
+                        m_PersonalCar = (RuleOptions)(byte)m_PersonalCar & RuleOptions.HasFlagRuleMask;
+                        m_PoliceCar = (RuleOptions)(byte)m_PoliceCar & RuleOptions.HasFlagRuleMask;
+                        m_PostVan = (RuleOptions)(byte)m_PostVan & RuleOptions.HasFlagRuleMask;
+                        m_PublicTransport = (RuleOptions)(byte)m_PublicTransport & RuleOptions.HasFlagRuleMask;
+                        m_Taxi = (RuleOptions)(byte)m_Taxi & RuleOptions.HasFlagRuleMask;
+                    }
+                }
+
+                if (schemaVersion >= 4)
+                {
+                    reader.Read(out byte bicycle);
+                    m_Bicycle = (RuleOptions)bicycle;
                 }
             }
 
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 3;
+                ushort schemaVersion = 4;
                 writer.Write(schemaVersion);
 
                 writer.Write((byte)m_Ambulance);
@@ -292,6 +296,7 @@ namespace RoadRule.Components
                 writer.Write((byte)m_PostVan);
                 writer.Write((byte)m_PublicTransport);
                 writer.Write((byte)m_Taxi);
+                writer.Write((byte)m_Bicycle);
             }
         }
 

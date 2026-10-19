@@ -1331,7 +1331,7 @@ namespace RoadRule.Systems.Pathfind
                 isForbidden = false;
                 isDisallow = false;
 
-                if ((pathSpecification.m_Methods & (PathMethod.Taxi | PathMethod.Road | PathMethod.MediumRoad)) == 0)
+                if ((pathSpecification.m_Methods & (PathMethod.Taxi | PathMethod.Bicycle | PathMethod.Road | PathMethod.MediumRoad)) == 0)
                 {
                     return;
                 }
@@ -1343,7 +1343,7 @@ namespace RoadRule.Systems.Pathfind
                     {
                         LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out isPrefer, out isForbidden, out isDisallow);
                     }
-                    else if ((pathSpecification.m_Methods & (PathMethod.Road | PathMethod.MediumRoad)) != 0)
+                    else if ((pathSpecification.m_Methods & (PathMethod.Bicycle | PathMethod.Road | PathMethod.MediumRoad)) != 0)
                     {
                         if (m_CarParameters.m_IsValid)
                         {

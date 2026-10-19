@@ -55,6 +55,11 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
     return rs
   }, [JSON.stringify(props.laneRulesValue.vehicleTypeRules)])
 
+  const bicycleRules = useMemo(() => {
+    const { bicycle } = props.laneRulesValue.vehicleTypeRules
+    return bicycle
+  }, [JSON.stringify(props.laneRulesValue.vehicleTypeRules)])
+
   return (
     <div>
       <PanelFoldout header={t('VehicleTypes')} initialExpanded={true}>
@@ -64,7 +69,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.EmergencyVehicles')}
                 ruleValue={emergencyVehiclesRules}
-                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -127,7 +131,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.ServiceVehicles')}
                 ruleValue={serviceVehiclesRules}
-                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -204,7 +207,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.PublicVehicles')}
                 ruleValue={publicVehiclesRules}
-                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -253,7 +255,6 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
               <RuleEditorRow
                 name={t('VehicleTypes.PrivateVehicles')}
                 ruleValue={privateVehiclesRules}
-                combined={true}
                 onChange={(_, newValue) => {
                   props.onValueChange(props.laneRulesValue, {
                     ...props.laneRulesValue,
@@ -296,6 +297,19 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
             }}
           />
         </PanelFoldout>
+        <RuleEditorRow
+          name={t('VehicleType.Bicycle')}
+          ruleValue={bicycleRules}
+          onChange={(_, newValue) => {
+            props.onValueChange(props.laneRulesValue, {
+              ...props.laneRulesValue,
+              vehicleTypeRules: {
+                ...props.laneRulesValue.vehicleTypeRules,
+                bicycle: newValue,
+              },
+            })
+          }}
+        />
       </PanelFoldout>
     </div>
   )
@@ -309,19 +323,14 @@ const DropdownToggleStyle: CSSProperties = {
 function RuleEditorRow(props: {
   name: string
   ruleValue: FieldValue<RuleOptionsValue>
-  combined?: boolean
   onChange: (oldValue: FieldValue<RuleOptionsValue>, newValue: FieldValue<RuleOptionsValue>) => void
 }) {
   const { t } = useTranslate()
 
-  const handleChange = useCallback((noneFlagRule: RuleValue, haveFlagRule: RuleValue) => {
-    if (props.combined) {
-      noneFlagRule = RuleValue.None
-    }
+  const handleChange = useCallback((haveFlagRule: RuleValue) => {
     props.onChange(props.ruleValue, {
       state: FieldState.Applied,
       value: {
-        noFlag: noneFlagRule,
         hasFlag: haveFlagRule,
       }
     })
@@ -342,38 +351,8 @@ function RuleEditorRow(props: {
           textAlign: 'right',
         }}
       >
-        {((props.ruleValue.state === FieldState.PartiallyApplied) || (props.combined && props.ruleValue.value.noFlag !== RuleValue.None))  && <>!</>}
+        {(props.ruleValue.state === FieldState.PartiallyApplied) && <>*</>}
       </div>
-      {!props.combined &&
-        <Dropdown
-          content={
-            <>
-              {Object.values(RuleValue).map((item) => {
-                if (typeof item !== 'string') {
-                  return null
-                }
-                return (
-                  <DropdownItem
-                    value={item}
-                    key={item}
-                    onChange={(value) => handleChange(RuleValue[value as keyof typeof RuleValue], props.ruleValue.value.hasFlag)}
-                  >
-                    <div>{t(`Rule.${item}`)}</div>
-                  </DropdownItem>
-                )
-              })}
-            </>
-          }
-        >
-          <TipArea position={'right'} tooltip={t('RuleEditor.NoneFlagRuleTooltip')}>
-            <DropdownToggle style={DropdownToggleStyle}>
-              {t(
-                `Rule.${Object.keys(RuleValue).find((key) => RuleValue[key as keyof typeof RuleValue] === props.ruleValue.value.noFlag)}`,
-              )}
-            </DropdownToggle>
-          </TipArea>
-        </Dropdown>
-      }
       <Dropdown
         content={
           <>
@@ -385,7 +364,7 @@ function RuleEditorRow(props: {
                 <DropdownItem
                   value={item}
                   key={item}
-                  onChange={(value) => handleChange(props.ruleValue.value.noFlag, RuleValue[value as keyof typeof RuleValue])}
+                  onChange={(value) => handleChange(RuleValue[value as keyof typeof RuleValue])}
                 >
                   <div>{t(`Rule.${item}`)}</div>
                 </DropdownItem>

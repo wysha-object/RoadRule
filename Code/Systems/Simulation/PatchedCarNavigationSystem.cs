@@ -1351,22 +1351,30 @@ namespace RoadRule.Systems.Simulation
                     currentLane.m_LaneFlags &= ~(Game.Vehicles.CarLaneFlags.FixedLane | Game.Vehicles.CarLaneFlags.IsBlocked);
                     currentLane.m_LaneFlags |= Game.Vehicles.CarLaneFlags.IgnoreBlocker;
                 }
-                LaneRulesUtils.GetCarParameters(
-                    entity,
-                    m_CarLookup,
-                    m_AmbulanceLookup,
-                    m_DeliveryTruckLookup,
-                    m_FireEngineLookup,
-                    m_GarbageTruckLookup,
-                    m_HearseLookup,
-                    m_MaintenanceVehicleLookup,
-                    m_PersonalCarLookup,
-                    m_PoliceCarLookup,
-                    m_PostVanLookup,
-                    m_PublicTransportLookup,
-                    m_TaxiLookup,
-                    out var carParameters
-                );
+                LaneRulesUtils.CarParameters carParameters;
+                if (isBicycle)
+                {
+                    carParameters = LaneRulesUtils.BICYCLE_CAR_PARAMETERS;
+                }
+                else
+                {
+                    LaneRulesUtils.GetCarParameters(
+                        entity,
+                        m_CarLookup,
+                        m_AmbulanceLookup,
+                        m_DeliveryTruckLookup,
+                        m_FireEngineLookup,
+                        m_GarbageTruckLookup,
+                        m_HearseLookup,
+                        m_MaintenanceVehicleLookup,
+                        m_PersonalCarLookup,
+                        m_PoliceCarLookup,
+                        m_PostVanLookup,
+                        m_PublicTransportLookup,
+                        m_TaxiLookup,
+                        out carParameters
+                    );
+                }
                 PatchedCarLaneSelectIterator carLaneSelectIterator = new PatchedCarLaneSelectIterator
                 {
                     m_OwnerData = m_OwnerData,

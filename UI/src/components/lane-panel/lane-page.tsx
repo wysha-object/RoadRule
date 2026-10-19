@@ -1,7 +1,7 @@
 import BasePage from "components/base/base-page";
 import { CSSProperties, HTMLAttributes, useMemo } from "react";
-import { FieldState, FieldValue, Lane, RuleOptionsValue, RuleValue } from "types";
-import { mergeLaneRules, mergeRuleOptionsFieldValues, mergeRuleValues } from "utils";
+import { FieldState, Lane, RuleValue } from "types";
+import { mergeRuleOptionsFieldValues } from "utils";
 import InfosignEmergencyPrefer from 'assets/images/infosign-emergency-prefer.svg'
 import InfosignEmergencyForbidden from 'assets/images/infosign-emergency-forbidden.svg'
 import InfosignEmergencyDisallow from 'assets/images/infosign-emergency-disallow.svg'
@@ -14,6 +14,9 @@ import InfosignPublicDisallow from 'assets/images/infosign-public-disallow.svg'
 import InfosignPrivatePrefer from 'assets/images/infosign-private-prefer.svg'
 import InfosignPrivateForbidden from 'assets/images/infosign-private-forbidden.svg'
 import InfosignPrivateDisallow from 'assets/images/infosign-private-disallow.svg'
+import InfosignBicyclePrefer from 'assets/images/infosign-bicycle-prefer.svg'
+import InfosignBicycleForbidden from 'assets/images/infosign-bicycle-forbidden.svg'
+import InfosignBicycleDisallow from 'assets/images/infosign-bicycle-disallow.svg'
 import InfosignSpeedLimit from 'assets/images/infosign-speed-limit.svg'
 
 export default function LanePage(props: {
@@ -64,41 +67,17 @@ export default function LanePage(props: {
         return rs
     }, [JSON.stringify(props.lane.laneRules.vehicleTypeRules)])
 
-    const emergencyRule = toRuleOptionsValue(
-        emergencyVehiclesRules,
-        [
-            serviceVehiclesRules,
-            publicVehiclesRules,
-            privateVehiclesRules
-        ]
-    )
+    const bicycleVehiclesRules = props.lane.laneRules.vehicleTypeRules.bicycle
 
-    const serviceRule = toRuleOptionsValue(
-        serviceVehiclesRules,
-        [
-            emergencyVehiclesRules,
-            publicVehiclesRules,
-            privateVehiclesRules
-        ]
-    )
+    const emergencyRule = emergencyVehiclesRules.value.hasFlag;
 
-    const publicRule = toRuleOptionsValue(
-        publicVehiclesRules,
-        [
-            emergencyVehiclesRules,
-            serviceVehiclesRules,
-            privateVehiclesRules
-        ]
-    )
+    const serviceRule = serviceVehiclesRules.value.hasFlag;
 
-    const privateRule = toRuleOptionsValue(
-        privateVehiclesRules,
-        [
-            emergencyVehiclesRules,
-            serviceVehiclesRules,
-            publicVehiclesRules
-        ]
-    )
+    const publicRule = publicVehiclesRules.value.hasFlag;
+
+    const privateRule = privateVehiclesRules.value.hasFlag;
+
+    const bicycleRule = bicycleVehiclesRules.value.hasFlag;
 
     return (
         <BasePage
@@ -160,6 +139,15 @@ export default function LanePage(props: {
                         <Star show={privateVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
+                {
+                    bicycleRule !== RuleValue.None &&
+                    <div style={{ display: 'flex', margin: '0.5em' }}>
+                        {bicycleRule === RuleValue.Prefer && <InfosignBicyclePrefer style={InfosignStyle} />}
+                        {bicycleRule === RuleValue.Forbidden && <InfosignBicycleForbidden style={InfosignStyle} />}
+                        {bicycleRule === RuleValue.Disallow && <InfosignBicycleDisallow style={InfosignStyle} />}
+                        <Star show={bicycleVehiclesRules.state === FieldState.PartiallyApplied} />
+                    </div>
+                }
             </div>
         </BasePage>
     );
@@ -172,12 +160,4 @@ function Star(props: { show: boolean }) {
 const InfosignStyle: CSSProperties = {
     width: '32rem',
     height: '32rem'
-}
-
-function toRuleOptionsValue(fieldValue: FieldValue<RuleOptionsValue>, otherFieldValues: FieldValue<RuleOptionsValue>[]): RuleValue {
-    let rs = fieldValue.value.hasFlag;
-    for (const otherValue of otherFieldValues) {
-        rs = mergeRuleValues(rs, otherValue.value.noFlag)
-    }
-    return rs;
 }

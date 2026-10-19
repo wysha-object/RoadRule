@@ -84,15 +84,11 @@ namespace RoadRule.Systems.UI
 
         public struct RuleOptionsValue : IJsonReadable, IJsonWritable, IEquatable<RuleOptionsValue>
         {
-            public RuleValue noFlag;
             public RuleValue hasFlag;
 
             public void Read(IJsonReader reader)
             {
                 reader.ReadMapBegin();
-                reader.ReadProperty(nameof(this.noFlag));
-                reader.Read(out int noFlag);
-                this.noFlag = (RuleValue)noFlag;
                 reader.ReadProperty(nameof(this.hasFlag));
                 reader.Read(out int hasFlag);
                 this.hasFlag = (RuleValue)hasFlag;
@@ -102,8 +98,6 @@ namespace RoadRule.Systems.UI
             public void Write(IJsonWriter writer)
             {
                 writer.TypeBegin(GetType().FullName);
-                writer.PropertyName(nameof(noFlag));
-                writer.Write((int)noFlag);
                 writer.PropertyName(nameof(hasFlag));
                 writer.Write((int)hasFlag);
                 writer.TypeEnd();
@@ -111,7 +105,7 @@ namespace RoadRule.Systems.UI
 
             public bool Equals(RuleOptionsValue other)
             {
-                return noFlag == other.noFlag && hasFlag == other.hasFlag;
+                return hasFlag == other.hasFlag;
             }
 
             public override bool Equals(object obj)
@@ -121,7 +115,7 @@ namespace RoadRule.Systems.UI
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(noFlag, hasFlag);
+                return HashCode.Combine(hasFlag);
             }
 
             public static bool operator ==(RuleOptionsValue left, RuleOptionsValue right)
@@ -230,6 +224,7 @@ namespace RoadRule.Systems.UI
             public FieldValue<RuleOptionsValue> postVan;
             public FieldValue<RuleOptionsValue> publicTransport;
             public FieldValue<RuleOptionsValue> taxi;
+            public FieldValue<RuleOptionsValue> bicycle;
 
             public static VehicleTypeRulesValue FromVehicleTypeRules(LaneRules.VehicleTypeRules vehicleTypeRules)
             {
@@ -246,6 +241,7 @@ namespace RoadRule.Systems.UI
                     postVan = FromRule(vehicleTypeRules.m_PostVan),
                     publicTransport = FromRule(vehicleTypeRules.m_PublicTransport),
                     taxi = FromRule(vehicleTypeRules.m_Taxi),
+                    bicycle = FromRule(vehicleTypeRules.m_Bicycle),
                 };
             }
 
@@ -264,6 +260,7 @@ namespace RoadRule.Systems.UI
                     m_PostVan = ApplyRuleOptionsValue(vehicleTypeRules.m_PostVan, vehicleTypeRulesValue.postVan),
                     m_PublicTransport = ApplyRuleOptionsValue(vehicleTypeRules.m_PublicTransport, vehicleTypeRulesValue.publicTransport),
                     m_Taxi = ApplyRuleOptionsValue(vehicleTypeRules.m_Taxi, vehicleTypeRulesValue.taxi),
+                    m_Bicycle = ApplyRuleOptionsValue(vehicleTypeRules.m_Bicycle, vehicleTypeRulesValue.bicycle),
                 };
             }
 
@@ -282,6 +279,7 @@ namespace RoadRule.Systems.UI
                     postVan = MergeRuleValues(a.postVan, b.postVan),
                     publicTransport = MergeRuleValues(a.publicTransport, b.publicTransport),
                     taxi = MergeRuleValues(a.taxi, b.taxi),
+                    bicycle = MergeRuleValues(a.bicycle, b.bicycle),
                 };
             }
 
@@ -310,6 +308,8 @@ namespace RoadRule.Systems.UI
                 publicTransport.Read(reader);
                 reader.ReadProperty(nameof(taxi));
                 taxi.Read(reader);
+                reader.ReadProperty(nameof(bicycle));
+                bicycle.Read(reader);
                 reader.ReadMapEnd();
             }
 
@@ -338,6 +338,8 @@ namespace RoadRule.Systems.UI
                 writer.Write(publicTransport);
                 writer.PropertyName(nameof(taxi));
                 writer.Write(taxi);
+                writer.PropertyName(nameof(bicycle));
+                writer.Write(bicycle);
                 writer.TypeEnd();
             }
 
@@ -353,7 +355,8 @@ namespace RoadRule.Systems.UI
                     && policeCar.Equals(other.policeCar)
                     && postVan.Equals(other.postVan)
                     && publicTransport.Equals(other.publicTransport)
-                    && taxi.Equals(other.taxi);
+                    && taxi.Equals(other.taxi)
+                    && bicycle.Equals(other.bicycle);
             }
 
             public override bool Equals(object obj)
@@ -375,6 +378,7 @@ namespace RoadRule.Systems.UI
                 hash.Add(postVan);
                 hash.Add(publicTransport);
                 hash.Add(taxi);
+                hash.Add(bicycle);
                 return hash.ToHashCode();
             }
 
@@ -452,26 +456,6 @@ namespace RoadRule.Systems.UI
 
         public static FieldValue<RuleOptionsValue> FromRule(LaneRules.RuleOptions rule)
         {
-            var noFlag = RuleValue.None;
-            switch (rule & LaneRules.RuleOptions.NoFlagRuleMask)
-            {
-                case LaneRules.RuleOptions.None:
-                    noFlag = RuleValue.None;
-                    break;
-                case LaneRules.RuleOptions.NoFlagPrefer:
-                    noFlag = RuleValue.Prefer;
-                    break;
-                case LaneRules.RuleOptions.NoFlagForbidden:
-                    noFlag = RuleValue.Forbidden;
-                    break;
-                case LaneRules.RuleOptions.NoFlagDisallow:
-                    noFlag = RuleValue.Disallow;
-                    break;
-                default:
-                    noFlag = RuleValue.None;
-                    break;
-            }
-
             var hasFlag = RuleValue.None;
             switch (rule & LaneRules.RuleOptions.HasFlagRuleMask)
             {
@@ -495,25 +479,13 @@ namespace RoadRule.Systems.UI
             return new FieldValue<RuleOptionsValue>()
             {
                 state = FieldState.Applied,
-                value = new RuleOptionsValue { noFlag = noFlag, hasFlag = hasFlag },
+                value = new RuleOptionsValue { hasFlag = hasFlag },
             };
         }
 
         public static LaneRules.RuleOptions ToRuleOptions(RuleOptionsValue ruleOptionsValue)
         {
             LaneRules.RuleOptions rule = LaneRules.RuleOptions.None;
-            switch (ruleOptionsValue.noFlag)
-            {
-                case RuleValue.Prefer:
-                    rule |= LaneRules.RuleOptions.NoFlagPrefer;
-                    break;
-                case RuleValue.Forbidden:
-                    rule |= LaneRules.RuleOptions.NoFlagForbidden;
-                    break;
-                case RuleValue.Disallow:
-                    rule |= LaneRules.RuleOptions.NoFlagDisallow;
-                    break;
-            }
             switch (ruleOptionsValue.hasFlag)
             {
                 case RuleValue.Prefer:
@@ -549,9 +521,8 @@ namespace RoadRule.Systems.UI
             }
             else
             {
-                var noFlag = (RuleValue)Math.Max((int)a.value.noFlag, (int)b.value.noFlag);
                 var hasFlag = (RuleValue)Math.Max((int)a.value.hasFlag, (int)b.value.hasFlag);
-                var mergedRule = new RuleOptionsValue { noFlag = noFlag, hasFlag = hasFlag };
+                var mergedRule = new RuleOptionsValue { hasFlag = hasFlag };
                 return new FieldValue<RuleOptionsValue> { state = FieldState.PartiallyApplied, value = mergedRule };
             }
         }

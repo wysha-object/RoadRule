@@ -20,7 +20,6 @@ export function mergeRuleOptionsFieldValues(
   b: FieldValue<RuleOptionsValue>,
 ): FieldValue<RuleOptionsValue> {
   if (
-    a.value.noFlag === b.value.noFlag &&
     a.value.hasFlag === b.value.hasFlag &&
     a.state === b.state &&
     a.state === FieldState.Applied
@@ -28,7 +27,6 @@ export function mergeRuleOptionsFieldValues(
     return Object.assign({}, a)
   } else {
     const mergedRule = {
-      noFlag: mergeRuleValues(a.value.noFlag, b.value.noFlag),
       hasFlag: mergeRuleValues(a.value.hasFlag, b.value.hasFlag),
     }
     return { state: FieldState.PartiallyApplied, value: mergedRule }
@@ -54,6 +52,7 @@ export function mergeVehicleRules(
     postVan: mergeRuleOptionsFieldValues(a.postVan, b.postVan),
     publicTransport: mergeRuleOptionsFieldValues(a.publicTransport, b.publicTransport),
     taxi: mergeRuleOptionsFieldValues(a.taxi, b.taxi),
+    bicycle: mergeRuleOptionsFieldValues(a.bicycle, b.bicycle),
   }
 }
 

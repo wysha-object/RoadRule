@@ -158,20 +158,7 @@ namespace RoadRule.Systems.Pathfind
             m_NeedMarkEntityQuery = GetEntityQuery(
                 new EntityQueryDesc
                 {
-                    All =
-                    [
-                        ComponentType.ReadWrite<PathOwner>(),
-                        ComponentType.ReadOnly<Target>(),
-                        ComponentType.ReadOnly<Blocker>(),
-                        ComponentType.ReadOnly<CarCurrentLane>(),
-                        ComponentType.ReadOnly<Owner>(),
-                        ComponentType.ReadOnly<Car>(),
-                        ComponentType.ReadOnly<CarNavigation>(),
-                        ComponentType.ReadOnly<Swaying>(),
-                        ComponentType.ReadOnly<Moving>(),
-                        ComponentType.ReadOnly<Transform>(),
-                        ComponentType.ReadOnly<Vehicle>(),
-                    ],
+                    All = [ComponentType.ReadOnly<Target>(), ComponentType.ReadOnly<Car>()],
                     None = [ComponentType.ReadOnly<Deleted>(), ComponentType.ReadOnly<Temp>(), ComponentType.ReadOnly<PathfindReprocessRequest>()],
                 }
             );

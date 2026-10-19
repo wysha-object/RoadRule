@@ -67,7 +67,6 @@ export enum RuleValue {
 }
 
 export interface RuleOptionsValue {
-  noFlag: RuleValue
   hasFlag: RuleValue
 }
 
@@ -97,6 +96,7 @@ export interface VehicleTypeRulesValue {
   postVan: FieldValue<RuleOptionsValue>
   publicTransport: FieldValue<RuleOptionsValue>
   taxi: FieldValue<RuleOptionsValue>
+  bicycle: FieldValue<RuleOptionsValue>
 }
 
 export interface LaneRulesValue {
