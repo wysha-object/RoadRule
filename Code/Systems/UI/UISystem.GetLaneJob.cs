@@ -92,7 +92,8 @@ namespace RoadRule.Systems.UI
                         float defaultSpeedLimit = roadComposition.m_SpeedLimit;
 
                         if (
-                            laneRules.m_VehicleType.m_Ambulance == LaneRules.RuleOptions.None
+                            defaultSpeedLimit == carLane.m_DefaultSpeedLimit
+                            && laneRules.m_VehicleType.m_Ambulance == LaneRules.RuleOptions.None
                             && laneRules.m_VehicleType.m_DeliveryTruck == LaneRules.RuleOptions.None
                             && laneRules.m_VehicleType.m_FireEngine == LaneRules.RuleOptions.None
                             && laneRules.m_VehicleType.m_GarbageTruck == LaneRules.RuleOptions.None
@@ -103,7 +104,7 @@ namespace RoadRule.Systems.UI
                             && laneRules.m_VehicleType.m_PostVan == LaneRules.RuleOptions.None
                             && laneRules.m_VehicleType.m_PublicTransport == LaneRules.RuleOptions.None
                             && laneRules.m_VehicleType.m_Taxi == LaneRules.RuleOptions.None
-                            && defaultSpeedLimit == carLane.m_DefaultSpeedLimit
+                            && laneRules.m_VehicleType.m_Bicycle == LaneRules.RuleOptions.None
                         )
                         {
                             continue;

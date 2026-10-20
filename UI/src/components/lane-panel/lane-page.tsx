@@ -139,8 +139,7 @@ export default function LanePage(props: {
                         <Star show={privateVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
-                {
-                    bicycleRule !== RuleValue.None &&
+                {bicycleRule !== RuleValue.None &&
                     <div style={{ display: 'flex', margin: '0.5em' }}>
                         {bicycleRule === RuleValue.Prefer && <InfosignBicyclePrefer style={InfosignStyle} />}
                         {bicycleRule === RuleValue.Forbidden && <InfosignBicycleForbidden style={InfosignStyle} />}
