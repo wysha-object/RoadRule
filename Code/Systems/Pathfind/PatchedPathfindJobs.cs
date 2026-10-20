@@ -759,7 +759,7 @@ namespace RoadRule.Systems.Pathfind
                 );
                 if (isApplicable)
                 {
-                    yz.x += math.select(0.1f, 0f, isPrefer);
+                    yz.x += math.select(0.01f, 0f, isPrefer);
                     yz.x += math.select(0f, 10f, isForbidden);
                 }
                 float4 value = pathSpecification.m_Costs.m_Value;
