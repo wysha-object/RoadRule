@@ -1,4 +1,0 @@
-- update pathfinding and lane selection cost calculations
-- update UI text
-- Added bicycle lane rules (Prefer / Forbidden / Disallow)
-- Removed the "vehicles without the flag" rule dropdown; existing rules of that kind are reset to None
