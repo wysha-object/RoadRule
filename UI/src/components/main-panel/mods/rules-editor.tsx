@@ -278,7 +278,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
         />
         <SmallPanelFoldoutContainer>
           <PanelFoldout
-            header={t('RuleEditor.Expand')}
+            header={t('RulesEditor.Expand')}
           >
             <div className='horizontal-gap' />
             <RuleEditorItem
