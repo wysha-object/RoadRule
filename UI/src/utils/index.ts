@@ -21,6 +21,7 @@ export function mergeRuleOptionsFieldValues(
 ): FieldValue<RuleOptionsValue> {
   if (
     a.value.hasFlag === b.value.hasFlag &&
+    a.value.fixedCost === b.value.fixedCost &&
     a.state === b.state &&
     a.state === FieldState.Applied
   ) {
@@ -28,6 +29,7 @@ export function mergeRuleOptionsFieldValues(
   } else {
     const mergedRule = {
       hasFlag: mergeRuleValues(a.value.hasFlag, b.value.hasFlag),
+      fixedCost: Math.max(a.value.fixedCost, b.value.fixedCost),
     }
     return { state: FieldState.PartiallyApplied, value: mergedRule }
   }

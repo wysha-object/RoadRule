@@ -64,10 +64,12 @@ export enum RuleValue {
   Prefer = 1,
   Forbidden = 2,
   Disallow = 3,
+  FixedCost = 4,
 }
 
 export interface RuleOptionsValue {
   hasFlag: RuleValue
+  fixedCost: number
 }
 
 export const enum FieldState {

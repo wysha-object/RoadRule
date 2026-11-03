@@ -430,160 +430,34 @@ namespace RoadRule.Utils
             return originType == type || destinationType == type;
         }
 
-        public static void CheckLaneRules(LaneRules laneRules, CarParameters carParameters, out bool isPrefer, out bool isForbidden, out bool isDisallow)
+        public static void CheckLaneRules(LaneRules laneRules, CarParameters carParameters, out LaneRules.RuleOptions options, out float fixedCost)
         {
+            options = LaneRules.RuleOptions.None;
+            fixedCost = 0f;
             if (!carParameters.m_IsValid)
             {
-                isPrefer = false;
-                isForbidden = false;
-                isDisallow = false;
                 return;
             }
 
-            var vehicleTypeFlags = carParameters.m_VehicleTypeFlags;
-
-            isPrefer = IsPrefer(laneRules, vehicleTypeFlags);
-            isForbidden = IsForbidden(laneRules, vehicleTypeFlags);
-            isDisallow = IsDisallow(laneRules, vehicleTypeFlags);
-        }
-
-        public static bool IsPrefer(LaneRules laneRules, VehicleType vehicleTypeFlags)
-        {
-            if (IsForbidden(laneRules, vehicleTypeFlags))
+            var rules = laneRules.m_VehicleType;
+            var rule = carParameters.m_VehicleTypeFlags switch
             {
-                return false;
-            }
-            if (IsDisallow(laneRules, vehicleTypeFlags))
-            {
-                return false;
-            }
-
-            bool isPreferVehicleType =
-                IsPrefer((int)VehicleType.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.DeliveryTruck, laneRules.m_VehicleType.m_DeliveryTruck, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.FireEngine, laneRules.m_VehicleType.m_FireEngine, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.GarbageTruck, laneRules.m_VehicleType.m_GarbageTruck, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.Hearse, laneRules.m_VehicleType.m_Hearse, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.MaintenanceVehicle, laneRules.m_VehicleType.m_MaintenanceVehicle, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags)
-                || IsPrefer((int)VehicleType.Bicycle, laneRules.m_VehicleType.m_Bicycle, (int)vehicleTypeFlags);
-
-            return isPreferVehicleType;
-        }
-
-        public static bool IsForbidden(LaneRules laneRules, VehicleType vehicleTypeFlags)
-        {
-            if (IsDisallow(laneRules, vehicleTypeFlags))
-            {
-                return false;
-            }
-
-            bool isForbiddenVehicleType =
-                IsForbidden((int)VehicleType.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.DeliveryTruck, laneRules.m_VehicleType.m_DeliveryTruck, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.FireEngine, laneRules.m_VehicleType.m_FireEngine, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.GarbageTruck, laneRules.m_VehicleType.m_GarbageTruck, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.Hearse, laneRules.m_VehicleType.m_Hearse, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.MaintenanceVehicle, laneRules.m_VehicleType.m_MaintenanceVehicle, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags)
-                || IsForbidden((int)VehicleType.Bicycle, laneRules.m_VehicleType.m_Bicycle, (int)vehicleTypeFlags);
-
-            return isForbiddenVehicleType;
-        }
-
-        public static bool IsDisallow(LaneRules laneRules, VehicleType vehicleTypeFlags)
-        {
-            bool isDisallowVehicleType =
-                IsDisallow((int)VehicleType.Ambulance, laneRules.m_VehicleType.m_Ambulance, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.DeliveryTruck, laneRules.m_VehicleType.m_DeliveryTruck, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.FireEngine, laneRules.m_VehicleType.m_FireEngine, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.GarbageTruck, laneRules.m_VehicleType.m_GarbageTruck, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.Hearse, laneRules.m_VehicleType.m_Hearse, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.MaintenanceVehicle, laneRules.m_VehicleType.m_MaintenanceVehicle, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.PersonalCar, laneRules.m_VehicleType.m_PersonalCar, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.PoliceCar, laneRules.m_VehicleType.m_PoliceCar, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.PostVan, laneRules.m_VehicleType.m_PostVan, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.PublicTransport, laneRules.m_VehicleType.m_PublicTransport, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.Taxi, laneRules.m_VehicleType.m_Taxi, (int)vehicleTypeFlags)
-                || IsDisallow((int)VehicleType.Bicycle, laneRules.m_VehicleType.m_Bicycle, (int)vehicleTypeFlags);
-
-            return isDisallowVehicleType;
-        }
-
-        public static bool IsPrefer(int flag, LaneRules.RuleOptions rule, int flags)
-        {
-            var value = (flags & flag) != 0;
-            return IsPrefer(rule, value);
-        }
-
-        public static bool IsForbidden(int flag, LaneRules.RuleOptions rule, int flags)
-        {
-            var value = (flags & flag) != 0;
-            return IsForbidden(rule, value);
-        }
-
-        public static bool IsDisallow(int flag, LaneRules.RuleOptions rule, int flags)
-        {
-            var value = (flags & flag) != 0;
-            return IsDisallow(rule, value);
-        }
-
-        public static bool IsPrefer(LaneRules.RuleOptions rule, bool value)
-        {
-            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
-
-            if (value)
-            {
-                switch (hasFlagRule)
-                {
-                    case LaneRules.RuleOptions.HasFlagPrefer:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-            return false;
-        }
-
-        public static bool IsForbidden(LaneRules.RuleOptions rule, bool value)
-        {
-            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
-
-            if (value)
-            {
-                switch (hasFlagRule)
-                {
-                    case LaneRules.RuleOptions.HasFlagForbidden:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-            return false;
-        }
-
-        public static bool IsDisallow(LaneRules.RuleOptions rule, bool value)
-        {
-            var hasFlagRule = rule & LaneRules.RuleOptions.HasFlagRuleMask;
-            if (value)
-            {
-                switch (hasFlagRule)
-                {
-                    case LaneRules.RuleOptions.HasFlagDisallow:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-            return false;
+                VehicleType.Ambulance => rules.m_Ambulance,
+                VehicleType.DeliveryTruck => rules.m_DeliveryTruck,
+                VehicleType.FireEngine => rules.m_FireEngine,
+                VehicleType.GarbageTruck => rules.m_GarbageTruck,
+                VehicleType.Hearse => rules.m_Hearse,
+                VehicleType.MaintenanceVehicle => rules.m_MaintenanceVehicle,
+                VehicleType.PersonalCar => rules.m_PersonalCar,
+                VehicleType.PoliceCar => rules.m_PoliceCar,
+                VehicleType.PostVan => rules.m_PostVan,
+                VehicleType.PublicTransport => rules.m_PublicTransport,
+                VehicleType.Taxi => rules.m_Taxi,
+                VehicleType.Bicycle => rules.m_Bicycle,
+                _ => default,
+            };
+            options = rule.m_Options;
+            fixedCost = rule.m_FixedCost;
         }
     }
 }

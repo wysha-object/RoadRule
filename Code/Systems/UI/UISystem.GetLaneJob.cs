@@ -93,18 +93,18 @@ namespace RoadRule.Systems.UI
 
                         if (
                             defaultSpeedLimit == carLane.m_DefaultSpeedLimit
-                            && laneRules.m_VehicleType.m_Ambulance == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_DeliveryTruck == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_FireEngine == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_GarbageTruck == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_Hearse == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_MaintenanceVehicle == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_PersonalCar == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_PoliceCar == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_PostVan == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_PublicTransport == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_Taxi == LaneRules.RuleOptions.None
-                            && laneRules.m_VehicleType.m_Bicycle == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_Ambulance.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_DeliveryTruck.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_FireEngine.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_GarbageTruck.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_Hearse.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_MaintenanceVehicle.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_PersonalCar.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_PoliceCar.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_PostVan.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_PublicTransport.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_Taxi.m_Options == LaneRules.RuleOptions.None
+                            && laneRules.m_VehicleType.m_Bicycle.m_Options == LaneRules.RuleOptions.None
                         )
                         {
                             continue;

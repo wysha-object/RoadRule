@@ -1,0 +1,3 @@
+- add configurable fixed pathfinding costs for MasterLane rules
+- update the rules editor layout
+- strengthen Prefer rules when selecting lanes

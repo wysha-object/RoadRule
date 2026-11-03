@@ -31,13 +31,13 @@ namespace RoadRule.Components
                 case Rule.None:
                     return RuleOptions.None;
                 case Rule.NoneOrPrefer:
-                    return RuleOptions.HasFlagPrefer;
+                    return RuleOptions.Prefer;
                 case Rule.NoneOrForbidden:
-                    return RuleOptions.HasFlagForbidden;
+                    return RuleOptions.Forbidden;
                 case Rule.ForbiddenOrPrefer:
-                    return RuleOptions.HasFlagPrefer;
+                    return RuleOptions.Prefer;
                 case Rule.PreferOrForbidden:
-                    return RuleOptions.HasFlagForbidden;
+                    return RuleOptions.Forbidden;
                 default:
                     return RuleOptions.None;
             }
@@ -47,13 +47,15 @@ namespace RoadRule.Components
         {
             None = 0,
 
-            HasFlagRuleMask = 0xf,
+            ModeMask = 0xf,
 
-            HasFlagPrefer = 1,
+            Prefer = 1,
 
-            HasFlagForbidden = 2,
+            Forbidden = 2,
 
-            HasFlagDisallow = 3,
+            Disallow = 3,
+
+            FixedCost = 4,
         }
 
         private struct CarFlagsRules : ISerializable
@@ -181,122 +183,162 @@ namespace RoadRule.Components
             }
         }
 
+        public struct VehicleRule : ISerializable
+        {
+            public RuleOptions m_Options;
+            public ushort m_FixedCost;
+
+            public void Deserialize<TReader>(TReader reader)
+                where TReader : IReader
+            {
+                reader.Read(out byte options);
+                m_Options = (RuleOptions)options;
+                reader.Read(out m_FixedCost);
+            }
+
+            public void Serialize<TWriter>(TWriter writer)
+                where TWriter : IWriter
+            {
+                writer.Write((byte)m_Options);
+                writer.Write(m_FixedCost);
+            }
+        }
+
         public struct VehicleTypeRules : ISerializable
         {
-            public RuleOptions m_Ambulance;
-            public RuleOptions m_DeliveryTruck;
-            public RuleOptions m_FireEngine;
-            public RuleOptions m_GarbageTruck;
-            public RuleOptions m_Hearse;
-            public RuleOptions m_MaintenanceVehicle;
-            public RuleOptions m_PersonalCar;
-            public RuleOptions m_PoliceCar;
-            public RuleOptions m_PostVan;
-            public RuleOptions m_PublicTransport;
-            public RuleOptions m_Taxi;
-            public RuleOptions m_Bicycle;
+            public VehicleRule m_Ambulance;
+            public VehicleRule m_DeliveryTruck;
+            public VehicleRule m_FireEngine;
+            public VehicleRule m_GarbageTruck;
+            public VehicleRule m_Hearse;
+            public VehicleRule m_MaintenanceVehicle;
+            public VehicleRule m_PersonalCar;
+            public VehicleRule m_PoliceCar;
+            public VehicleRule m_PostVan;
+            public VehicleRule m_PublicTransport;
+            public VehicleRule m_Taxi;
+            public VehicleRule m_Bicycle;
 
             public void Deserialize<TReader>(TReader reader)
                 where TReader : IReader
             {
                 reader.Read(out ushort schemaVersion);
 
+                this = default;
+
+                if (schemaVersion >= 5)
+                {
+                    reader.Read(out m_Ambulance);
+                    reader.Read(out m_DeliveryTruck);
+                    reader.Read(out m_FireEngine);
+                    reader.Read(out m_GarbageTruck);
+                    reader.Read(out m_Hearse);
+                    reader.Read(out m_MaintenanceVehicle);
+                    reader.Read(out m_PersonalCar);
+                    reader.Read(out m_PoliceCar);
+                    reader.Read(out m_PostVan);
+                    reader.Read(out m_PublicTransport);
+                    reader.Read(out m_Taxi);
+                    reader.Read(out m_Bicycle);
+                    return;
+                }
+
                 if (schemaVersion <= 2)
                 {
                     reader.Read(out int ambulance);
-                    m_Ambulance = migrateRule(ambulance);
+                    m_Ambulance.m_Options = migrateRule(ambulance);
                     reader.Read(out int deliveryTruck);
-                    m_DeliveryTruck = migrateRule(deliveryTruck);
+                    m_DeliveryTruck.m_Options = migrateRule(deliveryTruck);
                     reader.Read(out int fireEngine);
-                    m_FireEngine = migrateRule(fireEngine);
+                    m_FireEngine.m_Options = migrateRule(fireEngine);
                     reader.Read(out int garbageTruck);
-                    m_GarbageTruck = migrateRule(garbageTruck);
+                    m_GarbageTruck.m_Options = migrateRule(garbageTruck);
                     reader.Read(out int hearse);
-                    m_Hearse = migrateRule(hearse);
+                    m_Hearse.m_Options = migrateRule(hearse);
                     reader.Read(out int maintenanceVehicle);
-                    m_MaintenanceVehicle = migrateRule(maintenanceVehicle);
+                    m_MaintenanceVehicle.m_Options = migrateRule(maintenanceVehicle);
                     reader.Read(out int personalCar);
-                    m_PersonalCar = migrateRule(personalCar);
+                    m_PersonalCar.m_Options = migrateRule(personalCar);
                     reader.Read(out int policeCar);
-                    m_PoliceCar = migrateRule(policeCar);
+                    m_PoliceCar.m_Options = migrateRule(policeCar);
                     reader.Read(out int postVan);
-                    m_PostVan = migrateRule(postVan);
+                    m_PostVan.m_Options = migrateRule(postVan);
                     reader.Read(out int publicTransport);
-                    m_PublicTransport = migrateRule(publicTransport);
+                    m_PublicTransport.m_Options = migrateRule(publicTransport);
 
                     if (schemaVersion == 2)
                     {
                         reader.Read(out int taxi);
-                        m_Taxi = migrateRule(taxi);
+                        m_Taxi.m_Options = migrateRule(taxi);
                     }
                 }
 
                 if (schemaVersion >= 3)
                 {
                     reader.Read(out byte ambulance);
-                    m_Ambulance = (RuleOptions)ambulance;
+                    m_Ambulance.m_Options = (RuleOptions)ambulance;
                     reader.Read(out byte deliveryTruck);
-                    m_DeliveryTruck = (RuleOptions)deliveryTruck;
+                    m_DeliveryTruck.m_Options = (RuleOptions)deliveryTruck;
                     reader.Read(out byte fireEngine);
-                    m_FireEngine = (RuleOptions)fireEngine;
+                    m_FireEngine.m_Options = (RuleOptions)fireEngine;
                     reader.Read(out byte garbageTruck);
-                    m_GarbageTruck = (RuleOptions)garbageTruck;
+                    m_GarbageTruck.m_Options = (RuleOptions)garbageTruck;
                     reader.Read(out byte hearse);
-                    m_Hearse = (RuleOptions)hearse;
+                    m_Hearse.m_Options = (RuleOptions)hearse;
                     reader.Read(out byte maintenanceVehicle);
-                    m_MaintenanceVehicle = (RuleOptions)maintenanceVehicle;
+                    m_MaintenanceVehicle.m_Options = (RuleOptions)maintenanceVehicle;
                     reader.Read(out byte personalCar);
-                    m_PersonalCar = (RuleOptions)personalCar;
+                    m_PersonalCar.m_Options = (RuleOptions)personalCar;
                     reader.Read(out byte policeCar);
-                    m_PoliceCar = (RuleOptions)policeCar;
+                    m_PoliceCar.m_Options = (RuleOptions)policeCar;
                     reader.Read(out byte postVan);
-                    m_PostVan = (RuleOptions)postVan;
+                    m_PostVan.m_Options = (RuleOptions)postVan;
                     reader.Read(out byte publicTransport);
-                    m_PublicTransport = (RuleOptions)publicTransport;
+                    m_PublicTransport.m_Options = (RuleOptions)publicTransport;
                     reader.Read(out byte taxi);
-                    m_Taxi = (RuleOptions)taxi;
+                    m_Taxi.m_Options = (RuleOptions)taxi;
 
                     if (schemaVersion <= 3)
                     {
-                        m_Ambulance = (RuleOptions)(byte)m_Ambulance & RuleOptions.HasFlagRuleMask;
-                        m_DeliveryTruck = (RuleOptions)(byte)m_DeliveryTruck & RuleOptions.HasFlagRuleMask;
-                        m_FireEngine = (RuleOptions)(byte)m_FireEngine & RuleOptions.HasFlagRuleMask;
-                        m_GarbageTruck = (RuleOptions)(byte)m_GarbageTruck & RuleOptions.HasFlagRuleMask;
-                        m_Hearse = (RuleOptions)(byte)m_Hearse & RuleOptions.HasFlagRuleMask;
-                        m_MaintenanceVehicle = (RuleOptions)(byte)m_MaintenanceVehicle & RuleOptions.HasFlagRuleMask;
-                        m_PersonalCar = (RuleOptions)(byte)m_PersonalCar & RuleOptions.HasFlagRuleMask;
-                        m_PoliceCar = (RuleOptions)(byte)m_PoliceCar & RuleOptions.HasFlagRuleMask;
-                        m_PostVan = (RuleOptions)(byte)m_PostVan & RuleOptions.HasFlagRuleMask;
-                        m_PublicTransport = (RuleOptions)(byte)m_PublicTransport & RuleOptions.HasFlagRuleMask;
-                        m_Taxi = (RuleOptions)(byte)m_Taxi & RuleOptions.HasFlagRuleMask;
+                        m_Ambulance.m_Options &= RuleOptions.ModeMask;
+                        m_DeliveryTruck.m_Options &= RuleOptions.ModeMask;
+                        m_FireEngine.m_Options &= RuleOptions.ModeMask;
+                        m_GarbageTruck.m_Options &= RuleOptions.ModeMask;
+                        m_Hearse.m_Options &= RuleOptions.ModeMask;
+                        m_MaintenanceVehicle.m_Options &= RuleOptions.ModeMask;
+                        m_PersonalCar.m_Options &= RuleOptions.ModeMask;
+                        m_PoliceCar.m_Options &= RuleOptions.ModeMask;
+                        m_PostVan.m_Options &= RuleOptions.ModeMask;
+                        m_PublicTransport.m_Options &= RuleOptions.ModeMask;
+                        m_Taxi.m_Options &= RuleOptions.ModeMask;
                     }
                 }
 
                 if (schemaVersion >= 4)
                 {
                     reader.Read(out byte bicycle);
-                    m_Bicycle = (RuleOptions)bicycle;
+                    m_Bicycle.m_Options = (RuleOptions)bicycle;
                 }
             }
 
             public void Serialize<TWriter>(TWriter writer)
                 where TWriter : IWriter
             {
-                ushort schemaVersion = 4;
+                ushort schemaVersion = 5;
                 writer.Write(schemaVersion);
 
-                writer.Write((byte)m_Ambulance);
-                writer.Write((byte)m_DeliveryTruck);
-                writer.Write((byte)m_FireEngine);
-                writer.Write((byte)m_GarbageTruck);
-                writer.Write((byte)m_Hearse);
-                writer.Write((byte)m_MaintenanceVehicle);
-                writer.Write((byte)m_PersonalCar);
-                writer.Write((byte)m_PoliceCar);
-                writer.Write((byte)m_PostVan);
-                writer.Write((byte)m_PublicTransport);
-                writer.Write((byte)m_Taxi);
-                writer.Write((byte)m_Bicycle);
+                writer.Write(m_Ambulance);
+                writer.Write(m_DeliveryTruck);
+                writer.Write(m_FireEngine);
+                writer.Write(m_GarbageTruck);
+                writer.Write(m_Hearse);
+                writer.Write(m_MaintenanceVehicle);
+                writer.Write(m_PersonalCar);
+                writer.Write(m_PoliceCar);
+                writer.Write(m_PostVan);
+                writer.Write(m_PublicTransport);
+                writer.Write(m_Taxi);
+                writer.Write(m_Bicycle);
             }
         }
 

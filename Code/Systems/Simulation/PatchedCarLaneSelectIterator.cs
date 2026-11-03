@@ -411,14 +411,23 @@ public struct PatchedCarLaneSelectIterator
 
     private float GetLaneDriveCost(Game.Net.CarLane carLane, PathMethod pathMethods, int index, int minIndex, int maxIndex, LaneRules laneRules)
     {
-        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out var isPrefer, out var isForbidden, out var isDisallow);
+        LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out LaneRules.RuleOptions options, out float fixedCost);
 
         float falseValue = math.select(0.4f, 0f, (carLane.m_Flags & m_PreferLaneFlags) != 0);
         float trueValue = math.select(0.9f, 4.9f, m_Priority < 108);
         float num = math.select(falseValue, trueValue, (carLane.m_Flags & m_ForbidLaneFlags) != 0);
-        num += math.select(1f, 0f, isPrefer);
-        num += math.select(0f, 10f, isForbidden);
-        num += math.select(0f, 1000f, isDisallow);
+        switch (options & LaneRules.RuleOptions.ModeMask)
+        {
+            case LaneRules.RuleOptions.Prefer:
+                num -= 10f;
+                break;
+            case LaneRules.RuleOptions.Forbidden:
+                num += 10f;
+                break;
+            case LaneRules.RuleOptions.Disallow:
+                num += 1000f;
+                break;
+        }
         num -= carLane.m_SpeedLimit * 0.01f;
         int num2 = math.select(index - minIndex, maxIndex - index, (carLane.m_Flags & Game.Net.CarLaneFlags.Invert) != 0 == m_LeftHandTraffic);
         return math.select(

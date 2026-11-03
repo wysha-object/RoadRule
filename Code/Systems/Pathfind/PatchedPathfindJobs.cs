@@ -736,7 +736,12 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float CalculateCost(in PathSpecification pathSpecification, EdgeFlags flags, RuleFlags rules, float2 delta, Entity edgeEntity)
             {
-                CheckPathRules(edgeEntity, pathSpecification, out bool isApplicable, out bool isPrefer, out bool isForbidden, out _);
+                CheckPathRules(edgeEntity, pathSpecification, out bool isApplicable, out LaneRules.RuleOptions options, out float fixedCost);
+
+                if (isApplicable && (options & LaneRules.RuleOptions.FixedCost) != 0)
+                {
+                    return fixedCost;
+                }
 
                 float num = PathUtils.CalculateSpeed(in pathSpecification, in m_Parameters);
                 float num2 = delta.y - delta.x;
@@ -759,8 +764,16 @@ namespace RoadRule.Systems.Pathfind
                 );
                 if (isApplicable)
                 {
-                    yz.x += math.select(0.01f, 0f, isPrefer);
-                    yz.x += math.select(0f, 10f, isForbidden);
+                    yz.x += 0.01f;
+                    switch (options & LaneRules.RuleOptions.ModeMask)
+                    {
+                        case LaneRules.RuleOptions.Prefer:
+                            yz.x -= 0.01f;
+                            break;
+                        case LaneRules.RuleOptions.Forbidden:
+                            yz.x += 10f;
+                            break;
+                    }
                 }
                 float4 value = pathSpecification.m_Costs.m_Value;
                 value.xyw += pathSpecification.m_Length * new float3(1f / num, yz);
@@ -1187,8 +1200,8 @@ namespace RoadRule.Systems.Pathfind
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool DisallowConnection(PathMethod prevMethod, PathfindItemFlags itemFlags, in PathSpecification newSpec, ref EdgeFlags edgeFlags, Entity newOwner)
             {
-                CheckPathRules(newOwner, newSpec, out _, out _, out _, out bool isDisallow);
-                if (isDisallow)
+                CheckPathRules(newOwner, newSpec, out _, out LaneRules.RuleOptions options, out float fixedCost);
+                if ((options & LaneRules.RuleOptions.ModeMask) == LaneRules.RuleOptions.Disallow)
                 {
                     return true;
                 }
@@ -1324,12 +1337,11 @@ namespace RoadRule.Systems.Pathfind
                 path.ElementAt(0).m_Flags |= PathElementFlags.PathStart;
             }
 
-            private void CheckPathRules(Entity edgeEntity, PathSpecification pathSpecification, out bool isApplicable, out bool isPrefer, out bool isForbidden, out bool isDisallow)
+            private void CheckPathRules(Entity edgeEntity, PathSpecification pathSpecification, out bool isApplicable, out LaneRules.RuleOptions options, out float fixedCost)
             {
                 isApplicable = false;
-                isPrefer = false;
-                isForbidden = false;
-                isDisallow = false;
+                options = LaneRules.RuleOptions.None;
+                fixedCost = 0f;
 
                 if ((pathSpecification.m_Methods & (PathMethod.Taxi | PathMethod.Bicycle | PathMethod.Road | PathMethod.MediumRoad)) == 0)
                 {
@@ -1341,13 +1353,13 @@ namespace RoadRule.Systems.Pathfind
                 {
                     if ((pathSpecification.m_Methods & PathMethod.Taxi) != 0)
                     {
-                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out isPrefer, out isForbidden, out isDisallow);
+                        LaneRulesUtils.CheckLaneRules(laneRules, LaneRulesUtils.TAXI_CAR_PARAMETERS, out options, out fixedCost);
                     }
                     else if ((pathSpecification.m_Methods & (PathMethod.Bicycle | PathMethod.Road | PathMethod.MediumRoad)) != 0)
                     {
                         if (m_CarParameters.m_IsValid)
                         {
-                            LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out isPrefer, out isForbidden, out isDisallow);
+                            LaneRulesUtils.CheckLaneRules(laneRules, m_CarParameters, out options, out fixedCost);
                         }
                     }
                 }

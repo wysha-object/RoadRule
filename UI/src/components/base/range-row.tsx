@@ -8,30 +8,6 @@ import { Button } from 'cs2/ui'
 import TipIcon from 'components/icon/tip-icon'
 import styled from 'styled-components'
 
-const RangeComponent = styled.div`
-  padding: 0.25em 0;
-  width: 100%;
-`
-
-const Track = styled.div`
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 0.25em;
-  width: 100%;
-  height: 0.5em;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-direction: row;
-  padding: 0 0.5em;
-`
-
-const Filler = styled.div`
-  background-color: var(--accentColorNormal);
-  box-shadow: var(--accentColorNormal) -0.5em 0;
-  border-radius: 0.25em 0 0 0.25em;
-  height: 0.5em;
-`
-
 const Thumb = styled.div<{ active: boolean }>`
   background-color: var(--textColor);
   border-radius: 50%;
@@ -45,6 +21,7 @@ const Thumb = styled.div<{ active: boolean }>`
 `
 
 function Range(props: {
+  disabled?: boolean
   min: number
   max: number
   step: number
@@ -84,6 +61,9 @@ function Range(props: {
   )
 
   const mouseDownHandler = (_event: React.MouseEvent<HTMLElement>) => {
+    if (props.disabled) {
+      return
+    }
     setDragging(true)
   }
   const mouseUpHandler = useCallback(
@@ -134,17 +114,46 @@ function Range(props: {
   const sliderValue = ((value - props.min) / (props.max - props.min)) * 100
 
   return (
-    <RangeComponent onMouseDown={mouseDownHandler}>
-      <Track ref={sliderRef}>
-        <Filler style={{ width: sliderValue + '%' }} />
+    <div
+      onMouseDown={mouseDownHandler}
+      style={{
+        padding: '0.25em 0',
+        width: '100%'
+      }}
+    >
+      <div
+        ref={sliderRef}
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          borderRadius: '0.25em',
+          width: '100%',
+          height: '0.5em',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          flexDirection: 'row',
+          padding: '0 0.5em',
+        }}
+      >
+        <div
+          style={{
+            width: sliderValue + '%',
+            backgroundColor: 'var(--accentColorNormal)',
+            boxShadow: 'var(--accentColorNormal) -0.5em 0',
+            borderRadius: '0.25em 0 0 0.25em',
+            height: '0.5em',
+          }}
+        />
         <Thumb active={dragging} />
-      </Track>
-    </RangeComponent>
+      </div>
+    </div>
   )
 }
 
 
 export default function RangeRow(props: {
+  disabled?: boolean
+  singleLine?: boolean
   onChange: (value: number) => void
   label: string
   value: number
@@ -175,6 +184,7 @@ export default function RangeRow(props: {
     props.onChange(value)
   }
   const enableTextField = () => {
+    if (props.disabled) return
     setTextFieldValue('')
     setTextFieldActive(true)
   }
@@ -202,6 +212,7 @@ export default function RangeRow(props: {
     }
   }
   const resetHandler = () => {
+    if (props.disabled) return
     setTextFieldActive(false)
     props.onChange(props.defaultValue)
   }
@@ -212,70 +223,89 @@ export default function RangeRow(props: {
     preValueRef.current = props.value
   }
 
-  return (
-    <div className='row-with-hover-effect' style={{ flexDirection: 'column' }}>
-      <div
-        style={{
-          width: '100%',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ flex: '1', display: 'flex' }}>
-          <div style={{ flex: '1' }}>{props.label}</div>
-          {!textFieldActive
-            ? t(props.valuePrefix) +
-            `${Math.round(value * 100) / 100}` +
-            t(props.valueSuffix)
-            : ''}
-        </div>
-        {textFieldActive && (
-          <input
-            type='number'
-            style={{ minWidth: '3em', width: '3em' }}
-            onChange={textFieldChangeHandler}
-            onKeyDown={textFieldKeyDownHandler}
-            value={textFieldValue}
-            autoFocus
-          />
-        )}
-        <div className='vertical-gap' />
-        {props.enableTextField && (
-          <>
-            {textFieldActive ? (
-              <Button variant='round' onClick={submitTextField}>
-                <CheckSvg />
-              </Button>
-            ) : (
-              <Button variant='round' onClick={enableTextField}>
-                <EditSvg />
-              </Button>
-            )}
-          </>
-        )}
-        <div className='vertical-gap' />
-        <Button variant='round' onClick={resetHandler}>
-          <ResetSettingsSvg />
-        </Button>
-        {props.tooltip && (
-          <>
-            <div className='vertical-gap' />
-            <TipArea position='right-start' tooltip={props.tooltip}>
-              <TipIcon />
-            </TipArea>
-          </>
-        )}
+  const TextElement = (
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+      }}
+    >
+      <div style={{ flex: '1', display: 'flex' }}>
+        <div style={{ flex: '1' }}>{props.label}</div>
+        {!textFieldActive
+          ? t(props.valuePrefix) +
+          `${Math.round(value * 100) / 100}` +
+          t(props.valueSuffix)
+          : ''}
       </div>
-      <div className='horizontal-gap' />
-      <Range
-        min={props.min}
-        max={props.max}
-        step={props.step}
-        value={props.value}
-        onChange={changeHandler}
-        onUpdate={updateHandler}
-      />
+      {textFieldActive && (
+        <input
+          type='number'
+          style={{ minWidth: '3em', width: '3em' }}
+          onChange={textFieldChangeHandler}
+          onKeyDown={textFieldKeyDownHandler}
+          value={textFieldValue}
+          autoFocus
+        />
+      )}
+      <div className='vertical-gap' />
+      {props.enableTextField && (
+        <>
+          {textFieldActive ? (
+            <Button variant='round' onClick={submitTextField}>
+              <CheckSvg />
+            </Button>
+          ) : (
+            <Button disabled={props.disabled} style={{ opacity: 1 }} variant='round' onClick={enableTextField}>
+              <EditSvg />
+            </Button>
+          )}
+        </>
+      )}
+      <Button disabled={props.disabled} style={{ opacity: 1 }} variant='round' onClick={resetHandler}>
+        <ResetSettingsSvg />
+      </Button>
+      {props.tooltip && (
+        <>
+          <div className='vertical-gap' />
+          <TipArea position='right-start' tooltip={props.tooltip}>
+            <TipIcon />
+          </TipArea>
+        </>
+      )}
+    </div>
+  )
+
+  return (
+    <div
+      className='row-with-hover-effect'
+      style={{
+        flexDirection: props.singleLine ? 'row' : 'column',
+        opacity: props.disabled ? 0.3 : 1
+      }}
+    >
+      <div style={{ flex: props.singleLine ? '1 0 0' : '1 0 0', width: props.singleLine ? 'auto' : '100%' }}>
+        {TextElement}
+      </div>
+      {props.singleLine ?
+        <div style={{ width: '10rem' }} />
+        :
+        <div className='horizontal-gap' />
+      }
+      <div className={props.singleLine ? 'horizontal-gap' : 'vertical-gap'} />
+      <div style={{ flex: props.singleLine ? '2 0 0' : '1 0 0', width: props.singleLine ? 'auto' : '100%' }}>
+        <Range
+          disabled={props.disabled}
+          min={props.min}
+          max={props.max}
+          step={props.step}
+          value={props.value}
+          onChange={changeHandler}
+          onUpdate={updateHandler}
+        />
+      </div>
     </div>
   )
 }

@@ -80,11 +80,13 @@ namespace RoadRule.Systems.UI
             Prefer = 1,
             Forbidden = 2,
             Disallow = 3,
+            FixedCost = 4,
         }
 
         public struct RuleOptionsValue : IJsonReadable, IJsonWritable, IEquatable<RuleOptionsValue>
         {
             public RuleValue hasFlag;
+            public int fixedCost;
 
             public void Read(IJsonReader reader)
             {
@@ -92,6 +94,8 @@ namespace RoadRule.Systems.UI
                 reader.ReadProperty(nameof(this.hasFlag));
                 reader.Read(out int hasFlag);
                 this.hasFlag = (RuleValue)hasFlag;
+                reader.ReadProperty(nameof(fixedCost));
+                reader.Read(out fixedCost);
                 reader.ReadMapEnd();
             }
 
@@ -100,12 +104,14 @@ namespace RoadRule.Systems.UI
                 writer.TypeBegin(GetType().FullName);
                 writer.PropertyName(nameof(hasFlag));
                 writer.Write((int)hasFlag);
+                writer.PropertyName(nameof(fixedCost));
+                writer.Write(fixedCost);
                 writer.TypeEnd();
             }
 
             public bool Equals(RuleOptionsValue other)
             {
-                return hasFlag == other.hasFlag;
+                return hasFlag == other.hasFlag && fixedCost == other.fixedCost;
             }
 
             public override bool Equals(object obj)
@@ -115,7 +121,7 @@ namespace RoadRule.Systems.UI
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(hasFlag);
+                return HashCode.Combine(hasFlag, fixedCost);
             }
 
             public static bool operator ==(RuleOptionsValue left, RuleOptionsValue right)
@@ -454,22 +460,25 @@ namespace RoadRule.Systems.UI
             }
         }
 
-        public static FieldValue<RuleOptionsValue> FromRule(LaneRules.RuleOptions rule)
+        public static FieldValue<RuleOptionsValue> FromRule(LaneRules.VehicleRule rule)
         {
             var hasFlag = RuleValue.None;
-            switch (rule & LaneRules.RuleOptions.HasFlagRuleMask)
+            switch (rule.m_Options & LaneRules.RuleOptions.ModeMask)
             {
                 case LaneRules.RuleOptions.None:
                     hasFlag = RuleValue.None;
                     break;
-                case LaneRules.RuleOptions.HasFlagPrefer:
+                case LaneRules.RuleOptions.Prefer:
                     hasFlag = RuleValue.Prefer;
                     break;
-                case LaneRules.RuleOptions.HasFlagForbidden:
+                case LaneRules.RuleOptions.Forbidden:
                     hasFlag = RuleValue.Forbidden;
                     break;
-                case LaneRules.RuleOptions.HasFlagDisallow:
+                case LaneRules.RuleOptions.Disallow:
                     hasFlag = RuleValue.Disallow;
+                    break;
+                case LaneRules.RuleOptions.FixedCost:
+                    hasFlag = RuleValue.FixedCost;
                     break;
                 default:
                     hasFlag = RuleValue.None;
@@ -479,29 +488,32 @@ namespace RoadRule.Systems.UI
             return new FieldValue<RuleOptionsValue>()
             {
                 state = FieldState.Applied,
-                value = new RuleOptionsValue { hasFlag = hasFlag },
+                value = new RuleOptionsValue { hasFlag = hasFlag, fixedCost = rule.m_FixedCost },
             };
         }
 
-        public static LaneRules.RuleOptions ToRuleOptions(RuleOptionsValue ruleOptionsValue)
+        public static LaneRules.VehicleRule ToRuleOptions(RuleOptionsValue ruleOptionsValue)
         {
             LaneRules.RuleOptions rule = LaneRules.RuleOptions.None;
             switch (ruleOptionsValue.hasFlag)
             {
                 case RuleValue.Prefer:
-                    rule |= LaneRules.RuleOptions.HasFlagPrefer;
+                    rule |= LaneRules.RuleOptions.Prefer;
                     break;
                 case RuleValue.Forbidden:
-                    rule |= LaneRules.RuleOptions.HasFlagForbidden;
+                    rule |= LaneRules.RuleOptions.Forbidden;
                     break;
                 case RuleValue.Disallow:
-                    rule |= LaneRules.RuleOptions.HasFlagDisallow;
+                    rule |= LaneRules.RuleOptions.Disallow;
+                    break;
+                case RuleValue.FixedCost:
+                    rule |= LaneRules.RuleOptions.FixedCost;
                     break;
             }
-            return rule;
+            return new LaneRules.VehicleRule { m_Options = rule, m_FixedCost = (ushort)ruleOptionsValue.fixedCost };
         }
 
-        public static LaneRules.RuleOptions ApplyRuleOptionsValue(LaneRules.RuleOptions ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
+        public static LaneRules.VehicleRule ApplyRuleOptionsValue(LaneRules.VehicleRule ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
         {
             if (ruleOptionsValue.state == FieldState.Applied)
             {
@@ -522,7 +534,7 @@ namespace RoadRule.Systems.UI
             else
             {
                 var hasFlag = (RuleValue)Math.Max((int)a.value.hasFlag, (int)b.value.hasFlag);
-                var mergedRule = new RuleOptionsValue { hasFlag = hasFlag };
+                var mergedRule = new RuleOptionsValue { hasFlag = hasFlag, fixedCost = Math.Max(a.value.fixedCost, b.value.fixedCost) };
                 return new FieldValue<RuleOptionsValue> { state = FieldState.PartiallyApplied, value = mergedRule };
             }
         }
