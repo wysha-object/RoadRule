@@ -5,18 +5,23 @@ import { mergeRuleOptionsFieldValues } from "utils";
 import InfosignEmergencyPrefer from 'assets/images/infosign-emergency-prefer.svg'
 import InfosignEmergencyForbidden from 'assets/images/infosign-emergency-forbidden.svg'
 import InfosignEmergencyDisallow from 'assets/images/infosign-emergency-disallow.svg'
+import InfosignEmergencyFixed from 'assets/images/infosign-emergency-fixed.svg'
 import InfosignServicePrefer from 'assets/images/infosign-service-prefer.svg'
 import InfosignServiceForbidden from 'assets/images/infosign-service-forbidden.svg'
 import InfosignServiceDisallow from 'assets/images/infosign-service-disallow.svg'
+import InfosignServiceFixed from 'assets/images/infosign-service-fixed.svg'
 import InfosignPublicPrefer from 'assets/images/infosign-public-prefer.svg'
 import InfosignPublicForbidden from 'assets/images/infosign-public-forbidden.svg'
 import InfosignPublicDisallow from 'assets/images/infosign-public-disallow.svg'
+import InfosignPublicFixed from 'assets/images/infosign-public-fixed.svg'
 import InfosignPrivatePrefer from 'assets/images/infosign-private-prefer.svg'
 import InfosignPrivateForbidden from 'assets/images/infosign-private-forbidden.svg'
 import InfosignPrivateDisallow from 'assets/images/infosign-private-disallow.svg'
+import InfosignPrivateFixed from 'assets/images/infosign-private-fixed.svg'
 import InfosignBicyclePrefer from 'assets/images/infosign-bicycle-prefer.svg'
 import InfosignBicycleForbidden from 'assets/images/infosign-bicycle-forbidden.svg'
 import InfosignBicycleDisallow from 'assets/images/infosign-bicycle-disallow.svg'
+import InfosignBicycleFixed from 'assets/images/infosign-bicycle-fixed.svg'
 import InfosignSpeedLimit from 'assets/images/infosign-speed-limit.svg'
 
 export default function LanePage(props: {
@@ -112,6 +117,7 @@ export default function LanePage(props: {
                         {emergencyRule === RuleValue.Prefer && <InfosignEmergencyPrefer style={InfosignStyle} />}
                         {emergencyRule === RuleValue.Forbidden && <InfosignEmergencyForbidden style={InfosignStyle} />}
                         {emergencyRule === RuleValue.Disallow && <InfosignEmergencyDisallow style={InfosignStyle} />}
+                        {emergencyRule === RuleValue.FixedCost && <InfosignEmergencyFixed style={InfosignStyle} />}
                         <Star show={emergencyVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
@@ -120,6 +126,7 @@ export default function LanePage(props: {
                         {serviceRule === RuleValue.Prefer && <InfosignServicePrefer style={InfosignStyle} />}
                         {serviceRule === RuleValue.Forbidden && <InfosignServiceForbidden style={InfosignStyle} />}
                         {serviceRule === RuleValue.Disallow && <InfosignServiceDisallow style={InfosignStyle} />}
+                        {serviceRule === RuleValue.FixedCost && <InfosignServiceFixed style={InfosignStyle} />}
                         <Star show={serviceVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
@@ -128,6 +135,7 @@ export default function LanePage(props: {
                         {publicRule === RuleValue.Prefer && <InfosignPublicPrefer style={InfosignStyle} />}
                         {publicRule === RuleValue.Forbidden && <InfosignPublicForbidden style={InfosignStyle} />}
                         {publicRule === RuleValue.Disallow && <InfosignPublicDisallow style={InfosignStyle} />}
+                        {publicRule === RuleValue.FixedCost && <InfosignPublicFixed style={InfosignStyle} />}
                         <Star show={publicVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
@@ -136,6 +144,7 @@ export default function LanePage(props: {
                         {privateRule === RuleValue.Prefer && <InfosignPrivatePrefer style={InfosignStyle} />}
                         {privateRule === RuleValue.Forbidden && <InfosignPrivateForbidden style={InfosignStyle} />}
                         {privateRule === RuleValue.Disallow && <InfosignPrivateDisallow style={InfosignStyle} />}
+                        {privateRule === RuleValue.FixedCost && <InfosignPrivateFixed style={InfosignStyle} />}
                         <Star show={privateVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
@@ -144,6 +153,7 @@ export default function LanePage(props: {
                         {bicycleRule === RuleValue.Prefer && <InfosignBicyclePrefer style={InfosignStyle} />}
                         {bicycleRule === RuleValue.Forbidden && <InfosignBicycleForbidden style={InfosignStyle} />}
                         {bicycleRule === RuleValue.Disallow && <InfosignBicycleDisallow style={InfosignStyle} />}
+                        {bicycleRule === RuleValue.FixedCost && <InfosignBicycleFixed style={InfosignStyle} />}
                         <Star show={bicycleVehiclesRules.state === FieldState.PartiallyApplied} />
                     </div>
                 }
