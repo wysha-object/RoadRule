@@ -424,9 +424,7 @@ function RuleEditorItem(props: {
         defaultValue={0}
         enableTextField
         textFieldRegExp="^[0-9]*$"
-        min={0}
-        max={65535}
-        step={1}
+        range={{ type: 'step', min: 0, max: 65535, step: 1 }}
       />
     </div>
   )

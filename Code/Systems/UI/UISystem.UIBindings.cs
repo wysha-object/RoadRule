@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Colossal.Entities;
 using Colossal.UI.Binding;
+using Game.Areas;
 using Game.Common;
 using Game.Net;
 using Game.Prefabs;
@@ -260,6 +261,10 @@ namespace RoadRule.Systems.UI
                     laneRules = UITypes.LaneRulesValue.ApplyRulesValue(laneRules, laneRulesValue);
                     EntityManager.SetComponentData(e, laneRules);
                     EntityManager.AddComponentData(e, new Updated());
+                    if (EntityManager.TryGetComponent<Owner>(e, out var owner))
+                    {
+                        EntityManager.AddComponentData(owner.m_Owner, new ChangedDistrict());
+                    }
                 }
             }
             else if (inputValue.key == UITypes.UpdateLaneType.CarLane && inputValue.value is UITypes.CarLaneValue carLaneValue)
@@ -277,6 +282,10 @@ namespace RoadRule.Systems.UI
                     carLane = UITypes.CarLaneValue.ApplyLanePropertyValue(carLane, carLaneValue);
                     EntityManager.SetComponentData(e, carLane);
                     EntityManager.AddComponentData(e, new Updated());
+                    if (EntityManager.TryGetComponent<Owner>(e, out var owner))
+                    {
+                        EntityManager.AddComponentData(owner.m_Owner, new ChangedDistrict());
+                    }
                 }
             }
 

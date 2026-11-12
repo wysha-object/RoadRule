@@ -33,9 +33,7 @@ export default function CarLaneEditor(props: HTMLAttributes<HTMLDivElement> & {
                     valuePrefix={props.lanePropertiesValue.speedLimit.state === FieldState.PartiallyApplied ? '!' : ''}
                     valueSuffix={""}
                     defaultValue={defaultSpeedLimit}
-                    min={30}
-                    max={200}
-                    step={10}
+                    range={{ type: 'list', list: [30, 40, 50, 60, 80, 100, 120]}}
                 />
             </PanelFoldout>
         </div>

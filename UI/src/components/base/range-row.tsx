@@ -22,9 +22,7 @@ const Thumb = styled.div<{ active: boolean }>`
 
 function Range(props: {
   disabled?: boolean
-  min: number
-  max: number
-  step: number
+  range: Range
   value: number
   onChange?: (value: number) => void
   onUpdate?: (value: number) => void
@@ -42,22 +40,34 @@ function Range(props: {
         sliderLeft = rect.left
         sliderWidth = rect.right - rect.left
       }
-      let newValue =
-        Math.round(
-          (((clientX - sliderLeft) / sliderWidth) * (props.max - props.min)) /
-          props.step,
-        ) *
-        props.step +
-        props.min
-      if (newValue < props.min) {
-        newValue = props.min
-      }
-      if (newValue > props.max) {
-        newValue = props.max
+      let newValue = 0
+      switch (props.range.type) {
+        case 'step':
+          newValue =
+            Math.round(
+              (((clientX - sliderLeft) / sliderWidth) * (props.range.max - props.range.min)) /
+              props.range.step,
+            ) *
+            props.range.step +
+            props.range.min
+          if (newValue < props.range.min) {
+            newValue = props.range.min
+          }
+          if (newValue > props.range.max) {
+            newValue = props.range.max
+          }
+          break
+        case 'list':
+          let list = props.range.list.sort((a, b) => a - b)
+          newValue =
+            ((clientX - sliderLeft) / sliderWidth) * (list[list.length - 1] - list[0]) +
+            list[0]
+          newValue = list.reduce((prev, curr) => Math.abs(curr - newValue) < Math.abs(prev - newValue) ? curr : prev)
+          break
       }
       return newValue
     },
-    [props.min, props.max, props.step],
+    [JSON.stringify(props.range)],
   )
 
   const mouseDownHandler = (_event: React.MouseEvent<HTMLElement>) => {
@@ -101,17 +111,41 @@ function Range(props: {
 
   useEffect(() => {
     if (!dragging) {
-      if (props.value < props.min || isNaN(props.value)) {
-        setValue(props.min)
-      } else if (props.value > props.max) {
-        setValue(props.max)
+      let min
+      let max
+      switch (props.range.type) {
+        case 'step':
+          min = props.range.min
+          max = props.range.max
+          break
+        case 'list':
+          min = Math.min(...props.range.list)
+          max = Math.max(...props.range.list)
+          break
+      }
+      if (props.value < min || isNaN(props.value)) {
+        setValue(min)
+      } else if (props.value > max) {
+        setValue(max)
       } else {
         setValue(props.value)
       }
     }
-  }, [props.value, props.min, props.max, dragging])
+  }, [props.value, JSON.stringify(props.range), dragging])
 
-  const sliderValue = ((value - props.min) / (props.max - props.min)) * 100
+  let min
+  let max
+  switch (props.range.type) {
+    case 'step':
+      min = props.range.min
+      max = props.range.max
+      break
+    case 'list':
+      min = Math.min(...props.range.list)
+      max = Math.max(...props.range.list)
+      break
+  }
+  const sliderValue = ((value - min) / (max - min)) * 100
 
   return (
     <div
@@ -150,6 +184,15 @@ function Range(props: {
   )
 }
 
+export type Range = {
+  type: 'step'
+  min: number
+  max: number
+  step: number
+} | {
+  type: 'list'
+  list: number[]
+}
 
 export default function RangeRow(props: {
   disabled?: boolean
@@ -162,9 +205,7 @@ export default function RangeRow(props: {
   defaultValue: number
   enableTextField?: boolean
   textFieldRegExp?: string
-  min: number
-  max: number
-  step: number
+  range: Range
   tooltip?: React.ReactNode
 }) {
   const { t } = useTranslate()
@@ -298,9 +339,7 @@ export default function RangeRow(props: {
       <div style={{ flex: props.singleLine ? '2 0 0' : '1 0 0', width: props.singleLine ? 'auto' : '100%' }}>
         <Range
           disabled={props.disabled}
-          min={props.min}
-          max={props.max}
-          step={props.step}
+          range={props.range}
           value={props.value}
           onChange={changeHandler}
           onUpdate={updateHandler}
