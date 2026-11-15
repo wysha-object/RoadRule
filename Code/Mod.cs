@@ -53,7 +53,6 @@ namespace RoadRule
 
             updateSystem.UpdateBefore<Systems.Simulation.PatchedCarNavigationSystem, Game.Simulation.CarNavigationSystem.Actions>(Game.SystemUpdatePhase.LoadSimulation);
             updateSystem.UpdateBefore<Systems.Simulation.PatchedCarNavigationSystem, Game.Simulation.CarNavigationSystem.Actions>(Game.SystemUpdatePhase.GameSimulation);
-            updateSystem.UpdateAt<ObsoleteMarkSystem>(SystemUpdatePhase.GameSimulation);
             updateSystem.UpdateAt<LaneRulesModifiedSystem>(SystemUpdatePhase.ModificationEnd);
             updateSystem.UpdateAt<Systems.Tool.ToolSystem>(Game.SystemUpdatePhase.ToolUpdate);
             updateSystem.UpdateAt<Systems.UI.UISystem>(Game.SystemUpdatePhase.UIUpdate);

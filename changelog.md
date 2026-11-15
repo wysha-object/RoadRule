@@ -1,1 +1,2 @@
 - Add a "Keep in Lane" option to the Lane tab.
+- Vehicles no longer automatically recalculate their paths when lane rules are modified.
