@@ -58,6 +58,12 @@ namespace RoadRule.Components
             FixedCost = 4,
         }
 
+        public enum LaneOptions : byte
+        {
+            None = 0,
+            KeepInLane = 1 << 0,
+        }
+
         private struct CarFlagsRules : ISerializable
         {
             public RuleOptions m_Emergency;
@@ -344,6 +350,8 @@ namespace RoadRule.Components
 
         public VehicleTypeRules m_VehicleType;
 
+        public LaneOptions m_LaneOptions;
+
         public void Deserialize<TReader>(TReader reader)
             where TReader : IReader
         {
@@ -360,15 +368,22 @@ namespace RoadRule.Components
             {
                 reader.Read(out m_VehicleType);
             }
+
+            if (schemaVersion >= 4)
+            {
+                reader.Read(out byte laneOptions);
+                m_LaneOptions = (LaneOptions)laneOptions;
+            }
         }
 
         public void Serialize<TWriter>(TWriter writer)
             where TWriter : IWriter
         {
-            ushort schemaVersion = 3;
+            ushort schemaVersion = 4;
             writer.Write(schemaVersion);
 
             writer.Write(m_VehicleType);
+            writer.Write((byte)m_LaneOptions);
         }
     }
 }

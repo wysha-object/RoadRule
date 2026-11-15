@@ -8,6 +8,7 @@ import { LaneRulesValue, FieldState, FieldValue, RuleOptionsValue, RuleValue, UI
 import { UIToolModeContext } from 'context'
 import { mergeRuleOptionsFieldValues } from 'utils'
 import styled from 'styled-components'
+import CheckboxRow from 'components/base/checkbox-row'
 
 const SmallPanelFoldoutContainer = styled.div`
   font-size: 0.9em;
@@ -18,6 +19,7 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
   onValueChange: (oldValue: LaneRulesValue, newValue: LaneRulesValue) => void
 }) {
   const { t } = useTranslate()
+  const [mode] = useContext(UIToolModeContext)
 
   const emergencyVehiclesRules = useMemo(() => {
     const { ambulance, fireEngine, policeCar } = props.laneRulesValue.vehicleTypeRules
@@ -69,6 +71,25 @@ export default function RulesEditor(props: HTMLAttributes<HTMLDivElement> & {
 
   return (
     <div>
+      {mode === UIToolMode.Lane && (
+        <PanelFoldout header={t("Options")} initialExpanded={true}>
+          <CheckboxRow
+            isChecked={props.laneRulesValue.keepInLane.value}
+            label={t("Options.KeepInLane") + (props.laneRulesValue.keepInLane.state === FieldState.PartiallyApplied ? " *" : "")}
+            tooltip={t("Options.KeepInLane.Tooltip")}
+            onClick={() => {
+              props.onValueChange(props.laneRulesValue, {
+                ...props.laneRulesValue,
+                keepInLane: {
+                  state: FieldState.Applied,
+                  value: !props.laneRulesValue.keepInLane.value,
+                },
+              })
+            }}
+          />
+        </PanelFoldout>
+      )
+      }
       <PanelFoldout header={t('VehicleTypes')} initialExpanded={true}>
         <RuleEditorItem
           name={t('VehicleTypes.EmergencyVehicles')}

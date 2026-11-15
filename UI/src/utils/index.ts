@@ -15,6 +15,22 @@ export function mergeRuleValues(
   return Math.max(a, b)
 }
 
+export function mergeBooleanFieldValues(
+  a: FieldValue<boolean>,
+  b: FieldValue<boolean>,
+): FieldValue<boolean> {
+  if (
+    a.value === b.value &&
+    a.state === b.state &&
+    a.state === FieldState.Applied
+  ) {
+    return Object.assign({}, a)
+  } else {
+    const mergedValue = a.value || b.value
+    return { state: FieldState.PartiallyApplied, value: mergedValue }
+  }
+}
+
 export function mergeRuleOptionsFieldValues(
   a: FieldValue<RuleOptionsValue>,
   b: FieldValue<RuleOptionsValue>,
@@ -64,7 +80,26 @@ export function mergeLaneRules(
 ): LaneRulesValue {
   return {
     vehicleTypeRules: mergeVehicleRules(a.vehicleTypeRules, b.vehicleTypeRules),
+    keepInLane: mergeBooleanFieldValues(a.keepInLane, b.keepInLane),
   }
+}
+
+export function excludeLaneOnlyRules(value: LaneRulesValue): LaneRulesValue {
+  return {
+    ...value,
+    keepInLane: { ...value.keepInLane, state: FieldState.PartiallyApplied },
+  }
+}
+
+export function excludeMasterLaneOnlyRules(value: LaneRulesValue): LaneRulesValue {
+  const vehicleTypeRules = { ...value.vehicleTypeRules }
+  for (const key of Object.keys(vehicleTypeRules) as (keyof VehicleTypeRulesValue)[]) {
+    const rule = vehicleTypeRules[key]
+    if (rule.value.hasFlag === RuleValue.FixedCost) {
+      vehicleTypeRules[key] = { ...rule, state: FieldState.PartiallyApplied }
+    }
+  }
+  return { ...value, vehicleTypeRules }
 }
 
 export function mergeSpeedLimitValues(

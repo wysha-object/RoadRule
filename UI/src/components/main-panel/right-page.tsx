@@ -8,7 +8,7 @@ import {
 import { useContext } from 'react'
 import LaneList from './mods/lane-list'
 import { useTranslate } from 'hooks/translate'
-import { mergeCarLaneValues, mergeLaneRules } from 'utils'
+import { excludeLaneOnlyRules, excludeMasterLaneOnlyRules, mergeCarLaneValues, mergeLaneRules } from 'utils'
 import { CarLaneValue, LaneRulesValue, ToolState, UIToolMode } from 'types'
 import RulesEditor from './mods/rules-editor'
 import BasePage from 'components/base/base-page'
@@ -206,6 +206,7 @@ function Header() {
 
 function Footer(props: { value?: LaneRulesValue, onPaste: (value: LaneRulesValue) => void }) {
   const clipboard = useContext(RulesClipboardContext)
+  const [mode] = useContext(UIToolModeContext)
   return (
     <>
       {props.value &&
@@ -221,7 +222,9 @@ function Footer(props: { value?: LaneRulesValue, onPaste: (value: LaneRulesValue
           <Button
             variant='round'
             onClick={() => {
-              clipboard.setClipboard(props.value!)
+              clipboard.setClipboard(
+                mode === UIToolMode.MasterLane ? excludeLaneOnlyRules(props.value!) : excludeMasterLaneOnlyRules(props.value!),
+              )
             }}
           >
             <CopySvg />
@@ -232,7 +235,11 @@ function Footer(props: { value?: LaneRulesValue, onPaste: (value: LaneRulesValue
             variant='round'
             onClick={() => {
               if (clipboard.value && props.onPaste) {
-                props.onPaste(clipboard.value)
+                props.onPaste(
+                  mode === UIToolMode.MasterLane
+                    ? excludeLaneOnlyRules(clipboard.value)
+                    : excludeMasterLaneOnlyRules(clipboard.value),
+                )
               }
             }}
           >

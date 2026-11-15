@@ -201,6 +201,10 @@ public struct PatchedCarLaneSelectIterator
                 for (int i = componentData.m_MinIndex; i <= num; i++)
                 {
                     Game.Net.SubLane subLane = dynamicBuffer[i];
+                    if (!m_CarLaneRulesData.TryGetComponent(subLane.m_SubLane, out var carLaneRules))
+                    {
+                        carLaneRules = new LaneRules();
+                    }
                     Lane lane = m_LaneData[subLane.m_SubLane];
                     float num6 = 1000000f;
                     int num7;
@@ -256,7 +260,7 @@ public struct PatchedCarLaneSelectIterator
                         int num9 = num3;
                         for (int m = componentData2.m_MinIndex; m < num7; m++)
                         {
-                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num7 - m));
+                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num7 - m, carLaneRules));
                         }
                         for (int n = num7; n <= num8; n++)
                         {
@@ -264,7 +268,7 @@ public struct PatchedCarLaneSelectIterator
                         }
                         for (int num10 = num8 + 1; num10 <= num2; num10++)
                         {
-                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num10 - num8));
+                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num10 - num8, carLaneRules));
                         }
                         num6 += CalculateLaneObjectCost(laneObjectCost, index, subLane.m_SubLane, navLaneData.m_Flags);
                         bool test = num4 == 100000;
@@ -278,10 +282,6 @@ public struct PatchedCarLaneSelectIterator
                         }
                         if (m_CarLaneData.TryGetComponent(subLane.m_SubLane, out var componentData4))
                         {
-                            if (!m_CarLaneRulesData.TryGetComponent(subLane.m_SubLane, out var carLaneRules))
-                            {
-                                carLaneRules = new LaneRules();
-                            }
                             num6 += GetLaneDriveCost(componentData4, subLane.m_PathMethods, i, componentData.m_MinIndex, num, carLaneRules);
                         }
                     }
@@ -294,18 +294,18 @@ public struct PatchedCarLaneSelectIterator
                         if (num11 < num4 || num11 > num5)
                         {
                             Game.Net.SubLane subLane2 = dynamicBuffer[num11];
+                            if (!m_CarLaneRulesData.TryGetComponent(subLane2.m_SubLane, out var carLaneRules))
+                            {
+                                carLaneRules = new LaneRules();
+                            }
                             float num12 = math.select(falseValue, trueValue, num11 > num5);
-                            num12 += GetLaneSwitchCost(math.max(num4 - num11, num11 - num5));
+                            num12 += GetLaneSwitchCost(math.max(num4 - num11, num11 - num5), carLaneRules);
                             if (m_LaneReservationData.TryGetComponent(subLane2.m_SubLane, out var componentData5))
                             {
                                 num12 += GetLanePriorityCost(componentData5.GetPriority());
                             }
                             if (m_CarLaneData.TryGetComponent(subLane2.m_SubLane, out var componentData6))
                             {
-                                if (!m_CarLaneRulesData.TryGetComponent(subLane2.m_SubLane, out var carLaneRules))
-                                {
-                                    carLaneRules = new LaneRules();
-                                }
                                 num12 += GetLaneDriveCost(componentData6, subLane2.m_PathMethods, num11, componentData.m_MinIndex, num, carLaneRules);
                             }
                             m_Buffer[m_BufferPos - num + num11 - 1] = num12;
@@ -374,10 +374,14 @@ public struct PatchedCarLaneSelectIterator
                 for (int num19 = componentData.m_MinIndex; num19 <= num; num19++)
                 {
                     Game.Net.SubLane subLane4 = dynamicBuffer[num19];
+                    if (!m_CarLaneRulesData.TryGetComponent(subLane4.m_SubLane, out var carLaneRules))
+                    {
+                        carLaneRules = new LaneRules();
+                    }
                     float num20 = 0f;
                     if (num15 <= num16)
                     {
-                        num20 += GetLaneSwitchCost(math.max(0, math.max(num15 - num19, num19 - num16)));
+                        num20 += GetLaneSwitchCost(math.max(0, math.max(num15 - num19, num19 - num16)), carLaneRules);
                     }
                     num20 += CalculateLaneObjectCost(laneObjectCost, index, subLane4.m_SubLane, navLaneData.m_Flags);
                     if (m_LaneReservationData.TryGetComponent(subLane4.m_SubLane, out var componentData9))
@@ -386,10 +390,6 @@ public struct PatchedCarLaneSelectIterator
                     }
                     if (m_CarLaneData.TryGetComponent(subLane4.m_SubLane, out var componentData10))
                     {
-                        if (!m_CarLaneRulesData.TryGetComponent(subLane4.m_SubLane, out var carLaneRules))
-                        {
-                            carLaneRules = new LaneRules();
-                        }
                         num20 += GetLaneDriveCost(componentData10, subLane4.m_PathMethods, num19, componentData.m_MinIndex, num, carLaneRules);
                     }
                     m_Buffer[m_BufferPos++] = num20;
@@ -399,9 +399,9 @@ public struct PatchedCarLaneSelectIterator
         m_LaneSwitchBaseCost += 0.01f;
     }
 
-    private float GetLaneSwitchCost(int numLanes)
+    private float GetLaneSwitchCost(int numLanes, LaneRules laneRules)
     {
-        return (float)(numLanes * numLanes * numLanes) * m_LaneSwitchCost;
+        return (float)(numLanes * numLanes * numLanes) * (m_LaneSwitchCost + math.select(0, 16, (laneRules.m_LaneOptions & LaneRules.LaneOptions.KeepInLane) != 0));
     }
 
     private float GetLanePriorityCost(int lanePriority)
@@ -450,6 +450,10 @@ public struct PatchedCarLaneSelectIterator
         int changeIndex = 0;
         if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.FixedLane) == 0 && m_SlaveLaneData.TryGetComponent(entity, out var componentData))
         {
+            if (!m_CarLaneRulesData.TryGetComponent(currentLane.m_Lane, out var currentLaneRules))
+            {
+                currentLaneRules = new LaneRules();
+            }
             Owner owner = m_OwnerData[entity];
             DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
             int num = math.min(componentData.m_MaxIndex, dynamicBuffer.Length - 1);
@@ -555,7 +559,7 @@ public struct PatchedCarLaneSelectIterator
                         }
                     }
                     int2 int6 = math.abs(k - int5);
-                    num5 += GetLaneSwitchCost(math.select(int6.x, int6.y, int6.x != 0 && int6.y > int6.x));
+                    num5 += GetLaneSwitchCost(math.select(int6.x, int6.y, int6.x != 0 && int6.y > int6.x), currentLaneRules);
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane.m_SubLane, out var componentData4))
                     {
                         num5 += GetBicycleDriveCost(componentData4.m_Flags, subLane.m_PathMethods, k, componentData.m_MinIndex, num);
@@ -580,7 +584,7 @@ public struct PatchedCarLaneSelectIterator
                         num11 += GetLanePriorityCost(componentData5.GetPriority());
                     }
                     int2 int7 = math.abs(num10 - int5);
-                    num11 += GetLaneSwitchCost(math.select(int7.x, int7.y, int7.x != 0 && int7.y > int7.x));
+                    num11 += GetLaneSwitchCost(math.select(int7.x, int7.y, int7.x != 0 && int7.y > int7.x), currentLaneRules);
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane2.m_SubLane, out var componentData6))
                     {
                         num11 += GetBicycleDriveCost(componentData6.m_Flags, subLane2.m_PathMethods, num10, componentData.m_MinIndex, num);
@@ -648,7 +652,7 @@ public struct PatchedCarLaneSelectIterator
                         num17 = 1000000f;
                     }
                     int2 int8 = math.abs(num16 - int5);
-                    num17 += GetLaneSwitchCost(math.select(int8.x, int8.y, int8.x != 0 && int8.y > int8.x));
+                    num17 += GetLaneSwitchCost(math.select(int8.x, int8.y, int8.x != 0 && int8.y > int8.x), currentLaneRules);
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane3.m_SubLane, out var componentData8))
                     {
                         num17 += GetBicycleDriveCost(componentData8.m_Flags, subLane3.m_PathMethods, num16, componentData.m_MinIndex, num);
@@ -727,6 +731,10 @@ public struct PatchedCarLaneSelectIterator
                 && m_LaneData.HasComponent(m_PrevLane)
             )
             {
+                if (!m_CarLaneRulesData.TryGetComponent(m_PrevLane, out var carLaneRules))
+                {
+                    carLaneRules = new LaneRules();
+                }
                 Owner owner = m_OwnerData[navLaneData.m_Lane];
                 DynamicBuffer<Game.Net.SubLane> dynamicBuffer = m_Lanes[owner.m_Owner];
                 int num = math.min(slaveLane.m_MaxIndex, dynamicBuffer.Length - 1);
@@ -788,7 +796,7 @@ public struct PatchedCarLaneSelectIterator
                 int index = slaveLane.m_MinIndex;
                 for (int l = slaveLane.m_MinIndex; l < num2; l++)
                 {
-                    float num5 = m_Buffer[bufferPos++] + GetLaneSwitchCost(num2 - l);
+                    float num5 = m_Buffer[bufferPos++] + GetLaneSwitchCost(num2 - l, carLaneRules);
                     if (num5 < num4)
                     {
                         num4 = num5;
@@ -806,7 +814,7 @@ public struct PatchedCarLaneSelectIterator
                 }
                 for (int n = num3 + 1; n <= num; n++)
                 {
-                    float num7 = m_Buffer[bufferPos++] + GetLaneSwitchCost(n - num3);
+                    float num7 = m_Buffer[bufferPos++] + GetLaneSwitchCost(n - num3, carLaneRules);
                     if (num7 < num4)
                     {
                         num4 = num7;

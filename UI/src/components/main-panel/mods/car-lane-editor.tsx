@@ -1,3 +1,4 @@
+import CheckboxRow from "components/base/checkbox-row";
 import RangeRow from "components/base/range-row";
 import { PanelFoldout } from "cs2/ui";
 import { useGetCompositionCmd } from "hooks/cmd";

@@ -163,6 +163,11 @@ namespace RoadRule.Systems.UI
                     reader.Read(out float floatValue);
                     value = (T)(object)floatValue;
                 }
+                else if (value is bool)
+                {
+                    reader.Read(out bool boolValue);
+                    value = (T)(object)boolValue;
+                }
                 else
                 {
                     throw new InvalidOperationException($"Unsupported UI field value type: {typeof(T).FullName}");
@@ -183,6 +188,10 @@ namespace RoadRule.Systems.UI
                 else if (value is float floatValue)
                 {
                     writer.Write(floatValue);
+                }
+                else if (value is bool boolValue)
+                {
+                    writer.Write(boolValue);
                 }
                 else
                 {
@@ -402,20 +411,41 @@ namespace RoadRule.Systems.UI
         public struct LaneRulesValue : IJsonReadable, IJsonWritable, IEquatable<LaneRulesValue>
         {
             public VehicleTypeRulesValue vehicleTypeRules;
+            public FieldValue<bool> keepInLane;
 
             public static LaneRulesValue FromRules(LaneRules rules)
             {
-                return new LaneRulesValue { vehicleTypeRules = VehicleTypeRulesValue.FromVehicleTypeRules(rules.m_VehicleType) };
+                return new LaneRulesValue
+                {
+                    vehicleTypeRules = VehicleTypeRulesValue.FromVehicleTypeRules(rules.m_VehicleType),
+                    keepInLane = new FieldValue<bool>() { state = FieldState.Applied, value = (rules.m_LaneOptions & LaneRules.LaneOptions.KeepInLane) != 0 },
+                };
             }
 
             public static LaneRules ApplyRulesValue(LaneRules laneRules, LaneRulesValue rulesValue)
             {
-                return new LaneRules { m_VehicleType = VehicleTypeRulesValue.ApplyVehicleTypeRulesValue(laneRules.m_VehicleType, rulesValue.vehicleTypeRules) };
+                laneRules.m_VehicleType = VehicleTypeRulesValue.ApplyVehicleTypeRulesValue(laneRules.m_VehicleType, rulesValue.vehicleTypeRules);
+                if (rulesValue.keepInLane.state == FieldState.Applied)
+                {
+                    if (rulesValue.keepInLane.value)
+                    {
+                        laneRules.m_LaneOptions |= LaneRules.LaneOptions.KeepInLane;
+                    }
+                    else
+                    {
+                        laneRules.m_LaneOptions &= ~LaneRules.LaneOptions.KeepInLane;
+                    }
+                }
+                return laneRules;
             }
 
             public static LaneRulesValue MergeRulesValues(LaneRulesValue a, LaneRulesValue b)
             {
-                return new LaneRulesValue { vehicleTypeRules = VehicleTypeRulesValue.MergeVehicleTypeRules(a.vehicleTypeRules, b.vehicleTypeRules) };
+                return new LaneRulesValue
+                {
+                    vehicleTypeRules = VehicleTypeRulesValue.MergeVehicleTypeRules(a.vehicleTypeRules, b.vehicleTypeRules),
+                    keepInLane = MergeBoolValues(a.keepInLane, b.keepInLane),
+                };
             }
 
             public void Read(IJsonReader reader)
@@ -423,6 +453,8 @@ namespace RoadRule.Systems.UI
                 reader.ReadMapBegin();
                 reader.ReadProperty(nameof(vehicleTypeRules));
                 vehicleTypeRules.Read(reader);
+                reader.ReadProperty(nameof(keepInLane));
+                keepInLane.Read(reader);
                 reader.ReadMapEnd();
             }
 
@@ -431,12 +463,14 @@ namespace RoadRule.Systems.UI
                 writer.TypeBegin(GetType().FullName);
                 writer.PropertyName(nameof(vehicleTypeRules));
                 writer.Write(vehicleTypeRules);
+                writer.PropertyName(nameof(keepInLane));
+                writer.Write(keepInLane);
                 writer.TypeEnd();
             }
 
             public bool Equals(LaneRulesValue other)
             {
-                return vehicleTypeRules.Equals(other.vehicleTypeRules);
+                return vehicleTypeRules.Equals(other.vehicleTypeRules) && keepInLane.Equals(other.keepInLane);
             }
 
             public override bool Equals(object obj)
@@ -446,7 +480,7 @@ namespace RoadRule.Systems.UI
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(vehicleTypeRules);
+                return HashCode.Combine(vehicleTypeRules, keepInLane);
             }
 
             public static bool operator ==(LaneRulesValue left, LaneRulesValue right)
@@ -462,55 +496,55 @@ namespace RoadRule.Systems.UI
 
         public static FieldValue<RuleOptionsValue> FromRule(LaneRules.VehicleRule rule)
         {
-            var hasFlag = RuleValue.None;
+            var rsValue = new RuleOptionsValue();
             switch (rule.m_Options & LaneRules.RuleOptions.ModeMask)
             {
                 case LaneRules.RuleOptions.None:
-                    hasFlag = RuleValue.None;
+                    rsValue.hasFlag = RuleValue.None;
                     break;
                 case LaneRules.RuleOptions.Prefer:
-                    hasFlag = RuleValue.Prefer;
+                    rsValue.hasFlag = RuleValue.Prefer;
                     break;
                 case LaneRules.RuleOptions.Forbidden:
-                    hasFlag = RuleValue.Forbidden;
+                    rsValue.hasFlag = RuleValue.Forbidden;
                     break;
                 case LaneRules.RuleOptions.Disallow:
-                    hasFlag = RuleValue.Disallow;
+                    rsValue.hasFlag = RuleValue.Disallow;
                     break;
                 case LaneRules.RuleOptions.FixedCost:
-                    hasFlag = RuleValue.FixedCost;
+                    rsValue.hasFlag = RuleValue.FixedCost;
                     break;
                 default:
-                    hasFlag = RuleValue.None;
+                    rsValue.hasFlag = RuleValue.None;
                     break;
             }
 
-            return new FieldValue<RuleOptionsValue>()
-            {
-                state = FieldState.Applied,
-                value = new RuleOptionsValue { hasFlag = hasFlag, fixedCost = rule.m_FixedCost },
-            };
+            rsValue.fixedCost = rule.m_FixedCost;
+
+            return new FieldValue<RuleOptionsValue> { state = FieldState.Applied, value = rsValue };
         }
 
         public static LaneRules.VehicleRule ToRuleOptions(RuleOptionsValue ruleOptionsValue)
         {
-            LaneRules.RuleOptions rule = LaneRules.RuleOptions.None;
+            var rs = new LaneRules.VehicleRule();
             switch (ruleOptionsValue.hasFlag)
             {
                 case RuleValue.Prefer:
-                    rule |= LaneRules.RuleOptions.Prefer;
+                    rs.m_Options |= LaneRules.RuleOptions.Prefer;
                     break;
                 case RuleValue.Forbidden:
-                    rule |= LaneRules.RuleOptions.Forbidden;
+                    rs.m_Options |= LaneRules.RuleOptions.Forbidden;
                     break;
                 case RuleValue.Disallow:
-                    rule |= LaneRules.RuleOptions.Disallow;
+                    rs.m_Options |= LaneRules.RuleOptions.Disallow;
                     break;
                 case RuleValue.FixedCost:
-                    rule |= LaneRules.RuleOptions.FixedCost;
+                    rs.m_Options |= LaneRules.RuleOptions.FixedCost;
                     break;
             }
-            return new LaneRules.VehicleRule { m_Options = rule, m_FixedCost = (ushort)ruleOptionsValue.fixedCost };
+
+            rs.m_FixedCost = (ushort)ruleOptionsValue.fixedCost;
+            return rs;
         }
 
         public static LaneRules.VehicleRule ApplyRuleOptionsValue(LaneRules.VehicleRule ruleOptions, FieldValue<RuleOptionsValue> ruleOptionsValue)
@@ -522,6 +556,18 @@ namespace RoadRule.Systems.UI
             else
             {
                 return ruleOptions;
+            }
+        }
+
+        public static FieldValue<bool> MergeBoolValues(FieldValue<bool> a, FieldValue<bool> b)
+        {
+            if (a.value == b.value && a.state == b.state && a.state == FieldState.Applied)
+            {
+                return new FieldValue<bool> { state = FieldState.Applied, value = a.value };
+            }
+            else
+            {
+                return new FieldValue<bool> { state = FieldState.PartiallyApplied, value = a.value || b.value };
             }
         }
 

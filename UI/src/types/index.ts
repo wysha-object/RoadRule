@@ -103,6 +103,7 @@ export interface VehicleTypeRulesValue {
 
 export interface LaneRulesValue {
   vehicleTypeRules: VehicleTypeRulesValue
+  keepInLane: FieldValue<boolean>
 }
 
 export interface CarLaneValue {
