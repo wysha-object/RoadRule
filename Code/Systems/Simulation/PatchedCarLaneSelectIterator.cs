@@ -260,7 +260,14 @@ public struct PatchedCarLaneSelectIterator
                         int num9 = num3;
                         for (int m = componentData2.m_MinIndex; m < num7; m++)
                         {
-                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num7 - m, carLaneRules));
+                            if (!m_CarLaneRulesData.TryGetComponent(dynamicBuffer2[m].m_SubLane, out var nextLaneRules))
+                            {
+                                nextLaneRules = new LaneRules();
+                            }
+                            num6 = math.min(
+                                num6,
+                                m_Buffer[num9++] + GetLaneSwitchCost(num7 - m, carLaneRules, nextLaneRules)
+                            );
                         }
                         for (int n = num7; n <= num8; n++)
                         {
@@ -268,7 +275,14 @@ public struct PatchedCarLaneSelectIterator
                         }
                         for (int num10 = num8 + 1; num10 <= num2; num10++)
                         {
-                            num6 = math.min(num6, m_Buffer[num9++] + GetLaneSwitchCost(num10 - num8, carLaneRules));
+                            if (!m_CarLaneRulesData.TryGetComponent(dynamicBuffer2[num10].m_SubLane, out var nextLaneRules))
+                            {
+                                nextLaneRules = new LaneRules();
+                            }
+                            num6 = math.min(
+                                num6,
+                                m_Buffer[num9++] + GetLaneSwitchCost(num10 - num8, carLaneRules, nextLaneRules)
+                            );
                         }
                         num6 += CalculateLaneObjectCost(laneObjectCost, index, subLane.m_SubLane, navLaneData.m_Flags);
                         bool test = num4 == 100000;
@@ -298,8 +312,17 @@ public struct PatchedCarLaneSelectIterator
                             {
                                 carLaneRules = new LaneRules();
                             }
+                            Entity nextLane = dynamicBuffer[num11 > num5 ? num5 : num4].m_SubLane;
+                            if (!m_CarLaneRulesData.TryGetComponent(nextLane, out var nextLaneRules))
+                            {
+                                nextLaneRules = new LaneRules();
+                            }
                             float num12 = math.select(falseValue, trueValue, num11 > num5);
-                            num12 += GetLaneSwitchCost(math.max(num4 - num11, num11 - num5), carLaneRules);
+                            num12 += GetLaneSwitchCost(
+                                math.max(num4 - num11, num11 - num5),
+                                carLaneRules,
+                                nextLaneRules
+                            );
                             if (m_LaneReservationData.TryGetComponent(subLane2.m_SubLane, out var componentData5))
                             {
                                 num12 += GetLanePriorityCost(componentData5.GetPriority());
@@ -381,7 +404,16 @@ public struct PatchedCarLaneSelectIterator
                     float num20 = 0f;
                     if (num15 <= num16)
                     {
-                        num20 += GetLaneSwitchCost(math.max(0, math.max(num15 - num19, num19 - num16)), carLaneRules);
+                        Entity nextLane = dynamicBuffer[num19 < num15 ? num15 : num16].m_SubLane;
+                        if (!m_CarLaneRulesData.TryGetComponent(nextLane, out var nextLaneRules))
+                        {
+                            nextLaneRules = new LaneRules();
+                        }
+                        num20 += GetLaneSwitchCost(
+                            math.max(0, math.max(num15 - num19, num19 - num16)),
+                            carLaneRules,
+                            nextLaneRules
+                        );
                     }
                     num20 += CalculateLaneObjectCost(laneObjectCost, index, subLane4.m_SubLane, navLaneData.m_Flags);
                     if (m_LaneReservationData.TryGetComponent(subLane4.m_SubLane, out var componentData9))
@@ -399,9 +431,11 @@ public struct PatchedCarLaneSelectIterator
         m_LaneSwitchBaseCost += 0.01f;
     }
 
-    private float GetLaneSwitchCost(int numLanes, LaneRules laneRules)
+    private float GetLaneSwitchCost(int numLanes, LaneRules laneRules, LaneRules nextLaneRules)
     {
-        return (float)(numLanes * numLanes * numLanes) * (m_LaneSwitchCost + math.select(0, 16, (laneRules.m_LaneOptions & LaneRules.LaneOptions.KeepInLane) != 0));
+        bool keepInLane =
+            ((laneRules.m_LaneOptions | nextLaneRules.m_LaneOptions) & LaneRules.LaneOptions.KeepInLane) != 0;
+        return (float)(numLanes * numLanes * numLanes) * (m_LaneSwitchCost + math.select(0, 16, keepInLane));
     }
 
     private float GetLanePriorityCost(int lanePriority)
@@ -559,7 +593,15 @@ public struct PatchedCarLaneSelectIterator
                         }
                     }
                     int2 int6 = math.abs(k - int5);
-                    num5 += GetLaneSwitchCost(math.select(int6.x, int6.y, int6.x != 0 && int6.y > int6.x), currentLaneRules);
+                    if (!m_CarLaneRulesData.TryGetComponent(subLane.m_SubLane, out var nextLaneRules))
+                    {
+                        nextLaneRules = new LaneRules();
+                    }
+                    num5 += GetLaneSwitchCost(
+                        math.select(int6.x, int6.y, int6.x != 0 && int6.y > int6.x),
+                        currentLaneRules,
+                        nextLaneRules
+                    );
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane.m_SubLane, out var componentData4))
                     {
                         num5 += GetBicycleDriveCost(componentData4.m_Flags, subLane.m_PathMethods, k, componentData.m_MinIndex, num);
@@ -584,7 +626,15 @@ public struct PatchedCarLaneSelectIterator
                         num11 += GetLanePriorityCost(componentData5.GetPriority());
                     }
                     int2 int7 = math.abs(num10 - int5);
-                    num11 += GetLaneSwitchCost(math.select(int7.x, int7.y, int7.x != 0 && int7.y > int7.x), currentLaneRules);
+                    if (!m_CarLaneRulesData.TryGetComponent(subLane2.m_SubLane, out var nextLaneRules))
+                    {
+                        nextLaneRules = new LaneRules();
+                    }
+                    num11 += GetLaneSwitchCost(
+                        math.select(int7.x, int7.y, int7.x != 0 && int7.y > int7.x),
+                        currentLaneRules,
+                        nextLaneRules
+                    );
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane2.m_SubLane, out var componentData6))
                     {
                         num11 += GetBicycleDriveCost(componentData6.m_Flags, subLane2.m_PathMethods, num10, componentData.m_MinIndex, num);
@@ -652,7 +702,15 @@ public struct PatchedCarLaneSelectIterator
                         num17 = 1000000f;
                     }
                     int2 int8 = math.abs(num16 - int5);
-                    num17 += GetLaneSwitchCost(math.select(int8.x, int8.y, int8.x != 0 && int8.y > int8.x), currentLaneRules);
+                    if (!m_CarLaneRulesData.TryGetComponent(subLane3.m_SubLane, out var nextLaneRules))
+                    {
+                        nextLaneRules = new LaneRules();
+                    }
+                    num17 += GetLaneSwitchCost(
+                        math.select(int8.x, int8.y, int8.x != 0 && int8.y > int8.x),
+                        currentLaneRules,
+                        nextLaneRules
+                    );
                     if (m_PathMethods == PathMethod.Bicycle && m_CarLaneData.TryGetComponent(subLane3.m_SubLane, out var componentData8))
                     {
                         num17 += GetBicycleDriveCost(componentData8.m_Flags, subLane3.m_PathMethods, num16, componentData.m_MinIndex, num);
@@ -796,7 +854,11 @@ public struct PatchedCarLaneSelectIterator
                 int index = slaveLane.m_MinIndex;
                 for (int l = slaveLane.m_MinIndex; l < num2; l++)
                 {
-                    float num5 = m_Buffer[bufferPos++] + GetLaneSwitchCost(num2 - l, carLaneRules);
+                    if (!m_CarLaneRulesData.TryGetComponent(dynamicBuffer[l].m_SubLane, out var nextLaneRules))
+                    {
+                        nextLaneRules = new LaneRules();
+                    }
+                    float num5 = m_Buffer[bufferPos++] + GetLaneSwitchCost(num2 - l, carLaneRules, nextLaneRules);
                     if (num5 < num4)
                     {
                         num4 = num5;
@@ -814,7 +876,11 @@ public struct PatchedCarLaneSelectIterator
                 }
                 for (int n = num3 + 1; n <= num; n++)
                 {
-                    float num7 = m_Buffer[bufferPos++] + GetLaneSwitchCost(n - num3, carLaneRules);
+                    if (!m_CarLaneRulesData.TryGetComponent(dynamicBuffer[n].m_SubLane, out var nextLaneRules))
+                    {
+                        nextLaneRules = new LaneRules();
+                    }
+                    float num7 = m_Buffer[bufferPos++] + GetLaneSwitchCost(n - num3, carLaneRules, nextLaneRules);
                     if (num7 < num4)
                     {
                         num4 = num7;
